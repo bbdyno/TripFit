@@ -18,6 +18,7 @@ public final class ClothingItem {
     public var note: String?
     @Attribute(.externalStorage)
     public var imageData: Data?
+    public var imageURL: String?
     public var createdAt: Date
     public var updatedAt: Date
 
@@ -37,7 +38,8 @@ public final class ClothingItem {
         color: String? = nil,
         season: Season? = nil,
         note: String? = nil,
-        imageData: Data? = nil
+        imageData: Data? = nil,
+        imageURL: String? = nil
     ) {
         self.id = UUID()
         self.name = name
@@ -46,6 +48,7 @@ public final class ClothingItem {
         self.seasonRaw = season?.rawValue
         self.note = note
         self.imageData = imageData
+        self.imageURL = imageURL
         self.createdAt = Date()
         self.updatedAt = Date()
     }

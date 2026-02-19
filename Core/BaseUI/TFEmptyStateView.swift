@@ -5,31 +5,32 @@
 //  Created by bbdyno on 2/19/26.
 //
 
-import UIKit
 import SnapKit
+import UIKit
 
 public final class TFEmptyStateView: UIView {
     private let iconImageView = UIImageView()
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
+    private let cardView = TFCardView(style: .elevated)
     public let actionButton = TFPrimaryButton(title: "")
 
     public init(icon: String, title: String, subtitle: String, buttonTitle: String?) {
         super.init(frame: .zero)
 
         iconImageView.image = UIImage(systemName: icon)
-        iconImageView.tintColor = TFColor.lavender
+        iconImageView.tintColor = TFColor.Brand.primary
         iconImageView.contentMode = .scaleAspectFit
         iconImageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 48, weight: .light)
 
         titleLabel.text = title
-        titleLabel.font = .preferredFont(forTextStyle: .title2)
-        titleLabel.textColor = TFColor.textPrimary
+        titleLabel.font = TFTypography.title
+        titleLabel.textColor = TFColor.Text.primary
         titleLabel.textAlignment = .center
 
         subtitleLabel.text = subtitle
-        subtitleLabel.font = .preferredFont(forTextStyle: .body)
-        subtitleLabel.textColor = TFColor.textSecondary
+        subtitleLabel.font = TFTypography.bodyRegular
+        subtitleLabel.textColor = TFColor.Text.secondary
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
 
@@ -47,10 +48,16 @@ public final class TFEmptyStateView: UIView {
             actionButton.isHidden = true
         }
 
-        addSubview(stack)
-        stack.snp.makeConstraints { make in
+        addSubview(cardView)
+        cardView.addSubview(stack)
+
+        cardView.snp.makeConstraints { make in
             make.center.equalToSuperview()
-            make.leading.trailing.equalToSuperview().inset(32)
+            make.leading.trailing.equalToSuperview().inset(24)
+        }
+
+        stack.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(24)
         }
     }
 

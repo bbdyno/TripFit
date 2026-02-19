@@ -13,17 +13,17 @@ public final class TFPrimaryButton: UIButton {
     public init(title: String) {
         super.init(frame: .zero)
         setTitle(title, for: .normal)
-        setTitleColor(.white, for: .normal)
-        titleLabel?.font = .preferredFont(forTextStyle: .headline)
-        layer.cornerRadius = 14
+        setTitleColor(TFColor.Text.inverse, for: .normal)
+        titleLabel?.font = TFTypography.button
+        layer.cornerRadius = TFRadius.md
         clipsToBounds = true
 
-        gradientLayer.colors = [TFColor.pink.cgColor, TFColor.lavender.cgColor]
+        gradientLayer.colors = [TFColor.Brand.primary.cgColor, TFColor.Brand.primaryLight.cgColor]
         gradientLayer.startPoint = CGPoint(x: 0, y: 0.5)
         gradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
         layer.insertSublayer(gradientLayer, at: 0)
 
-        snp_makeHeightConstraint()
+        configureHeight()
     }
 
     @available(*, unavailable)
@@ -34,8 +34,14 @@ public final class TFPrimaryButton: UIButton {
         gradientLayer.frame = bounds
     }
 
-    private func snp_makeHeightConstraint() {
+    private func configureHeight() {
         translatesAutoresizingMaskIntoConstraints = false
-        heightAnchor.constraint(equalToConstant: 48).isActive = true
+        heightAnchor.constraint(equalToConstant: 56).isActive = true
+    }
+
+    public override var isEnabled: Bool {
+        didSet {
+            alpha = isEnabled ? 1 : 0.45
+        }
     }
 }

@@ -9,16 +9,17 @@ import Domain
 import Foundation
 import SwiftData
 
-@MainActor
-final class AppEnvironment {
+final class AppEnvironment: @unchecked Sendable {
     let container: ModelContainer
-    var context: ModelContext { container.mainContext }
     let onboardingStore: OnboardingStore
 
     private init(container: ModelContainer, onboardingStore: OnboardingStore) {
         self.container = container
         self.onboardingStore = onboardingStore
     }
+
+    @MainActor
+    var context: ModelContext { container.mainContext }
 
     static func makeDefault() -> AppEnvironment {
         let schema = Schema([
@@ -28,14 +29,18 @@ final class AppEnvironment {
             PackingItem.self,
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-        // swiftlint:disable:next force_try
-        let container = try! ModelContainer(for: schema, configurations: [config])
-        return AppEnvironment(
-            container: container,
-            onboardingStore: OnboardingStore()
-        )
+        do {
+            let container = try ModelContainer(for: schema, configurations: [config])
+            return AppEnvironment(
+                container: container,
+                onboardingStore: OnboardingStore()
+            )
+        } catch {
+            fatalError("[TripFit] Failed to create ModelContainer: \(error)")
+        }
     }
 
+    @MainActor
     func seedIfNeeded() {
         SeedService.seedIfNeeded(context: context)
     }

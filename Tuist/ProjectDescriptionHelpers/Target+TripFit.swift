@@ -24,6 +24,21 @@ public enum TripFitTarget {
                 "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
                 "UILaunchScreen": [:],
                 "UIApplicationSupportsIndirectInputEvents": true,
+                "UIAppFonts": [
+                    "PlusJakartaSans-Variable.ttf",
+                    "Fonts/PlusJakartaSans-Variable.ttf",
+                ],
+                "UIApplicationSceneManifest": [
+                    "UIApplicationSupportsMultipleScenes": false,
+                    "UISceneConfigurations": [
+                        "UIWindowSceneSessionRoleApplication": [
+                            [
+                                "UISceneConfigurationName": "Default Configuration",
+                                "UISceneDelegateClassName": "$(PRODUCT_MODULE_NAME).SceneDelegate",
+                            ]
+                        ]
+                    ]
+                ],
             ]),
             sources: sources,
             resources: resources,

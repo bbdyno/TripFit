@@ -14,6 +14,10 @@ import UIKit
 public final class TripsListViewController: UIViewController {
     private let context: ModelContext
     private var trips: [Trip] = []
+    private let headerContainer = UIView()
+    private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
+    private let addButton = UIButton(type: .system)
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, UUID>!
     private var emptyView: TFEmptyStateView!
@@ -28,41 +32,86 @@ public final class TripsListViewController: UIViewController {
 
     public override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Trips"
-        view.backgroundColor = TFColor.pageBackground
-        navigationController?.navigationBar.prefersLargeTitles = true
+        view.backgroundColor = TFColor.Surface.canvas
+        setupHeader()
         setupCollectionView()
         setupEmptyView()
-        setupNavBar()
     }
 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
         fetchTrips()
     }
 
-    private func setupNavBar() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            systemItem: .add,
-            primaryAction: UIAction { [weak self] _ in self?.addTapped() }
+    public override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
+
+    private func setupHeader() {
+        headerContainer.backgroundColor = TFColor.Surface.canvas.withAlphaComponent(0.96)
+        view.addSubview(headerContainer)
+        headerContainer.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.leading.trailing.equalToSuperview()
+        }
+
+        titleLabel.text = "Trips"
+        titleLabel.font = TFTypography.largeTitle.withSize(36)
+        titleLabel.textColor = TFColor.Text.primary
+
+        subtitleLabel.text = "Ready for your next adventure?"
+        subtitleLabel.font = TFTypography.caption
+        subtitleLabel.textColor = TFColor.Text.secondary
+
+        let titleStack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
+        titleStack.axis = .vertical
+        titleStack.spacing = 2
+
+        addButton.setImage(
+            UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 21, weight: .bold)),
+            for: .normal
         )
+        addButton.tintColor = .white
+        addButton.backgroundColor = TFColor.Brand.primary
+        addButton.layer.cornerRadius = 22
+        addButton.layer.shadowColor = TFColor.Brand.primary.cgColor
+        addButton.layer.shadowOpacity = 0.3
+        addButton.layer.shadowRadius = 10
+        addButton.layer.shadowOffset = CGSize(width: 0, height: 4)
+        addButton.addAction(UIAction { [weak self] _ in self?.addTapped() }, for: .touchUpInside)
+
+        let titleRow = UIStackView(arrangedSubviews: [titleStack, UIView(), addButton])
+        titleRow.alignment = .center
+        titleRow.spacing = TFSpacing.md
+        headerContainer.addSubview(titleRow)
+        titleRow.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(8)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
+            make.bottom.equalToSuperview().inset(8)
+        }
+        addButton.snp.makeConstraints { make in
+            make.size.equalTo(44)
+        }
     }
 
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumLineSpacing = 12
-        layout.sectionInset = UIEdgeInsets(top: 12, left: 16, bottom: 16, right: 16)
-        layout.itemSize = CGSize(width: UIScreen.main.bounds.width - 32, height: 100)
+        layout.minimumLineSpacing = TFSpacing.lg
+        layout.sectionInset = UIEdgeInsets(top: TFSpacing.md, left: TFSpacing.md, bottom: 112, right: TFSpacing.md)
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
         collectionView.delegate = self
         collectionView.register(TripCell.self, forCellWithReuseIdentifier: TripCell.reuseId)
         view.addSubview(collectionView)
-        collectionView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        collectionView.snp.makeConstraints { make in
+            make.top.equalTo(headerContainer.snp.bottom)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
 
-        dataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) {
-            [weak self] collectionView, indexPath, itemId in
+        dataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) { [weak self] collectionView, indexPath, itemId in
             let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: TripCell.reuseId, for: indexPath
             ) as! TripCell
@@ -82,7 +131,10 @@ public final class TripsListViewController: UIViewController {
         )
         emptyView.isHidden = true
         view.addSubview(emptyView)
-        emptyView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        emptyView.snp.makeConstraints { make in
+            make.top.equalTo(headerContainer.snp.bottom)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
         emptyView.actionButton.addTarget(self, action: #selector(addTapped), for: .touchUpInside)
     }
 
@@ -109,8 +161,11 @@ public final class TripsListViewController: UIViewController {
 
 extension TripsListViewController: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard indexPath.item < trips.count else { return }
-        let detail = TripDetailViewController(context: context, trip: trips[indexPath.item])
+        guard
+            let itemID = dataSource.itemIdentifier(for: indexPath),
+            let trip = trips.first(where: { $0.id == itemID })
+        else { return }
+        let detail = TripDetailViewController(context: context, trip: trip)
         navigationController?.pushViewController(detail, animated: true)
     }
 
@@ -119,8 +174,10 @@ extension TripsListViewController: UICollectionViewDelegate {
         contextMenuConfigurationForItemAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
-        guard indexPath.item < trips.count else { return nil }
-        let trip = trips[indexPath.item]
+        guard
+            let itemID = dataSource.itemIdentifier(for: indexPath),
+            let trip = trips.first(where: { $0.id == itemID })
+        else { return nil }
         return UIContextMenuConfiguration(actionProvider: { [weak self] _ in
             let delete = UIAction(title: "Delete", attributes: .destructive) { _ in
                 self?.context.delete(trip)
@@ -129,5 +186,16 @@ extension TripsListViewController: UICollectionViewDelegate {
             }
             return UIMenu(children: [delete])
         })
+    }
+}
+
+extension TripsListViewController: UICollectionViewDelegateFlowLayout {
+    public func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAt indexPath: IndexPath
+    ) -> CGSize {
+        let width = collectionView.bounds.width - (TFSpacing.md * 2)
+        return CGSize(width: width, height: 292)
     }
 }

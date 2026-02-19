@@ -16,20 +16,30 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         willConnectTo session: UISceneSession,
         options connectionOptions: UIScene.ConnectionOptions
     ) {
-        guard let windowScene = scene as? UIWindowScene else { return }
+        print("[TripFit] SceneDelegate.scene called")
+        guard let windowScene = scene as? UIWindowScene else {
+            print("[TripFit] Failed to get windowScene")
+            return
+        }
 
+        print("[TripFit] Creating AppEnvironment...")
         environment = AppEnvironment.makeDefault()
         environment.seedIfNeeded()
+        print("[TripFit] AppEnvironment created, onboarding completed: \(environment.onboardingStore.hasCompletedOnboarding)")
 
-        let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = RootBuilder.makeRoot(
+        let rootVC = RootBuilder.makeRoot(
             environment: environment,
             onOnboardingComplete: { [weak self] in
                 self?.transitionToMain()
             }
         )
+        print("[TripFit] rootVC: \(type(of: rootVC))")
+
+        let window = UIWindow(windowScene: windowScene)
+        window.rootViewController = rootVC
         window.makeKeyAndVisible()
         self.window = window
+        print("[TripFit] Window set and visible, frame: \(window.frame)")
     }
 
     private func transitionToMain() {

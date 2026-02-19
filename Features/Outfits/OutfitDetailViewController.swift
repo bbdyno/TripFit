@@ -17,6 +17,9 @@ public final class OutfitDetailViewController: UIViewController {
 
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, UUID>!
+    private let summaryCard = TFCardView(style: .elevated)
+    private let itemsCountLabel = UILabel()
+    private let noteLabel = UILabel()
 
     public init(context: ModelContext, outfit: Outfit) {
         self.context = context
@@ -30,10 +33,12 @@ public final class OutfitDetailViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         title = outfit.name
-        view.backgroundColor = TFColor.pageBackground
+        view.backgroundColor = TFColor.Surface.canvas
 
         setupNavBar()
+        setupSummaryCard()
         setupCollectionView()
+        updateSummary()
         applySnapshot()
     }
 
@@ -52,25 +57,23 @@ public final class OutfitDetailViewController: UIViewController {
 
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumInteritemSpacing = 12
-        layout.minimumLineSpacing = 12
-        layout.sectionInset = UIEdgeInsets(top: 12, left: 16, bottom: 16, right: 16)
+        layout.minimumInteritemSpacing = TFSpacing.sm
+        layout.minimumLineSpacing = TFSpacing.sm
+        layout.sectionInset = UIEdgeInsets(top: TFSpacing.md, left: TFSpacing.md, bottom: TFSpacing.md, right: TFSpacing.md)
         let width = (UIScreen.main.bounds.width - 44) / 2
-        layout.itemSize = CGSize(width: width, height: width + 40)
+        layout.itemSize = CGSize(width: width, height: width + 70)
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
 
-        let headerNib = UICollectionView.SupplementaryRegistration<UICollectionViewCell>(
-            elementKind: UICollectionView.elementKindSectionHeader
-        ) { _, _, _ in }
-
         collectionView.register(ClothingCell.self, forCellWithReuseIdentifier: ClothingCell.reuseId)
         view.addSubview(collectionView)
-        collectionView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        collectionView.snp.makeConstraints { make in
+            make.top.equalTo(summaryCard.snp.bottom)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
 
-        dataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) {
-            [weak self] collectionView, indexPath, itemId in
+        dataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) { [weak self] collectionView, indexPath, itemId in
             let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: ClothingCell.reuseId, for: indexPath
             ) as! ClothingCell
@@ -90,6 +93,42 @@ public final class OutfitDetailViewController: UIViewController {
 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        updateSummary()
         applySnapshot()
+    }
+
+    private func setupSummaryCard() {
+        let titleLabel = UILabel()
+        titleLabel.font = TFTypography.subtitle
+        titleLabel.textColor = TFColor.Text.primary
+        titleLabel.text = outfit.name
+
+        itemsCountLabel.font = TFTypography.caption
+        itemsCountLabel.textColor = TFColor.Brand.primary
+
+        noteLabel.font = TFTypography.bodyRegular
+        noteLabel.textColor = TFColor.Text.secondary
+        noteLabel.numberOfLines = 0
+
+        let stack = UIStackView(arrangedSubviews: [titleLabel, itemsCountLabel, noteLabel])
+        stack.axis = .vertical
+        stack.spacing = TFSpacing.xs
+
+        view.addSubview(summaryCard)
+        summaryCard.addSubview(stack)
+
+        summaryCard.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(TFSpacing.sm)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
+        }
+
+        stack.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(TFSpacing.md)
+        }
+    }
+
+    private func updateSummary() {
+        itemsCountLabel.text = "\(outfit.items.count) items"
+        noteLabel.text = outfit.note?.isEmpty == false ? outfit.note : "No notes yet"
     }
 }

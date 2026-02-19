@@ -37,7 +37,7 @@ public final class TripEditViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         title = editingTrip == nil ? "New Trip" : "Edit Trip"
-        view.backgroundColor = TFColor.pageBackground
+        view.backgroundColor = TFColor.Surface.canvas
         setupNav()
         setupForm()
         populateIfEditing()
@@ -60,8 +60,8 @@ public final class TripEditViewController: UIViewController {
         scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
 
         stackView.axis = .vertical
-        stackView.spacing = 16
-        stackView.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        stackView.spacing = TFSpacing.md
+        stackView.layoutMargins = UIEdgeInsets(top: TFSpacing.md, left: TFSpacing.md, bottom: TFSpacing.md, right: TFSpacing.md)
         stackView.isLayoutMarginsRelativeArrangement = true
         scrollView.addSubview(stackView)
         stackView.snp.makeConstraints { make in
@@ -77,7 +77,8 @@ public final class TripEditViewController: UIViewController {
         )
 
         countryButton.setTitle("Country: None", for: .normal)
-        countryButton.setTitleColor(TFColor.textPrimary, for: .normal)
+        countryButton.setTitleColor(TFColor.Text.primary, for: .normal)
+        countryButton.titleLabel?.font = TFTypography.body
         countryButton.contentHorizontalAlignment = .leading
         countryButton.addTarget(self, action: #selector(selectCountry), for: .touchUpInside)
         stackView.addArrangedSubview(makeCard(title: "Country Code", content: countryButton))
@@ -87,7 +88,8 @@ public final class TripEditViewController: UIViewController {
 
     private func makeFieldCard(title: String, field: UITextField, placeholder: String) -> UIView {
         field.placeholder = placeholder
-        field.font = .preferredFont(forTextStyle: .body)
+        field.font = TFTypography.body
+        field.textColor = TFColor.Text.primary
         return makeCard(title: title, content: field)
     }
 
@@ -98,20 +100,7 @@ public final class TripEditViewController: UIViewController {
     }
 
     private func makeCard(title: String, content: UIView) -> UIView {
-        let card = TFCardView(showShadow: false)
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = .preferredFont(forTextStyle: .caption1)
-        titleLabel.textColor = TFColor.textSecondary
-        card.addSubview(titleLabel)
-        card.addSubview(content)
-        titleLabel.snp.makeConstraints { $0.top.leading.trailing.equalToSuperview().inset(12) }
-        content.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(4)
-            make.leading.trailing.bottom.equalToSuperview().inset(12)
-            make.height.greaterThanOrEqualTo(32)
-        }
-        return card
+        TFFormFieldCard(title: title, content: content, style: .flat)
     }
 
     @objc private func selectCountry() {

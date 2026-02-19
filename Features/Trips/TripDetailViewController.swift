@@ -15,7 +15,7 @@ public final class TripDetailViewController: UIViewController {
     private let context: ModelContext
     private let trip: Trip
 
-    private let tableView = UITableView(frame: .zero, style: .insetGrouped)
+    private let tableView = UITableView(frame: .zero, style: .plain)
     private let headerStack = UIStackView()
 
     public init(context: ModelContext, trip: Trip) {
@@ -30,7 +30,7 @@ public final class TripDetailViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         title = trip.name
-        view.backgroundColor = TFColor.pageBackground
+        view.backgroundColor = TFColor.Surface.canvas
         setupNavBar()
         setupTableView()
     }
@@ -52,9 +52,15 @@ public final class TripDetailViewController: UIViewController {
                 primaryAction: UIAction { [weak self] _ in self?.editTrip() }
             ),
         ]
+        navigationItem.rightBarButtonItems?.forEach { $0.tintColor = TFColor.Brand.primary }
     }
 
     private func setupTableView() {
+        tableView.backgroundColor = .clear
+        tableView.separatorStyle = .none
+        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 24, right: 0)
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 74
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(PackingItemCell.self, forCellReuseIdentifier: PackingItemCell.reuseId)
@@ -66,25 +72,25 @@ public final class TripDetailViewController: UIViewController {
     private func rebuildHeader() {
         headerStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         headerStack.axis = .vertical
-        headerStack.spacing = 12
-        headerStack.layoutMargins = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+        headerStack.spacing = TFSpacing.md
+        headerStack.layoutMargins = UIEdgeInsets(top: TFSpacing.xs, left: TFSpacing.md, bottom: TFSpacing.xs, right: TFSpacing.md)
         headerStack.isLayoutMarginsRelativeArrangement = true
 
         // Trip info card
-        let infoCard = TFCardView()
+        let infoCard = TFCardView(style: .elevated)
         let nameLabel = UILabel()
         nameLabel.text = trip.name
-        nameLabel.font = .preferredFont(forTextStyle: .title2)
-        nameLabel.textColor = TFColor.textPrimary
+        nameLabel.font = TFTypography.title
+        nameLabel.textColor = TFColor.Text.primary
 
         let dateLabel = UILabel()
         dateLabel.text = TFDateFormatter.tripRange(start: trip.startDate, end: trip.endDate)
-        dateLabel.font = .preferredFont(forTextStyle: .caption1)
-        dateLabel.textColor = TFColor.textSecondary
+        dateLabel.font = TFTypography.caption
+        dateLabel.textColor = TFColor.Text.secondary
 
         let progressLabel = UILabel()
-        progressLabel.font = .preferredFont(forTextStyle: .headline)
-        progressLabel.textColor = TFColor.mint
+        progressLabel.font = TFTypography.headline
+        progressLabel.textColor = TFColor.Brand.accentMint
         progressLabel.text = "Packed: \(trip.progressText)"
 
         let infoStack = UIStackView(arrangedSubviews: [nameLabel, dateLabel, progressLabel])
@@ -97,32 +103,32 @@ public final class TripDetailViewController: UIViewController {
         // Destination Essentials card
         if let code = trip.destinationCountryCode,
            let essentials = CountryEssentialsService.shared.essentials(for: code) {
-            let essCard = TFCardView()
+            let essCard = TFCardView(style: .elevated)
 
             let essTitle = UILabel()
             essTitle.text = "Destination Essentials"
-            essTitle.font = .preferredFont(forTextStyle: .headline)
-            essTitle.textColor = TFColor.textPrimary
+            essTitle.font = TFTypography.headline
+            essTitle.textColor = TFColor.Text.primary
 
             let countryLabel = UILabel()
             countryLabel.text = essentials.countryName
-            countryLabel.font = .preferredFont(forTextStyle: .subheadline)
-            countryLabel.textColor = TFColor.sky
+            countryLabel.font = TFTypography.body
+            countryLabel.textColor = TFColor.Brand.accentSky
 
             let voltageLabel = UILabel()
             voltageLabel.text = "Voltage: \(essentials.voltageText)"
-            voltageLabel.font = .preferredFont(forTextStyle: .body)
-            voltageLabel.textColor = TFColor.textSecondary
+            voltageLabel.font = TFTypography.bodyRegular
+            voltageLabel.textColor = TFColor.Text.secondary
 
             let freqLabel = UILabel()
             freqLabel.text = "Frequency: \(essentials.frequencyText)"
-            freqLabel.font = .preferredFont(forTextStyle: .body)
-            freqLabel.textColor = TFColor.textSecondary
+            freqLabel.font = TFTypography.bodyRegular
+            freqLabel.textColor = TFColor.Text.secondary
 
             let plugLabel = UILabel()
             plugLabel.text = "Plug Types: \(essentials.plugTypes.joined(separator: ", "))"
-            plugLabel.font = .preferredFont(forTextStyle: .body)
-            plugLabel.textColor = TFColor.textSecondary
+            plugLabel.font = TFTypography.bodyRegular
+            plugLabel.textColor = TFColor.Text.secondary
 
             let addButton = TFSecondaryButton(title: "Add recommended items")
             addButton.addTarget(self, action: #selector(addRecommendedItems), for: .touchUpInside)
@@ -155,12 +161,10 @@ public final class TripDetailViewController: UIViewController {
         let existingNames = Set(trip.packingItems.compactMap(\.customName))
         var addedCount = 0
 
-        for itemName in CountryEssentialsService.recommendedPackingItems {
-            if !existingNames.contains(itemName) {
-                let packing = PackingItem(trip: trip, customName: itemName)
-                context.insert(packing)
-                addedCount += 1
-            }
+        for itemName in CountryEssentialsService.recommendedPackingItems where !existingNames.contains(itemName) {
+            let packing = PackingItem(trip: trip, customName: itemName)
+            context.insert(packing)
+            addedCount += 1
         }
 
         // Add note item
@@ -270,6 +274,6 @@ extension TripDetailViewController: UITableViewDataSource, UITableViewDelegate {
     }
 
     public func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        "Packing List"
+        nil
     }
 }

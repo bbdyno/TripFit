@@ -16,8 +16,11 @@ public final class ClothingEditViewController: UIViewController {
     private let context: ModelContext
     private var editingItem: ClothingItem?
     private var selectedImageData: Data?
+    private var selectedImageURL: String?
     private var selectedCategory: ClothingCategory = .tops
     private var selectedSeason: Season?
+    private var imageLoadToken: UUID?
+    private var imageLoadRequestID = UUID()
 
     private let scrollView = UIScrollView()
     private let stackView = UIStackView()
@@ -34,13 +37,17 @@ public final class ClothingEditViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
+    deinit {
+        TFRemoteImageLoader.shared.cancel(imageLoadToken)
+    }
+
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     public override func viewDidLoad() {
         super.viewDidLoad()
         title = editingItem == nil ? "New Item" : "Edit Item"
-        view.backgroundColor = TFColor.pageBackground
+        view.backgroundColor = TFColor.Surface.canvas
         setupNav()
         setupForm()
         populateIfEditing()
@@ -74,8 +81,8 @@ public final class ClothingEditViewController: UIViewController {
         scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
 
         stackView.axis = .vertical
-        stackView.spacing = 16
-        stackView.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        stackView.spacing = TFSpacing.md
+        stackView.layoutMargins = UIEdgeInsets(top: TFSpacing.md, left: TFSpacing.md, bottom: TFSpacing.md, right: TFSpacing.md)
         stackView.isLayoutMarginsRelativeArrangement = true
         scrollView.addSubview(stackView)
         stackView.snp.makeConstraints { make in
@@ -85,13 +92,15 @@ public final class ClothingEditViewController: UIViewController {
 
         // Image
         imageButton.setImage(UIImage(systemName: "photo.badge.plus"), for: .normal)
-        imageButton.tintColor = TFColor.lavender
-        imageButton.backgroundColor = TFColor.cardBackground
-        imageButton.layer.cornerRadius = 16
+        imageButton.tintColor = TFColor.Brand.primary
+        imageButton.backgroundColor = TFColor.Surface.input
+        imageButton.layer.cornerRadius = TFRadius.lg
+        imageButton.layer.borderWidth = 2
+        imageButton.layer.borderColor = TFColor.Brand.primary.withAlphaComponent(0.22).cgColor
         imageButton.clipsToBounds = true
         imageButton.addTarget(self, action: #selector(pickPhoto), for: .touchUpInside)
         stackView.addArrangedSubview(imageButton)
-        imageButton.snp.makeConstraints { $0.height.equalTo(200) }
+        imageButton.snp.makeConstraints { $0.height.equalTo(220) }
 
         // Name
         stackView.addArrangedSubview(makeFieldCard(title: "Name *", field: nameField, placeholder: "Item name"))
@@ -121,30 +130,14 @@ public final class ClothingEditViewController: UIViewController {
 
     private func makeFieldCard(title: String, field: UITextField, placeholder: String) -> UIView {
         field.placeholder = placeholder
-        field.font = .preferredFont(forTextStyle: .body)
+        field.font = TFTypography.body
+        field.textColor = TFColor.Text.primary
         field.borderStyle = .none
         return makeCard(title: title, content: field)
     }
 
     private func makeCard(title: String, content: UIView) -> UIView {
-        let card = TFCardView(showShadow: false)
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = .preferredFont(forTextStyle: .caption1)
-        titleLabel.textColor = TFColor.textSecondary
-
-        card.addSubview(titleLabel)
-        card.addSubview(content)
-
-        titleLabel.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview().inset(12)
-        }
-        content.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(4)
-            make.leading.trailing.bottom.equalToSuperview().inset(12)
-            make.height.greaterThanOrEqualTo(32)
-        }
-        return card
+        TFFormFieldCard(title: title, content: content, style: .flat)
     }
 
     private func makeCategoryMenu() -> UIMenu {
@@ -189,10 +182,12 @@ public final class ClothingEditViewController: UIViewController {
         colorField.text = item.color
         noteField.text = item.note
         selectedImageData = item.imageData
+        selectedImageURL = item.imageURL
 
         if let data = item.imageData, let image = UIImage(data: data) {
-            imageButton.setImage(image.withRenderingMode(.alwaysOriginal), for: .normal)
-            imageButton.imageView?.contentMode = .scaleAspectFill
+            showSelectedImage(image)
+        } else {
+            loadImageFromURLIfNeeded()
         }
 
         categoryPicker.menu = makeCategoryMenu()
@@ -223,6 +218,7 @@ public final class ClothingEditViewController: UIViewController {
             item.color = colorField.text?.isEmpty == true ? nil : colorField.text
             item.note = noteField.text?.isEmpty == true ? nil : noteField.text
             item.imageData = imageData
+            item.imageURL = selectedImageURL
             item.updatedAt = Date()
         } else {
             let item = ClothingItem(
@@ -231,7 +227,8 @@ public final class ClothingEditViewController: UIViewController {
                 color: colorField.text?.isEmpty == true ? nil : colorField.text,
                 season: selectedSeason,
                 note: noteField.text?.isEmpty == true ? nil : noteField.text,
-                imageData: imageData
+                imageData: imageData,
+                imageURL: selectedImageURL
             )
             context.insert(item)
         }
@@ -252,6 +249,37 @@ public final class ClothingEditViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
+
+    private func showSelectedImage(_ image: UIImage) {
+        imageButton.setImage(image.withRenderingMode(.alwaysOriginal), for: .normal)
+        imageButton.imageView?.contentMode = .scaleAspectFill
+        imageButton.tintColor = nil
+    }
+
+    private func showImagePlaceholder() {
+        imageButton.setImage(UIImage(systemName: "photo.badge.plus"), for: .normal)
+        imageButton.imageView?.contentMode = .scaleAspectFit
+        imageButton.tintColor = TFColor.Brand.primary
+    }
+
+    private func loadImageFromURLIfNeeded() {
+        TFRemoteImageLoader.shared.cancel(imageLoadToken)
+        imageLoadToken = nil
+
+        guard selectedImageData == nil else { return }
+
+        let requestID = UUID()
+        imageLoadRequestID = requestID
+        imageLoadToken = TFRemoteImageLoader.shared.load(from: selectedImageURL) { [weak self] image in
+            guard let self, self.imageLoadRequestID == requestID else { return }
+
+            if let image {
+                self.showSelectedImage(image)
+            } else {
+                self.showImagePlaceholder()
+            }
+        }
+    }
 }
 
 extension ClothingEditViewController: PHPickerViewControllerDelegate {
@@ -262,9 +290,9 @@ extension ClothingEditViewController: PHPickerViewControllerDelegate {
         provider.loadObject(ofClass: UIImage.self) { [weak self] image, _ in
             guard let uiImage = image as? UIImage else { return }
             DispatchQueue.main.async {
+                self?.selectedImageURL = nil
                 self?.selectedImageData = uiImage.jpegData(compressionQuality: 0.9)
-                self?.imageButton.setImage(uiImage.withRenderingMode(.alwaysOriginal), for: .normal)
-                self?.imageButton.imageView?.contentMode = .scaleAspectFill
+                self?.showSelectedImage(uiImage)
             }
         }
     }

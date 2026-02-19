@@ -146,11 +146,11 @@ private final class OnboardingCell: UICollectionViewCell {
         iconView.contentMode = .scaleAspectFit
         iconView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 80, weight: .light)
 
-        titleLabel.font = .preferredFont(forTextStyle: .title1)
+        titleLabel.font = TFTypography.title
         titleLabel.textAlignment = .center
         titleLabel.textColor = TFColor.textPrimary
 
-        subtitleLabel.font = .preferredFont(forTextStyle: .body)
+        subtitleLabel.font = TFTypography.bodyRegular
         subtitleLabel.textAlignment = .center
         subtitleLabel.textColor = TFColor.textSecondary
         subtitleLabel.numberOfLines = 0

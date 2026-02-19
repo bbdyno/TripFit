@@ -35,7 +35,7 @@ public final class OutfitEditViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         title = editingOutfit == nil ? "New Outfit" : "Edit Outfit"
-        view.backgroundColor = TFColor.pageBackground
+        view.backgroundColor = TFColor.Surface.canvas
         setupNav()
         setupForm()
         populateIfEditing()
@@ -58,8 +58,8 @@ public final class OutfitEditViewController: UIViewController {
         scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
 
         stackView.axis = .vertical
-        stackView.spacing = 16
-        stackView.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        stackView.spacing = TFSpacing.md
+        stackView.layoutMargins = UIEdgeInsets(top: TFSpacing.md, left: TFSpacing.md, bottom: TFSpacing.md, right: TFSpacing.md)
         stackView.isLayoutMarginsRelativeArrangement = true
         scrollView.addSubview(stackView)
         stackView.snp.makeConstraints { make in
@@ -67,51 +67,36 @@ public final class OutfitEditViewController: UIViewController {
             make.width.equalToSuperview()
         }
 
-        let nameCard = TFCardView(showShadow: false)
-        let nameTitle = UILabel()
-        nameTitle.text = "Name *"
-        nameTitle.font = .preferredFont(forTextStyle: .caption1)
-        nameTitle.textColor = TFColor.textSecondary
         nameField.placeholder = "Outfit name"
-        nameField.font = .preferredFont(forTextStyle: .body)
-        nameCard.addSubview(nameTitle)
-        nameCard.addSubview(nameField)
-        nameTitle.snp.makeConstraints { $0.top.leading.trailing.equalToSuperview().inset(12) }
-        nameField.snp.makeConstraints { make in
-            make.top.equalTo(nameTitle.snp.bottom).offset(4)
-            make.leading.trailing.bottom.equalToSuperview().inset(12)
-            make.height.greaterThanOrEqualTo(32)
-        }
-        stackView.addArrangedSubview(nameCard)
+        nameField.font = TFTypography.body
+        nameField.textColor = TFColor.Text.primary
+        stackView.addArrangedSubview(TFFormFieldCard(title: "Name *", content: nameField, style: .flat))
 
-        let noteCard = TFCardView(showShadow: false)
-        let noteTitle = UILabel()
-        noteTitle.text = "Note"
-        noteTitle.font = .preferredFont(forTextStyle: .caption1)
-        noteTitle.textColor = TFColor.textSecondary
         noteField.placeholder = "Optional note"
-        noteField.font = .preferredFont(forTextStyle: .body)
-        noteCard.addSubview(noteTitle)
-        noteCard.addSubview(noteField)
-        noteTitle.snp.makeConstraints { $0.top.leading.trailing.equalToSuperview().inset(12) }
-        noteField.snp.makeConstraints { make in
-            make.top.equalTo(noteTitle.snp.bottom).offset(4)
-            make.leading.trailing.bottom.equalToSuperview().inset(12)
-            make.height.greaterThanOrEqualTo(32)
-        }
-        stackView.addArrangedSubview(noteCard)
+        noteField.font = TFTypography.bodyRegular
+        noteField.textColor = TFColor.Text.primary
+        stackView.addArrangedSubview(TFFormFieldCard(title: "Note", content: noteField, style: .flat))
 
         selectButton.addTarget(self, action: #selector(selectItemsTapped), for: .touchUpInside)
         stackView.addArrangedSubview(selectButton)
 
+        let selectedTitle = UILabel()
+        selectedTitle.text = "Selected Items"
+        selectedTitle.font = TFTypography.caption
+        selectedTitle.textColor = TFColor.Text.secondary
+        stackView.addArrangedSubview(selectedTitle)
+
         selectedItemsStack.axis = .horizontal
-        selectedItemsStack.spacing = 8
+        selectedItemsStack.spacing = TFSpacing.xs
         let itemsScroll = UIScrollView()
         itemsScroll.showsHorizontalScrollIndicator = false
         itemsScroll.addSubview(selectedItemsStack)
-        selectedItemsStack.snp.makeConstraints { $0.edges.height.equalToSuperview() }
+        selectedItemsStack.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.height.equalToSuperview()
+        }
         stackView.addArrangedSubview(itemsScroll)
-        itemsScroll.snp.makeConstraints { $0.height.equalTo(60) }
+        itemsScroll.snp.makeConstraints { $0.height.equalTo(64) }
     }
 
     private func populateIfEditing() {
@@ -136,6 +121,7 @@ public final class OutfitEditViewController: UIViewController {
         selectedItemsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for item in selectedItems {
             let chip = TFChip(title: item.name)
+            chip.setAccentColor(item.category.tintColor)
             chip.isChipSelected = true
             selectedItemsStack.addArrangedSubview(chip)
         }
