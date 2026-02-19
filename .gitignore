@@ -1,0 +1,9 @@
+Derived/
+TripFit.xcworkspace/
+TripFit.xcodeproj/project.pbxproj
+TripFit.xcodeproj/xcshareddata/
+TripFit.xcodeproj/xcuserdata/
+Tuist/.build/
+.swiftlint-cache/
+.build/
+DerivedData/

@@ -1,0 +1,53 @@
+included:
+  - App
+  - Core
+  - Domain
+  - Features
+
+excluded:
+  - Derived
+  - Tuist
+  - TripFit.xcodeproj
+  - TripFit.xcworkspace
+
+disabled_rules:
+  - trailing_comma
+  - todo
+  - large_tuple
+  - force_cast
+
+opt_in_rules:
+  - empty_count
+  - implicit_return
+  - private_outlet
+  - redundant_nil_coalescing
+  - sorted_imports
+  - unused_import
+
+line_length:
+  warning: 140
+  ignores_comments: true
+  ignores_interpolated_strings: true
+
+identifier_name:
+  min_length:
+    warning: 2
+  excluded:
+    - id
+    - x
+    - y
+
+type_name:
+  min_length:
+    warning: 3
+
+function_body_length:
+  warning: 80
+
+file_length:
+  warning: 500
+
+cyclomatic_complexity:
+  warning: 12
+
+reporter: "xcode"
