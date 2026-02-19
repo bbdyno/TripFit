@@ -1,3 +1,10 @@
+//
+//  ClothingCategory.swift
+//  TripFit
+//
+//  Created by bbdyno on 2/19/26.
+//
+
 import Foundation
 
 public enum ClothingCategory: String, CaseIterable, Codable {

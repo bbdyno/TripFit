@@ -1,3 +1,10 @@
+//
+//  TFPrimaryButton.swift
+//  TripFit
+//
+//  Created by bbdyno on 2/19/26.
+//
+
 import UIKit
 
 public final class TFPrimaryButton: UIButton {

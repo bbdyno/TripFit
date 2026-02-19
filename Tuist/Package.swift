@@ -1,3 +1,10 @@
+//
+//  Package.swift
+//  TripFit
+//
+//  Created by bbdyno on 2/19/26.
+//
+
 // swift-tools-version: 5.9
 import PackageDescription
 

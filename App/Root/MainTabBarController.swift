@@ -1,3 +1,10 @@
+//
+//  MainTabBarController.swift
+//  TripFit
+//
+//  Created by bbdyno on 2/19/26.
+//
+
 import Features
 import SwiftData
 import UIKit

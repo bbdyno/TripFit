@@ -1,3 +1,10 @@
+//
+//  SceneDelegate.swift
+//  TripFit
+//
+//  Created by bbdyno on 2/19/26.
+//
+
 import UIKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
