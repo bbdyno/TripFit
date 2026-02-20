@@ -33,3 +33,72 @@ public enum TFDateFormatter {
         "\(short(start)) - \(short(end))"
     }
 }
+
+public final class TFFavoritesStore {
+    public static let shared = TFFavoritesStore()
+
+    private let userDefaults: UserDefaults
+    private let key = "tripfit.favorite.clothing.ids.v1"
+
+    private init(userDefaults: UserDefaults = .standard) {
+        self.userDefaults = userDefaults
+    }
+
+    public func isFavorite(_ itemID: UUID) -> Bool {
+        storedIDs.contains(itemID.uuidString)
+    }
+
+    @discardableResult
+    public func toggleFavorite(_ itemID: UUID) -> Bool {
+        var ids = storedIDs
+        let id = itemID.uuidString
+        let newValue: Bool
+        if ids.contains(id) {
+            ids.remove(id)
+            newValue = false
+        } else {
+            ids.insert(id)
+            newValue = true
+        }
+        store(ids)
+        return newValue
+    }
+
+    public func setFavorite(_ itemID: UUID, isFavorite: Bool) {
+        var ids = storedIDs
+        let id = itemID.uuidString
+        if isFavorite {
+            ids.insert(id)
+        } else {
+            ids.remove(id)
+        }
+        store(ids)
+    }
+
+    private var storedIDs: Set<String> {
+        let array = userDefaults.array(forKey: key) as? [String] ?? []
+        return Set(array)
+    }
+
+    private func store(_ ids: Set<String>) {
+        userDefaults.set(Array(ids), forKey: key)
+    }
+}
+
+public enum TFAppInfo {
+    public static var marketingVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
+    }
+
+    public static var buildNumber: String {
+        Bundle.main.object(forInfoDictionaryKey: kCFBundleVersionKey as String) as? String ?? "1"
+    }
+
+    public static var shortVersionDescription: String {
+        "v\(marketingVersion) (Build \(buildNumber))"
+    }
+
+    public static var aboutVersionDescription: String {
+        "Version \(marketingVersion) (Build \(buildNumber))"
+    }
+}

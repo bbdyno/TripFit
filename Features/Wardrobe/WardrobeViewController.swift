@@ -199,7 +199,11 @@ public final class WardrobeViewController: UIViewController {
                 withReuseIdentifier: ClothingCell.reuseId, for: indexPath
             ) as! ClothingCell
             if let item = self?.viewModel.items.first(where: { $0.id == itemId }) {
-                cell.configure(with: item)
+                let isFavorite = TFFavoritesStore.shared.isFavorite(item.id)
+                cell.configure(with: item, isFavorite: isFavorite)
+                cell.onToggleFavorite = { [weak self] in
+                    self?.toggleFavorite(itemID: item.id)
+                }
             }
             return cell
         }
@@ -224,6 +228,7 @@ public final class WardrobeViewController: UIViewController {
     @objc private func addTapped() {
         let editVC = ClothingEditViewController(context: context)
         let nav = UINavigationController(rootViewController: editVC)
+        nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true)
     }
 
@@ -238,6 +243,13 @@ public final class WardrobeViewController: UIViewController {
         snapshot.appendItems(viewModel.items.map(\.id))
         dataSource.apply(snapshot, animatingDifferences: true)
         emptyView.isHidden = !viewModel.items.isEmpty
+    }
+
+    private func toggleFavorite(itemID: UUID) {
+        TFFavoritesStore.shared.toggleFavorite(itemID)
+        var snapshot = dataSource.snapshot()
+        snapshot.reconfigureItems([itemID])
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 }
 
@@ -265,6 +277,7 @@ extension WardrobeViewController: UICollectionViewDelegate {
                 guard let self else { return }
                 let editVC = ClothingEditViewController(context: self.context, editingItem: item)
                 let nav = UINavigationController(rootViewController: editVC)
+                nav.modalPresentationStyle = .fullScreen
                 self.present(nav, animated: true)
             }
             let delete = UIAction(title: "Delete", attributes: .destructive) { _ in

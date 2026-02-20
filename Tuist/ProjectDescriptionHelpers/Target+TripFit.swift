@@ -27,6 +27,8 @@ public enum TripFitTarget {
                 "UIAppFonts": [
                     "PlusJakartaSans-Variable.ttf",
                     "Fonts/PlusJakartaSans-Variable.ttf",
+                    "MaterialSymbolsOutlined.ttf",
+                    "Fonts/MaterialSymbolsOutlined.ttf",
                 ],
                 "UIApplicationSceneManifest": [
                     "UIApplicationSupportsMultipleScenes": false,

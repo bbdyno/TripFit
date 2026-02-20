@@ -20,13 +20,13 @@ final class ClothingCell: UICollectionViewCell {
 
     private let card = TFCardView(style: .elevated)
     private let imageView = UIImageView()
-    private let favoriteBadge = UIView()
-    private let favoriteIcon = UIImageView(image: UIImage(systemName: "heart"))
+    private let favoriteButton = UIButton(type: .system)
     private let nameLabel = UILabel()
     private let categoryLabel = InsetLabel(insets: UIEdgeInsets(top: 3, left: 8, bottom: 3, right: 8))
     private let metaLabel = UILabel()
     private var imageRequestToken: UUID?
     private var imageRequestID = UUID()
+    var onToggleFavorite: (() -> Void)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -47,12 +47,12 @@ final class ClothingCell: UICollectionViewCell {
         imageView.layer.cornerRadius = 12
         imageView.backgroundColor = TFColor.Surface.input
 
-        favoriteBadge.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.88)
-        favoriteBadge.layer.cornerRadius = 14
-        favoriteBadge.layer.borderWidth = 1
-        favoriteBadge.layer.borderColor = TFColor.Border.subtle.cgColor
-        favoriteIcon.tintColor = TFColor.Text.tertiary
-        favoriteIcon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
+        favoriteButton.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.88)
+        favoriteButton.layer.cornerRadius = 14
+        favoriteButton.layer.borderWidth = 1
+        favoriteButton.layer.borderColor = TFColor.Border.subtle.cgColor
+        favoriteButton.tintColor = TFColor.Text.tertiary
+        favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)
 
         nameLabel.font = TFTypography.caption.withSize(14)
         nameLabel.textColor = TFColor.Text.primary
@@ -67,8 +67,7 @@ final class ClothingCell: UICollectionViewCell {
         metaLabel.numberOfLines = 1
 
         card.addSubview(imageView)
-        imageView.addSubview(favoriteBadge)
-        favoriteBadge.addSubview(favoriteIcon)
+        imageView.addSubview(favoriteButton)
         card.addSubview(categoryLabel)
         card.addSubview(nameLabel)
         card.addSubview(metaLabel)
@@ -78,11 +77,10 @@ final class ClothingCell: UICollectionViewCell {
             make.height.equalTo(imageView.snp.width).multipliedBy(1.25)
         }
 
-        favoriteBadge.snp.makeConstraints { make in
+        favoriteButton.snp.makeConstraints { make in
             make.top.trailing.equalToSuperview().inset(8)
             make.size.equalTo(28)
         }
-        favoriteIcon.snp.makeConstraints { $0.center.equalToSuperview() }
 
         categoryLabel.snp.makeConstraints { make in
             make.top.equalTo(imageView.snp.bottom).offset(8)
@@ -100,12 +98,13 @@ final class ClothingCell: UICollectionViewCell {
         }
     }
 
-    func configure(with item: ClothingItem) {
+    func configure(with item: ClothingItem, isFavorite: Bool) {
         nameLabel.text = item.name
         metaLabel.text = "Updated \(Self.relativeFormatter.localizedString(for: item.updatedAt, relativeTo: Date()))"
         categoryLabel.text = item.category.displayName.uppercased()
         categoryLabel.textColor = item.category.tintColor
         categoryLabel.backgroundColor = item.category.badgeBackgroundColor
+        updateFavoriteUI(isFavorite)
 
         TFRemoteImageLoader.shared.cancel(imageRequestToken)
         imageRequestToken = nil
@@ -136,6 +135,21 @@ final class ClothingCell: UICollectionViewCell {
         imageRequestID = UUID()
         imageView.image = nil
         imageView.tintColor = nil
+        onToggleFavorite = nil
+    }
+
+    @objc private func favoriteTapped() {
+        onToggleFavorite?()
+    }
+
+    private func updateFavoriteUI(_ isFavorite: Bool) {
+        let symbolName = isFavorite ? "heart.fill" : "heart"
+        let image = UIImage(
+            systemName: symbolName,
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
+        )
+        favoriteButton.setImage(image, for: .normal)
+        favoriteButton.tintColor = isFavorite ? TFColor.Brand.primary : TFColor.Text.tertiary
     }
 
     private func setPlaceholder(for item: ClothingItem) {

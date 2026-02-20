@@ -78,7 +78,12 @@ public final class OutfitDetailViewController: UIViewController {
                 withReuseIdentifier: ClothingCell.reuseId, for: indexPath
             ) as! ClothingCell
             if let item = self?.outfit.items.first(where: { $0.id == itemId }) {
-                cell.configure(with: item)
+                let isFavorite = TFFavoritesStore.shared.isFavorite(item.id)
+                cell.configure(with: item, isFavorite: isFavorite)
+                cell.onToggleFavorite = { [weak self] in
+                    TFFavoritesStore.shared.toggleFavorite(item.id)
+                    self?.applySnapshot()
+                }
             }
             return cell
         }

@@ -83,3 +83,48 @@ public final class TFRemoteImageLoader {
         }
     }
 }
+
+public enum TFMaterialIcon {
+    public static func image(
+        named ligature: String,
+        pointSize: CGFloat,
+        weight: UIFont.Weight = .regular
+    ) -> UIImage? {
+        guard let font = materialFont(size: pointSize, weight: weight) else { return nil }
+
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: UIColor.black,
+        ]
+        let text = NSAttributedString(string: ligature, attributes: attributes)
+        let size = CGSize(width: ceil(text.size().width), height: ceil(text.size().height))
+        guard size.width > 0, size.height > 0 else { return nil }
+
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let image = renderer.image { _ in
+            text.draw(at: .zero)
+        }
+        return image.withRenderingMode(.alwaysTemplate)
+    }
+
+    private static func materialFont(size: CGFloat, weight: UIFont.Weight) -> UIFont? {
+        let name: String
+        switch weight {
+        case ..<UIFont.Weight.ultraLight:
+            name = "MaterialSymbolsOutlined-Regular_Thin"
+        case UIFont.Weight.ultraLight..<UIFont.Weight.light:
+            name = "MaterialSymbolsOutlined-Regular_ExtraLight"
+        case UIFont.Weight.light..<UIFont.Weight.regular:
+            name = "MaterialSymbolsOutlined-Regular_Light"
+        case UIFont.Weight.regular..<UIFont.Weight.medium:
+            name = "MaterialSymbolsOutlined-Regular"
+        case UIFont.Weight.medium..<UIFont.Weight.semibold:
+            name = "MaterialSymbolsOutlined-Regular_Medium"
+        case UIFont.Weight.semibold..<UIFont.Weight.bold:
+            name = "MaterialSymbolsOutlined-Regular_SemiBold"
+        default:
+            name = "MaterialSymbolsOutlined-Regular_Bold"
+        }
+        return UIFont(name: name, size: size)
+    }
+}

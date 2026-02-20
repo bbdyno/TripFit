@@ -51,11 +51,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     private func registerCustomFontsIfNeeded() {
-        let directMatch = Bundle.main.url(forResource: "PlusJakartaSans-Variable", withExtension: "ttf")
-        let folderMatch = Bundle.main.url(forResource: "PlusJakartaSans-Variable", withExtension: "ttf", subdirectory: "Fonts")
-        let discovered = (Bundle.main.urls(forResourcesWithExtension: "ttf", subdirectory: nil) ?? [])
-            .filter { $0.lastPathComponent.contains("PlusJakartaSans") }
-        let urls = Set([directMatch, folderMatch].compactMap { $0 } + discovered)
+        let discoveredRoot = Bundle.main.urls(forResourcesWithExtension: "ttf", subdirectory: nil) ?? []
+        let discoveredFontsFolder = Bundle.main.urls(forResourcesWithExtension: "ttf", subdirectory: "Fonts") ?? []
+        let urls = Set(discoveredRoot + discoveredFontsFolder)
 
         for url in urls {
             CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)

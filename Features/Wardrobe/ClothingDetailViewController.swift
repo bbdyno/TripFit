@@ -179,6 +179,7 @@ public final class ClothingDetailViewController: UIViewController {
 
         favoriteButton.setImage(UIImage(systemName: "heart"), for: .normal)
         favoriteButton.tintColor = TFColor.Text.tertiary
+        favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)
 
         contentView.addSubview(titleCard)
         titleCard.snp.makeConstraints { make in
@@ -290,6 +291,7 @@ public final class ClothingDetailViewController: UIViewController {
         titleLabel.text = item.name
         updatedLabel.text = "Updated \(relativeString(for: item.updatedAt))"
         noteTextLabel.text = item.note?.isEmpty == false ? item.note : "No notes yet."
+        refreshFavoriteState()
 
         refreshAttributes()
         refreshStats()
@@ -363,7 +365,23 @@ public final class ClothingDetailViewController: UIViewController {
     @objc private func editTapped() {
         let editVC = ClothingEditViewController(context: context, editingItem: item)
         let nav = UINavigationController(rootViewController: editVC)
+        nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true)
+    }
+
+    @objc private func favoriteTapped() {
+        _ = TFFavoritesStore.shared.toggleFavorite(item.id)
+        refreshFavoriteState()
+    }
+
+    private func refreshFavoriteState() {
+        let isFavorite = TFFavoritesStore.shared.isFavorite(item.id)
+        let imageName = isFavorite ? "heart.fill" : "heart"
+        favoriteButton.setImage(
+            UIImage(systemName: imageName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)),
+            for: .normal
+        )
+        favoriteButton.tintColor = isFavorite ? TFColor.Brand.primary : TFColor.Text.tertiary
     }
 
     @objc private func addToPackingTapped() {

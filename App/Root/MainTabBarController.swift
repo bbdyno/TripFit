@@ -28,7 +28,7 @@ final class MainTabBarController: UITabBarController {
         tabAppearance.configureWithTransparentBackground()
         tabAppearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
         tabAppearance.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.94)
-        tabAppearance.shadowColor = TFColor.Border.subtle
+        tabAppearance.shadowColor = UIColor.clear
         tabAppearance.stackedLayoutAppearance.selected.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 1)
         tabAppearance.stackedLayoutAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 1)
         tabAppearance.stackedLayoutAppearance.selected.iconColor = TFColor.Brand.primary
@@ -52,13 +52,17 @@ final class MainTabBarController: UITabBarController {
         )
         wardrobeVC.tabBarItem = UITabBarItem(
             title: "Wardrobe",
-            image: UIImage(
-                systemName: "checkroom",
-                withConfiguration: UIImage.SymbolConfiguration(pointSize: 26, weight: .regular)
+            image: makeMaterialTabIcon(
+                ligature: "checkroom",
+                pointSize: 24,
+                weight: .regular,
+                fallbackSystemName: "tshirt"
             ),
-            selectedImage: UIImage(
-                systemName: "checkroom",
-                withConfiguration: UIImage.SymbolConfiguration(pointSize: 26, weight: .semibold)
+            selectedImage: makeMaterialTabIcon(
+                ligature: "checkroom",
+                pointSize: 24,
+                weight: .semibold,
+                fallbackSystemName: "tshirt.fill"
             )
         )
         wardrobeVC.tabBarItem.tag = 0
@@ -68,13 +72,17 @@ final class MainTabBarController: UITabBarController {
         )
         outfitsVC.tabBarItem = UITabBarItem(
             title: "Outfits",
-            image: UIImage(
-                systemName: "styler",
-                withConfiguration: UIImage.SymbolConfiguration(pointSize: 26, weight: .regular)
+            image: makeMaterialTabIcon(
+                ligature: "styler",
+                pointSize: 24,
+                weight: .regular,
+                fallbackSystemName: "square.grid.2x2"
             ),
-            selectedImage: UIImage(
-                systemName: "styler",
-                withConfiguration: UIImage.SymbolConfiguration(pointSize: 26, weight: .bold)
+            selectedImage: makeMaterialTabIcon(
+                ligature: "styler",
+                pointSize: 24,
+                weight: .semibold,
+                fallbackSystemName: "square.grid.2x2.fill"
             )
         )
         outfitsVC.tabBarItem.tag = 1
@@ -84,18 +92,42 @@ final class MainTabBarController: UITabBarController {
         )
         tripsVC.tabBarItem = UITabBarItem(
             title: "Trips",
-            image: UIImage(
-                systemName: "flight_takeoff",
-                withConfiguration: UIImage.SymbolConfiguration(pointSize: 26, weight: .regular)
+            image: makeMaterialTabIcon(
+                ligature: "flight_takeoff",
+                pointSize: 24,
+                weight: .regular,
+                fallbackSystemName: "airplane"
             ),
-            selectedImage: UIImage(
-                systemName: "flight_takeoff",
-                withConfiguration: UIImage.SymbolConfiguration(pointSize: 26, weight: .bold)
+            selectedImage: makeMaterialTabIcon(
+                ligature: "flight_takeoff",
+                pointSize: 24,
+                weight: .semibold,
+                fallbackSystemName: "airplane.departure"
             )
         )
         tripsVC.tabBarItem.tag = 2
 
-        viewControllers = [wardrobeVC, outfitsVC, tripsVC]
+        let moreVC = UINavigationController(
+            rootViewController: MoreSettingsHomeViewController(context: environment.context)
+        )
+        moreVC.tabBarItem = UITabBarItem(
+            title: "More",
+            image: makeMaterialTabIcon(
+                ligature: "settings",
+                pointSize: 24,
+                weight: .regular,
+                fallbackSystemName: "gearshape"
+            ),
+            selectedImage: makeMaterialTabIcon(
+                ligature: "settings",
+                pointSize: 24,
+                weight: .semibold,
+                fallbackSystemName: "gearshape.fill"
+            )
+        )
+        moreVC.tabBarItem.tag = 3
+
+        viewControllers = [wardrobeVC, outfitsVC, tripsVC, moreVC]
         updateSelectionIndicator()
     }
 
@@ -125,5 +157,46 @@ final class MainTabBarController: UITabBarController {
         UIBezierPath(roundedRect: indicatorRect, cornerRadius: 2).fill()
 
         tabBar.selectionIndicatorImage = UIGraphicsGetImageFromCurrentImageContext()
+    }
+
+    private func makeMaterialTabIcon(
+        ligature: String,
+        pointSize: CGFloat,
+        weight: UIFont.Weight,
+        fallbackSystemName: String
+    ) -> UIImage? {
+        if let icon = TFMaterialIcon.image(named: ligature, pointSize: pointSize, weight: weight) {
+            return icon
+        }
+        return UIImage(
+            systemName: fallbackSystemName,
+            withConfiguration: UIImage.SymbolConfiguration(
+                pointSize: pointSize,
+                weight: symbolWeight(for: weight)
+            )
+        )
+    }
+
+    private func symbolWeight(for fontWeight: UIFont.Weight) -> UIImage.SymbolWeight {
+        switch fontWeight {
+        case ..<UIFont.Weight.ultraLight:
+            return .ultraLight
+        case UIFont.Weight.ultraLight..<UIFont.Weight.light:
+            return .thin
+        case UIFont.Weight.light..<UIFont.Weight.regular:
+            return .light
+        case UIFont.Weight.regular..<UIFont.Weight.medium:
+            return .regular
+        case UIFont.Weight.medium..<UIFont.Weight.semibold:
+            return .medium
+        case UIFont.Weight.semibold..<UIFont.Weight.bold:
+            return .semibold
+        case UIFont.Weight.bold..<UIFont.Weight.heavy:
+            return .bold
+        case UIFont.Weight.heavy..<UIFont.Weight.black:
+            return .heavy
+        default:
+            return .black
+        }
     }
 }
