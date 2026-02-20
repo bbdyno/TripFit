@@ -30,7 +30,7 @@ final class AboutTripFitViewController: UIViewController {
         backButton.tintColor = MorePalette.pink
         backButton.setImage(TFMaterialIcon.image(named: "arrow_back_ios_new", pointSize: 20, weight: .regular), for: .normal)
         backButton.addAction(UIAction { [weak self] _ in
-            self?.navigationController?.popViewController(animated: true)
+            self?.morePopOrDismiss()
         }, for: .touchUpInside)
         view.addSubview(backButton)
         backButton.snp.makeConstraints { make in
@@ -47,6 +47,7 @@ final class AboutTripFitViewController: UIViewController {
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             make.leading.trailing.bottom.equalToSuperview()
         }
+        view.bringSubviewToFront(backButton)
 
         contentStack.axis = .vertical
         contentStack.spacing = 18
@@ -127,10 +128,34 @@ final class AboutTripFitViewController: UIViewController {
         contentStack.addArrangedSubview(menuCard)
 
         let rows = [
-            makeRow(title: "Rate on App Store", icon: "star", tint: UIColor(hex: 0xF39A35), bg: UIColor(hex: 0xF39A35).withAlphaComponent(0.15)),
-            makeRow(title: "Privacy Policy", icon: "shield", tint: UIColor(hex: 0x4B8DF2), bg: UIColor(hex: 0x4B8DF2).withAlphaComponent(0.15)),
-            makeRow(title: "Open Source Licenses", icon: "code", tint: UIColor(hex: 0x1FBF84), bg: UIColor(hex: 0x1FBF84).withAlphaComponent(0.15)),
-            makeRow(title: "Terms of Service", icon: "description", tint: UIColor(hex: 0x9E6BFF), bg: UIColor(hex: 0x9E6BFF).withAlphaComponent(0.15)),
+            makeRow(
+                title: "Rate on App Store",
+                icon: "star",
+                tint: UIColor(hex: 0xF39A35),
+                bg: UIColor(hex: 0xF39A35).withAlphaComponent(0.15),
+                action: { [weak self] in self?.pushLinkDetail(title: "Rate on App Store") }
+            ),
+            makeRow(
+                title: "Privacy Policy",
+                icon: "shield",
+                tint: UIColor(hex: 0x4B8DF2),
+                bg: UIColor(hex: 0x4B8DF2).withAlphaComponent(0.15),
+                action: { [weak self] in self?.pushLinkDetail(title: "Privacy Policy") }
+            ),
+            makeRow(
+                title: "Open Source Licenses",
+                icon: "code",
+                tint: UIColor(hex: 0x1FBF84),
+                bg: UIColor(hex: 0x1FBF84).withAlphaComponent(0.15),
+                action: { [weak self] in self?.pushLinkDetail(title: "Open Source Licenses") }
+            ),
+            makeRow(
+                title: "Terms of Service",
+                icon: "description",
+                tint: UIColor(hex: 0x9E6BFF),
+                bg: UIColor(hex: 0x9E6BFF).withAlphaComponent(0.15),
+                action: { [weak self] in self?.pushLinkDetail(title: "Terms of Service") }
+            ),
         ]
         layoutRows(rows, in: menuCard)
 
@@ -140,13 +165,13 @@ final class AboutTripFitViewController: UIViewController {
         footerStack.alignment = .center
 
         let madeWithLabel = UILabel()
-        madeWithLabel.text = "Made with ❤️ by Travelers"
+        madeWithLabel.text = "Made with ❤️ by TaeinKim"
         madeWithLabel.font = TFTypography.bodyRegular.withSize(16)
         madeWithLabel.textColor = MorePalette.subtitle
         footerStack.addArrangedSubview(madeWithLabel)
 
         let copyrightLabel = UILabel()
-        copyrightLabel.text = "© 2023 TripFit Inc. All rights reserved."
+        copyrightLabel.text = "© 2026 TaeinKim. All rights reserved."
         copyrightLabel.font = TFTypography.footnote.withSize(13)
         copyrightLabel.textColor = MorePalette.subtitle.withAlphaComponent(0.7)
         footerStack.addArrangedSubview(copyrightLabel)
@@ -154,7 +179,13 @@ final class AboutTripFitViewController: UIViewController {
         contentStack.addArrangedSubview(footerStack)
     }
 
-    private func makeRow(title: String, icon: String, tint: UIColor, bg: UIColor) -> MoreSettingsRowControl {
+    private func makeRow(
+        title: String,
+        icon: String,
+        tint: UIColor,
+        bg: UIColor,
+        action: @escaping () -> Void
+    ) -> MoreSettingsRowControl {
         let row = MoreSettingsRowControl(
             model: .init(
                 title: title,
@@ -166,9 +197,7 @@ final class AboutTripFitViewController: UIViewController {
                 showsChevron: true
             )
         )
-        row.addAction(UIAction { [weak self] _ in
-            self?.showNotConnectedAlert(title: title)
-        }, for: .touchUpInside)
+        row.addAction(UIAction { _ in action() }, for: .touchUpInside)
         return row
     }
 
@@ -204,13 +233,61 @@ final class AboutTripFitViewController: UIViewController {
         }
     }
 
-    private func showNotConnectedAlert(title: String) {
-        let alert = UIAlertController(
+    private func pushLinkDetail(title: String) {
+        let icon: String
+        let tint: UIColor
+        switch title {
+        case "Rate on App Store":
+            icon = "star"
+            tint = UIColor(hex: 0xF39A35)
+        case "Privacy Policy":
+            icon = "shield"
+            tint = UIColor(hex: 0x4B8DF2)
+        case "Open Source Licenses":
+            icon = "code"
+            tint = UIColor(hex: 0x1FBF84)
+        default:
+            icon = "description"
+            tint = UIColor(hex: 0x9E6BFF)
+        }
+
+        let screen = MoreInfoViewController(
             title: title,
-            message: "Link destination can be connected in the next step.",
-            preferredStyle: .alert
+            leadingTint: MorePalette.pink,
+            hero: .init(
+                icon: icon,
+                iconTint: tint,
+                iconBackground: tint.withAlphaComponent(0.14),
+                title: title,
+                subtitle: "This section is now available as an in-app detail page."
+            ),
+            sections: [
+                .init(
+                    title: "Details",
+                    footer: "Legal and product metadata can be updated from your release pipeline.",
+                    rows: [
+                        .init(
+                            title: "Status",
+                            subtitle: nil,
+                            value: "Ready",
+                            icon: "check_circle",
+                            iconTint: UIColor(hex: 0x27C16E),
+                            iconBackground: UIColor(hex: 0x27C16E).withAlphaComponent(0.14),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "Last Updated",
+                            subtitle: nil,
+                            value: "2026",
+                            icon: "history",
+                            iconTint: MorePalette.cyan,
+                            iconBackground: MorePalette.cyan.withAlphaComponent(0.14),
+                            titleColor: TFColor.Text.primary
+                        ),
+                    ]
+                )
+            ]
         )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        navigationController?.pushViewController(screen, animated: true)
     }
 }

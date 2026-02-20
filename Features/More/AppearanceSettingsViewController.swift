@@ -47,7 +47,7 @@ final class AppearanceSettingsViewController: UIViewController {
             make.height.equalTo(56)
         }
         headerView.onLeadingTap = { [weak self] in
-            self?.navigationController?.popViewController(animated: true)
+            self?.morePopOrDismiss()
         }
 
         scrollView.showsVerticalScrollIndicator = false

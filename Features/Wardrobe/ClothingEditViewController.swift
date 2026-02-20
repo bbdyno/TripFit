@@ -18,6 +18,11 @@ public final class ClothingEditViewController: UIViewController {
         let color: UIColor
     }
 
+    private enum ViewTag {
+        static let colorCheck = 101
+        static let colorRing = 102
+    }
+
     private static let colorOptions: [ColorOption] = [
         ColorOption(name: "Pink", color: UIColor(hex: 0xFF5CA3)),
         ColorOption(name: "Sky", color: UIColor(hex: 0xA2D2FF)),
@@ -27,14 +32,16 @@ public final class ClothingEditViewController: UIViewController {
         ColorOption(name: "Cream", color: UIColor(hex: 0xFFE5B4)),
     ]
 
-    private static let seasonOptions: [Season] = [.spring, .summer, .fall, .winter, .all]
+    private static let seasonOptions: [Season] = [.spring, .summer, .fall, .winter]
 
     private let context: ModelContext
     private var editingItem: ClothingItem?
     private var selectedImageData: Data?
     private var selectedImageURL: String?
-    private var selectedCategory: ClothingCategory = .tops
-    private var selectedSeason: Season = .all
+    private var selectedCategory: ClothingCategory?
+    private var selectedSeason: Season = .summer
+    private var keepsOriginalAllSeason = false
+    private var didChangeSeason = false
     private var selectedColorName: String? = colorOptions.first?.name
     private var imageLoadToken: UUID?
     private var imageLoadRequestID = UUID()
@@ -50,9 +57,9 @@ public final class ClothingEditViewController: UIViewController {
     private let photoButton = UIButton(type: .system)
     private let photoPreviewView = UIImageView()
     private let photoPlaceholderStack = UIStackView()
-    private let photoIcon = UIImageView(image: UIImage(systemName: "camera.badge.plus"))
+    private let photoIcon = UIImageView()
+    private let photoIconBadge = UIView()
     private let photoHintLabel = UILabel()
-    private let photoTypeBadge = UILabel()
     private let photoBorderLayer = CAShapeLayer()
 
     private let nameField = UITextField()
@@ -114,6 +121,7 @@ public final class ClothingEditViewController: UIViewController {
             roundedRect: photoButton.bounds,
             cornerRadius: TFRadius.xl
         ).cgPath
+        saveButton.layer.cornerRadius = saveButton.bounds.height / 2
     }
 
     private func setupLayout() {
@@ -123,26 +131,26 @@ public final class ClothingEditViewController: UIViewController {
     }
 
     private func setupHeader() {
-        headerContainer.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.96)
+        headerContainer.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.95)
         view.addSubview(headerContainer)
         headerContainer.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.top.equalToSuperview()
             make.leading.trailing.equalToSuperview()
         }
 
         cancelButton.setTitle("Cancel", for: .normal)
         cancelButton.setTitleColor(TFColor.Brand.primary, for: .normal)
-        cancelButton.titleLabel?.font = TFTypography.body
+        cancelButton.titleLabel?.font = TFTypography.body.withSize(17)
         headerContainer.addSubview(cancelButton)
         cancelButton.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(TFSpacing.md)
-            make.top.equalToSuperview().offset(10)
-            make.height.equalTo(32)
-            make.bottom.equalToSuperview().inset(10)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
+            make.height.equalTo(34)
+            make.bottom.equalToSuperview().inset(8)
         }
 
         titleLabel.text = editingItem == nil ? "Add Item" : "Edit Item"
-        titleLabel.font = TFTypography.headline
+        titleLabel.font = TFTypography.headline.withSize(17)
         titleLabel.textColor = TFColor.Text.primary
         headerContainer.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
@@ -159,7 +167,7 @@ public final class ClothingEditViewController: UIViewController {
     }
 
     private func setupBottomBar() {
-        bottomBar.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.98)
+        bottomBar.backgroundColor = .clear
         view.addSubview(bottomBar)
         bottomBar.snp.makeConstraints { make in
             make.leading.trailing.bottom.equalToSuperview()
@@ -170,12 +178,13 @@ public final class ClothingEditViewController: UIViewController {
         bottomFadeView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(bottomBar.snp.top)
-            make.height.equalTo(34)
+            make.height.equalTo(56)
         }
 
         bottomFadeLayer.colors = [
             TFColor.Surface.card.withAlphaComponent(0).cgColor,
-            TFColor.Surface.card.withAlphaComponent(0.92).cgColor,
+            TFColor.Surface.card.withAlphaComponent(0.9).cgColor,
+            TFColor.Surface.card.cgColor,
         ]
         bottomFadeLayer.startPoint = CGPoint(x: 0.5, y: 0)
         bottomFadeLayer.endPoint = CGPoint(x: 0.5, y: 1)
@@ -183,10 +192,11 @@ public final class ClothingEditViewController: UIViewController {
 
         bottomBar.addSubview(saveButton)
         saveButton.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(10)
+            make.top.equalToSuperview().offset(8)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
-            make.bottom.equalTo(bottomBar.safeAreaLayoutGuide.snp.bottom).inset(8)
+            make.bottom.equalTo(bottomBar.safeAreaLayoutGuide.snp.bottom).inset(10)
         }
+        saveButton.layer.cornerCurve = .continuous
 
         saveButton.setTitle(editingItem == nil ? "Save Item" : "Save Changes", for: .normal)
     }
@@ -202,11 +212,11 @@ public final class ClothingEditViewController: UIViewController {
         }
 
         contentStack.axis = .vertical
-        contentStack.spacing = TFSpacing.md
+        contentStack.spacing = TFSpacing.lg
         contentStack.layoutMargins = UIEdgeInsets(
             top: TFSpacing.md,
             left: TFSpacing.md,
-            bottom: TFSpacing.xl,
+            bottom: 120,
             right: TFSpacing.md
         )
         contentStack.isLayoutMarginsRelativeArrangement = true
@@ -226,15 +236,15 @@ public final class ClothingEditViewController: UIViewController {
     }
 
     private func setupPhotoSection() {
-        photoButton.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.08)
+        photoButton.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.1)
         photoButton.layer.cornerRadius = TFRadius.xl
         photoButton.clipsToBounds = true
         photoButton.layer.addSublayer(photoBorderLayer)
 
         photoBorderLayer.fillColor = UIColor.clear.cgColor
-        photoBorderLayer.strokeColor = TFColor.Brand.primary.withAlphaComponent(0.35).cgColor
-        photoBorderLayer.lineWidth = 2.5
-        photoBorderLayer.lineDashPattern = [8, 5]
+        photoBorderLayer.strokeColor = TFColor.Brand.primary.withAlphaComponent(0.4).cgColor
+        photoBorderLayer.lineWidth = 3
+        photoBorderLayer.lineDashPattern = [6, 5]
 
         contentStack.addArrangedSubview(photoButton)
         photoButton.snp.makeConstraints { make in
@@ -247,34 +257,28 @@ public final class ClothingEditViewController: UIViewController {
         photoButton.addSubview(photoPreviewView)
         photoPreviewView.snp.makeConstraints { $0.edges.equalToSuperview() }
 
-        photoIcon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 42, weight: .regular)
+        photoIcon.image = TFMaterialIcon.image(named: "add_a_photo", pointSize: 34, weight: .medium)
         photoIcon.tintColor = TFColor.Brand.primary
 
-        photoHintLabel.text = "Tap to add photo"
-        photoHintLabel.font = TFTypography.caption
+        photoIconBadge.backgroundColor = TFColor.Surface.card
+        photoIconBadge.layer.cornerRadius = 26
+        photoIconBadge.addSubview(photoIcon)
+        photoIcon.snp.makeConstraints { $0.center.equalToSuperview() }
+        photoIconBadge.snp.makeConstraints { make in
+            make.size.equalTo(52)
+        }
+
+        photoHintLabel.text = "ADD PHOTO"
+        photoHintLabel.font = TFTypography.caption.withSize(14)
         photoHintLabel.textColor = TFColor.Brand.primary
 
         photoPlaceholderStack.axis = .vertical
         photoPlaceholderStack.alignment = .center
-        photoPlaceholderStack.spacing = TFSpacing.xs
-        photoPlaceholderStack.addArrangedSubview(photoIcon)
+        photoPlaceholderStack.spacing = TFSpacing.sm
+        photoPlaceholderStack.addArrangedSubview(photoIconBadge)
         photoPlaceholderStack.addArrangedSubview(photoHintLabel)
         photoButton.addSubview(photoPlaceholderStack)
         photoPlaceholderStack.snp.makeConstraints { $0.center.equalToSuperview() }
-
-        photoTypeBadge.text = "JPG, PNG"
-        photoTypeBadge.font = TFTypography.footnote.withSize(11)
-        photoTypeBadge.textColor = TFColor.Text.secondary
-        photoTypeBadge.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.84)
-        photoTypeBadge.layer.cornerRadius = 8
-        photoTypeBadge.layer.masksToBounds = true
-        photoTypeBadge.textAlignment = .center
-        photoButton.addSubview(photoTypeBadge)
-        photoTypeBadge.snp.makeConstraints { make in
-            make.trailing.bottom.equalToSuperview().inset(10)
-            make.height.equalTo(24)
-            make.width.greaterThanOrEqualTo(66)
-        }
     }
 
     private func setupNameSection() {
@@ -284,8 +288,11 @@ public final class ClothingEditViewController: UIViewController {
         contentStack.addArrangedSubview(container)
         container.snp.makeConstraints { $0.height.equalTo(52) }
 
-        nameField.placeholder = "e.g. Vintage Denim Jacket"
-        nameField.font = TFTypography.bodyRegular
+        nameField.attributedPlaceholder = NSAttributedString(
+            string: "e.g. Vintage Denim Jacket",
+            attributes: [.foregroundColor: TFColor.Text.tertiary]
+        )
+        nameField.font = TFTypography.bodyRegular.withSize(17)
         nameField.textColor = TFColor.Text.primary
         nameField.returnKeyType = .done
         nameField.delegate = self
@@ -304,12 +311,16 @@ public final class ClothingEditViewController: UIViewController {
         container.snp.makeConstraints { $0.height.equalTo(52) }
 
         categoryButton.setTitleColor(TFColor.Text.primary, for: .normal)
-        categoryButton.titleLabel?.font = TFTypography.bodyRegular
+        categoryButton.titleLabel?.font = TFTypography.bodyRegular.withSize(17)
         categoryButton.tintColor = TFColor.Brand.primary
         categoryButton.contentHorizontalAlignment = .leading
         categoryButton.showsMenuAsPrimaryAction = true
         categoryButton.semanticContentAttribute = .forceRightToLeft
-        categoryButton.setImage(UIImage(systemName: "chevron.down"), for: .normal)
+        categoryButton.setImage(
+            TFMaterialIcon.image(named: "expand_more", pointSize: 20, weight: .medium)
+                ?? UIImage(systemName: "chevron.down"),
+            for: .normal
+        )
         categoryButton.menu = makeCategoryMenu()
         container.addSubview(categoryButton)
         categoryButton.snp.makeConstraints { make in
@@ -326,7 +337,8 @@ public final class ClothingEditViewController: UIViewController {
         colorScrollView.snp.makeConstraints { $0.height.equalTo(52) }
 
         colorStack.axis = .horizontal
-        colorStack.spacing = 10
+        colorStack.alignment = .center
+        colorStack.spacing = 12
         colorScrollView.addSubview(colorStack)
         colorStack.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -338,12 +350,29 @@ public final class ClothingEditViewController: UIViewController {
             button.tag = index
             button.backgroundColor = option.color
             button.layer.cornerRadius = 22
-            button.clipsToBounds = true
+            button.layer.cornerCurve = .continuous
+            button.clipsToBounds = false
 
-            let checkImageView = UIImageView(image: UIImage(systemName: "checkmark"))
-            checkImageView.tag = 101
+            let ringView = UIView()
+            ringView.tag = ViewTag.colorRing
+            ringView.isHidden = true
+            ringView.isUserInteractionEnabled = false
+            ringView.layer.cornerRadius = 24
+            ringView.layer.cornerCurve = .continuous
+            ringView.layer.borderWidth = 2
+            ringView.layer.borderColor = TFColor.Brand.primary.cgColor
+            button.insertSubview(ringView, at: 0)
+            ringView.snp.makeConstraints { make in
+                make.edges.equalToSuperview()
+            }
+
+            let checkImageView = UIImageView(
+                image: TFMaterialIcon.image(named: "check", pointSize: 18, weight: .bold)
+                    ?? UIImage(systemName: "checkmark")
+            )
+            checkImageView.tag = ViewTag.colorCheck
             checkImageView.tintColor = option.name == "White" ? TFColor.Text.primary : .white
-            checkImageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
+            checkImageView.isHidden = true
             button.addSubview(checkImageView)
             checkImageView.snp.makeConstraints { $0.center.equalToSuperview() }
 
@@ -357,23 +386,27 @@ public final class ClothingEditViewController: UIViewController {
     private func setupSeasonSection() {
         contentStack.addArrangedSubview(makeSectionLabel("Season"))
 
-        let container = makeInputContainer()
+        let container = UIView()
+        container.backgroundColor = TFColor.Surface.input
+        container.layer.cornerRadius = 20
+        container.layer.cornerCurve = .continuous
         contentStack.addArrangedSubview(container)
-        container.snp.makeConstraints { $0.height.equalTo(50) }
+        container.snp.makeConstraints { $0.height.equalTo(44) }
 
         seasonStack.axis = .horizontal
-        seasonStack.spacing = 6
+        seasonStack.spacing = 3
         seasonStack.distribution = .fillEqually
         container.addSubview(seasonStack)
         seasonStack.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4))
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 3, left: 3, bottom: 3, right: 3))
         }
 
         for (index, season) in Self.seasonOptions.enumerated() {
             let button = UIButton(type: .system)
             button.tag = index
-            button.layer.cornerRadius = 10
-            button.titleLabel?.font = TFTypography.footnote
+            button.layer.cornerRadius = 17
+            button.layer.cornerCurve = .continuous
+            button.titleLabel?.font = TFTypography.body.withSize(13)
             button.setTitle(shortSeasonLabel(for: season), for: .normal)
             button.addTarget(self, action: #selector(seasonTapped(_:)), for: .touchUpInside)
             seasonStack.addArrangedSubview(button)
@@ -386,9 +419,9 @@ public final class ClothingEditViewController: UIViewController {
 
         let container = makeInputContainer()
         contentStack.addArrangedSubview(container)
-        container.snp.makeConstraints { $0.height.equalTo(108) }
+        container.snp.makeConstraints { $0.height.equalTo(112) }
 
-        noteTextView.font = TFTypography.bodyRegular
+        noteTextView.font = TFTypography.bodyRegular.withSize(17)
         noteTextView.textColor = TFColor.Text.primary
         noteTextView.backgroundColor = .clear
         noteTextView.delegate = self
@@ -398,7 +431,7 @@ public final class ClothingEditViewController: UIViewController {
         }
 
         notePlaceholderLabel.text = "Dry clean only..."
-        notePlaceholderLabel.font = TFTypography.bodyRegular
+        notePlaceholderLabel.font = TFTypography.bodyRegular.withSize(17)
         notePlaceholderLabel.textColor = TFColor.Text.tertiary
         noteTextView.addSubview(notePlaceholderLabel)
         notePlaceholderLabel.snp.makeConstraints { make in
@@ -410,10 +443,10 @@ public final class ClothingEditViewController: UIViewController {
     private func setupDeleteSection() {
         deleteButton.setTitle("Delete Item", for: .normal)
         deleteButton.setTitleColor(.systemRed, for: .normal)
-        deleteButton.titleLabel?.font = TFTypography.body
+        deleteButton.titleLabel?.font = TFTypography.body.withSize(17)
         deleteButton.isHidden = editingItem == nil
         contentStack.addArrangedSubview(deleteButton)
-        deleteButton.snp.makeConstraints { $0.height.equalTo(44) }
+        deleteButton.snp.makeConstraints { $0.height.equalTo(40) }
     }
 
     private func setupActions() {
@@ -427,7 +460,11 @@ public final class ClothingEditViewController: UIViewController {
         guard let item = editingItem else { return }
         nameField.text = item.name
         selectedCategory = item.category
-        selectedSeason = item.season ?? .all
+        selectedSeason = item.season ?? .summer
+        if selectedSeason == .all {
+            keepsOriginalAllSeason = true
+            selectedSeason = .summer
+        }
         selectedColorName = item.color ?? selectedColorName
         noteTextView.text = item.note
         selectedImageData = item.imageData
@@ -448,8 +485,8 @@ public final class ClothingEditViewController: UIViewController {
     private func makeSectionLabel(_ text: String) -> UILabel {
         let label = UILabel()
         label.text = text
-        label.font = TFTypography.caption
-        label.textColor = TFColor.Text.secondary
+        label.font = TFTypography.body.withSize(14)
+        label.textColor = TFColor.Text.primary
         return label
     }
 
@@ -473,7 +510,7 @@ public final class ClothingEditViewController: UIViewController {
     }
 
     private func refreshCategoryButtonTitle() {
-        categoryButton.setTitle(selectedCategory.displayName, for: .normal)
+        categoryButton.setTitle(selectedCategory?.displayName ?? "Select Category", for: .normal)
     }
 
     private func shortSeasonLabel(for season: Season) -> String {
@@ -494,16 +531,21 @@ public final class ClothingEditViewController: UIViewController {
 
             if isSelected {
                 button.layer.borderWidth = 2
-                button.layer.borderColor = TFColor.Brand.primary.cgColor
+                button.layer.borderColor = UIColor.white.cgColor
             } else if option.name == "White" {
                 button.layer.borderWidth = 1
                 button.layer.borderColor = TFColor.Border.strong.cgColor
             } else {
                 button.layer.borderWidth = 0
-                button.layer.borderColor = nil
+                button.layer.borderColor = UIColor.clear.cgColor
             }
 
-            if let check = button.viewWithTag(101) as? UIImageView {
+            if let ring = button.viewWithTag(ViewTag.colorRing) {
+                ring.isHidden = !isSelected
+            }
+
+            if let check = button.viewWithTag(ViewTag.colorCheck) as? UIImageView {
+                check.tintColor = option.name == "White" ? TFColor.Text.primary : .white
                 check.isHidden = !isSelected
             }
         }
@@ -518,6 +560,7 @@ public final class ClothingEditViewController: UIViewController {
             button.setTitleColor(isSelected ? TFColor.Brand.primary : TFColor.Text.secondary, for: .normal)
             button.layer.borderWidth = isSelected ? 1 : 0
             button.layer.borderColor = isSelected ? TFColor.Border.subtle.cgColor : UIColor.clear.cgColor
+            button.layer.shadowOpacity = 0
         }
     }
 
@@ -529,14 +572,12 @@ public final class ClothingEditViewController: UIViewController {
         photoPreviewView.image = image
         photoPreviewView.isHidden = false
         photoPlaceholderStack.isHidden = true
-        photoTypeBadge.isHidden = true
     }
 
     private func showImagePlaceholder() {
         photoPreviewView.image = nil
         photoPreviewView.isHidden = true
         photoPlaceholderStack.isHidden = false
-        photoTypeBadge.isHidden = false
     }
 
     private func loadImageFromURLIfNeeded() {
@@ -558,7 +599,7 @@ public final class ClothingEditViewController: UIViewController {
     }
 
     @objc private func cancelTapped() {
-        dismiss(animated: true)
+        closeScreen()
     }
 
     @objc private func colorTapped(_ sender: UIButton) {
@@ -570,6 +611,7 @@ public final class ClothingEditViewController: UIViewController {
     @objc private func seasonTapped(_ sender: UIButton) {
         guard sender.tag < Self.seasonOptions.count else { return }
         selectedSeason = Self.seasonOptions[sender.tag]
+        didChangeSeason = true
         refreshSeasonButtons()
     }
 
@@ -587,16 +629,21 @@ public final class ClothingEditViewController: UIViewController {
             showAlert("Please enter a name")
             return
         }
+        guard let selectedCategory else {
+            showAlert("Please select a category")
+            return
+        }
 
         let optimizedImageData = selectedImageData.flatMap { ImageDownsampler.downsample($0) } ?? selectedImageData
         let noteText = noteTextView.text.trimmingCharacters(in: .whitespacesAndNewlines)
         let noteValue = noteText.isEmpty ? nil : noteText
+        let seasonToSave: Season = (keepsOriginalAllSeason && !didChangeSeason) ? .all : selectedSeason
 
         if let item = editingItem {
             item.name = name
             item.category = selectedCategory
             item.color = selectedColorName
-            item.season = selectedSeason
+            item.season = seasonToSave
             item.note = noteValue
             item.imageData = optimizedImageData
             item.imageURL = selectedImageURL
@@ -606,7 +653,7 @@ public final class ClothingEditViewController: UIViewController {
                 name: name,
                 category: selectedCategory,
                 color: selectedColorName,
-                season: selectedSeason,
+                season: seasonToSave,
                 note: noteValue,
                 imageData: optimizedImageData,
                 imageURL: selectedImageURL
@@ -615,20 +662,28 @@ public final class ClothingEditViewController: UIViewController {
         }
 
         try? context.save()
-        dismiss(animated: true)
+        closeScreen()
     }
 
     @objc private func deleteTapped() {
         guard let item = editingItem else { return }
         context.delete(item)
         try? context.save()
-        dismiss(animated: true)
+        closeScreen()
     }
 
     private func showAlert(_ message: String) {
         let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+    }
+
+    private func closeScreen() {
+        if presentingViewController != nil || navigationController?.presentingViewController != nil {
+            dismiss(animated: true)
+        } else {
+            navigationController?.popViewController(animated: true)
+        }
     }
 }
 

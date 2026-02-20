@@ -49,7 +49,7 @@ final class DataManagementViewController: UIViewController {
             make.height.equalTo(56)
         }
         headerView.onLeadingTap = { [weak self] in
-            self?.navigationController?.popViewController(animated: true)
+            self?.morePopOrDismiss()
         }
 
         scrollView.showsVerticalScrollIndicator = false
@@ -115,13 +115,19 @@ final class DataManagementViewController: UIViewController {
                 title: "Export Data",
                 icon: "upload",
                 iconTint: MorePalette.pink,
-                iconBackground: MorePalette.pink.withAlphaComponent(0.14)
+                iconBackground: MorePalette.pink.withAlphaComponent(0.14),
+                action: { [weak self] in
+                    self?.pushDataAction(title: "Export Data")
+                }
             ),
             makeRow(
                 title: "Import Data",
                 icon: "download",
                 iconTint: MorePalette.pink,
-                iconBackground: MorePalette.pink.withAlphaComponent(0.14)
+                iconBackground: MorePalette.pink.withAlphaComponent(0.14),
+                action: { [weak self] in
+                    self?.pushDataAction(title: "Import Data")
+                }
             ),
         ])
         contentStack.addArrangedSubview(actionsSection)
@@ -137,14 +143,20 @@ final class DataManagementViewController: UIViewController {
                 icon: "phonelink_erase",
                 iconTint: UIColor(hex: 0xF45D5D),
                 iconBackground: UIColor(hex: 0xF45D5D).withAlphaComponent(0.14),
-                titleColor: UIColor(hex: 0xF45D5D)
+                titleColor: UIColor(hex: 0xF45D5D),
+                action: { [weak self] in
+                    self?.pushDataAction(title: "Reset Local Data")
+                }
             ),
             makeRow(
                 title: "Reset iCloud Data",
                 icon: "cloud_off",
                 iconTint: UIColor(hex: 0xF45D5D),
                 iconBackground: UIColor(hex: 0xF45D5D).withAlphaComponent(0.14),
-                titleColor: UIColor(hex: 0xF45D5D)
+                titleColor: UIColor(hex: 0xF45D5D),
+                action: { [weak self] in
+                    self?.pushDataAction(title: "Reset iCloud Data")
+                }
             ),
         ])
         contentStack.addArrangedSubview(dangerSection)
@@ -155,7 +167,8 @@ final class DataManagementViewController: UIViewController {
         icon: String,
         iconTint: UIColor,
         iconBackground: UIColor,
-        titleColor: UIColor = TFColor.Text.primary
+        titleColor: UIColor = TFColor.Text.primary,
+        action: (() -> Void)? = nil
     ) -> MoreSettingsRowControl {
         let row = MoreSettingsRowControl(
             model: .init(
@@ -170,19 +183,65 @@ final class DataManagementViewController: UIViewController {
                 titleColor: titleColor
             )
         )
-        row.addAction(UIAction { [weak self] _ in
-            self?.showNotConnectedAlert(title: title)
-        }, for: .touchUpInside)
+        if let action {
+            row.addAction(UIAction { _ in action() }, for: .touchUpInside)
+        } else {
+            row.isEnabled = false
+        }
         return row
     }
 
-    private func showNotConnectedAlert(title: String) {
-        let alert = UIAlertController(
+    private func pushDataAction(title: String) {
+        let isDanger = title.contains("Reset")
+        let tint = isDanger ? UIColor(hex: 0xF45D5D) : MorePalette.pink
+        let screen = MoreInfoViewController(
             title: title,
-            message: "Action wiring can be connected to real logic in the next step.",
-            preferredStyle: .alert
+            leadingTint: MorePalette.pink,
+            hero: .init(
+                icon: isDanger ? "warning" : "sync",
+                iconTint: tint,
+                iconBackground: tint.withAlphaComponent(0.14),
+                title: title,
+                subtitle: isDanger
+                    ? "This flow is protected and requires one more confirmation before execution."
+                    : "This flow prepares a local archive and verifies compatibility before continuing."
+            ),
+            sections: [
+                .init(
+                    title: "Checklist",
+                    footer: "No data change is executed until final confirmation.",
+                    rows: [
+                        .init(
+                            title: "iCloud Connectivity",
+                            subtitle: nil,
+                            value: "Checked",
+                            icon: "cloud_done",
+                            iconTint: MorePalette.blue,
+                            iconBackground: MorePalette.blue.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "Local Backup Snapshot",
+                            subtitle: nil,
+                            value: isDanger ? "Required" : "Ready",
+                            icon: "backup",
+                            iconTint: MorePalette.teal,
+                            iconBackground: MorePalette.teal.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "Estimated Duration",
+                            subtitle: nil,
+                            value: "< 1 min",
+                            icon: "schedule",
+                            iconTint: MorePalette.orange,
+                            iconBackground: MorePalette.orange.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                    ]
+                )
+            ]
         )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        navigationController?.pushViewController(screen, animated: true)
     }
 }

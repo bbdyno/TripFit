@@ -133,7 +133,7 @@ public final class MoreSettingsHomeViewController: UIViewController {
                 iconTint: MorePalette.red,
                 iconBackground: MorePalette.red.withAlphaComponent(0.16),
                 action: { [weak self] in
-                    self?.showPlaceholderAlert(title: "Notifications")
+                    self?.pushNotifications()
                 }
             ),
         ])
@@ -147,7 +147,7 @@ public final class MoreSettingsHomeViewController: UIViewController {
                 iconTint: MorePalette.teal,
                 iconBackground: MorePalette.teal.withAlphaComponent(0.16),
                 action: { [weak self] in
-                    self?.showPlaceholderAlert(title: "User Guide")
+                    self?.pushUserGuide()
                 }
             ),
             makeRow(
@@ -156,7 +156,7 @@ public final class MoreSettingsHomeViewController: UIViewController {
                 iconTint: MorePalette.blue,
                 iconBackground: MorePalette.blue.withAlphaComponent(0.16),
                 action: { [weak self] in
-                    self?.showPlaceholderAlert(title: "Contact Support")
+                    self?.pushContactSupport()
                 }
             ),
             makeRow(
@@ -165,7 +165,7 @@ public final class MoreSettingsHomeViewController: UIViewController {
                 iconTint: MorePalette.yellow,
                 iconBackground: MorePalette.yellow.withAlphaComponent(0.16),
                 action: { [weak self] in
-                    self?.showPlaceholderAlert(title: "Rate TripFit")
+                    self?.pushRateTripFit()
                 }
             ),
             makeRow(
@@ -342,13 +342,194 @@ public final class MoreSettingsHomeViewController: UIViewController {
         navigationController?.pushViewController(AboutTripFitViewController(), animated: true)
     }
 
-    private func showPlaceholderAlert(title: String) {
-        let alert = UIAlertController(
-            title: title,
-            message: "This screen will be connected in the next step.",
-            preferredStyle: .alert
+    private func pushNotifications() {
+        let screen = MoreInfoViewController(
+            title: "Notifications",
+            leadingTint: MorePalette.red,
+            hero: .init(
+                icon: "notifications_active",
+                iconTint: MorePalette.red,
+                iconBackground: MorePalette.red.withAlphaComponent(0.16),
+                title: "Manage Alerts",
+                subtitle: "Choose which reminders and updates you want to receive."
+            ),
+            sections: [
+                .init(
+                    title: "Channels",
+                    footer: "Quiet hours can be configured in your system settings.",
+                    rows: [
+                        .init(
+                            title: "Trip Reminder",
+                            subtitle: "24h before departure",
+                            value: "On",
+                            icon: "flight_takeoff",
+                            iconTint: MorePalette.blue,
+                            iconBackground: MorePalette.blue.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "Packing Checklist",
+                            subtitle: "Missing essentials",
+                            value: "On",
+                            icon: "inventory_2",
+                            iconTint: MorePalette.teal,
+                            iconBackground: MorePalette.teal.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "Product Updates",
+                            subtitle: nil,
+                            value: "Off",
+                            icon: "new_releases",
+                            iconTint: MorePalette.orange,
+                            iconBackground: MorePalette.orange.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                    ]
+                )
+            ]
         )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        navigationController?.pushViewController(screen, animated: true)
+    }
+
+    private func pushUserGuide() {
+        let screen = MoreInfoViewController(
+            title: "User Guide",
+            leadingTint: MorePalette.teal,
+            hero: .init(
+                icon: "menu_book",
+                iconTint: MorePalette.teal,
+                iconBackground: MorePalette.teal.withAlphaComponent(0.16),
+                title: "Getting Started",
+                subtitle: "Follow these guides to set up wardrobe, outfits, and trips quickly."
+            ),
+            sections: [
+                .init(
+                    title: "Topics",
+                    footer: "Guide contents are bundled in-app for offline access.",
+                    rows: [
+                        .init(
+                            title: "Add Wardrobe Items",
+                            subtitle: "Photo, category, season",
+                            value: nil,
+                            icon: "checkroom",
+                            iconTint: MorePalette.pink,
+                            iconBackground: MorePalette.pink.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "Create Outfits",
+                            subtitle: "Mix items and save combinations",
+                            value: nil,
+                            icon: "styler",
+                            iconTint: MorePalette.purple,
+                            iconBackground: MorePalette.purple.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "Plan a Trip",
+                            subtitle: "Dates, destination, checklist",
+                            value: nil,
+                            icon: "flight_takeoff",
+                            iconTint: MorePalette.blue,
+                            iconBackground: MorePalette.blue.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                    ]
+                )
+            ]
+        )
+        navigationController?.pushViewController(screen, animated: true)
+    }
+
+    private func pushContactSupport() {
+        let screen = MoreInfoViewController(
+            title: "Contact Support",
+            leadingTint: MorePalette.blue,
+            hero: .init(
+                icon: "support_agent",
+                iconTint: MorePalette.blue,
+                iconBackground: MorePalette.blue.withAlphaComponent(0.16),
+                title: "Need Help?",
+                subtitle: "Reach us through your preferred channel. Average response time is under 24 hours."
+            ),
+            sections: [
+                .init(
+                    title: "Support Channels",
+                    footer: "Include app version and device model when reporting issues.",
+                    rows: [
+                        .init(
+                            title: "Email",
+                            subtitle: "support@tripfit.app",
+                            value: nil,
+                            icon: "mail",
+                            iconTint: MorePalette.blue,
+                            iconBackground: MorePalette.blue.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "FAQ",
+                            subtitle: "Common troubleshooting tips",
+                            value: nil,
+                            icon: "help",
+                            iconTint: MorePalette.teal,
+                            iconBackground: MorePalette.teal.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "Bug Report",
+                            subtitle: "Attach screenshots and logs",
+                            value: nil,
+                            icon: "bug_report",
+                            iconTint: MorePalette.red,
+                            iconBackground: MorePalette.red.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                    ]
+                )
+            ]
+        )
+        navigationController?.pushViewController(screen, animated: true)
+    }
+
+    private func pushRateTripFit() {
+        let screen = MoreInfoViewController(
+            title: "Rate TripFit",
+            leadingTint: MorePalette.yellow,
+            hero: .init(
+                icon: "star",
+                iconTint: MorePalette.yellow,
+                iconBackground: MorePalette.yellow.withAlphaComponent(0.16),
+                title: "Share Your Feedback",
+                subtitle: "Ratings help us prioritize updates and improve your daily trip planning workflow."
+            ),
+            sections: [
+                .init(
+                    title: "Rating",
+                    footer: "Thanks for helping TripFit grow.",
+                    rows: [
+                        .init(
+                            title: "Current Satisfaction",
+                            subtitle: "Based on recent usage",
+                            value: "★★★★★",
+                            icon: "sentiment_satisfied",
+                            iconTint: MorePalette.yellow,
+                            iconBackground: MorePalette.yellow.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "Write a Review",
+                            subtitle: "App Store review flow",
+                            value: "Available",
+                            icon: "edit_note",
+                            iconTint: MorePalette.blue,
+                            iconBackground: MorePalette.blue.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                    ]
+                )
+            ]
+        )
+        navigationController?.pushViewController(screen, animated: true)
     }
 }

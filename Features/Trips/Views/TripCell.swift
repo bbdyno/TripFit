@@ -31,6 +31,7 @@ final class TripCell: UICollectionViewCell {
     private let titleLabel = UILabel()
     private let durationBadge = InsetLabel(insets: UIEdgeInsets(top: 2, left: 7, bottom: 2, right: 7))
     private let dateLabel = UILabel()
+    private let localTimeLabel = UILabel()
     private let progressRing = TFProgressRingView()
     private let imageGradientLayer = CAGradientLayer()
 
@@ -98,6 +99,10 @@ final class TripCell: UICollectionViewCell {
         dateLabel.font = TFTypography.footnote
         dateLabel.textColor = TFColor.Text.secondary
 
+        localTimeLabel.font = .monospacedDigitSystemFont(ofSize: 11, weight: .medium)
+        localTimeLabel.textColor = TFColor.Brand.accentSky
+        localTimeLabel.numberOfLines = 1
+
         progressRing.backgroundColor = TFColor.Surface.card
         progressRing.layer.cornerRadius = 28
         progressRing.layer.borderWidth = 1
@@ -111,6 +116,7 @@ final class TripCell: UICollectionViewCell {
         card.addSubview(titleLabel)
         card.addSubview(durationBadge)
         card.addSubview(dateLabel)
+        card.addSubview(localTimeLabel)
         card.addSubview(progressRing)
 
         photoContainer.snp.makeConstraints { make in
@@ -142,9 +148,16 @@ final class TripCell: UICollectionViewCell {
         }
 
         dateLabel.snp.makeConstraints { make in
-            make.centerY.equalTo(durationBadge)
             make.leading.equalTo(durationBadge.snp.trailing).offset(8)
+            make.top.equalTo(durationBadge.snp.top)
             make.trailing.lessThanOrEqualTo(progressRing.snp.leading).offset(-12)
+        }
+
+        localTimeLabel.snp.makeConstraints { make in
+            make.leading.equalTo(durationBadge.snp.trailing).offset(8)
+            make.top.equalTo(dateLabel.snp.bottom).offset(2)
+            make.trailing.lessThanOrEqualTo(progressRing.snp.leading).offset(-12)
+            make.bottom.lessThanOrEqualToSuperview().inset(14)
         }
 
         progressRing.snp.makeConstraints { make in
@@ -159,8 +172,26 @@ final class TripCell: UICollectionViewCell {
         dateLabel.text = TFDateFormatter.tripRange(start: trip.startDate, end: trip.endDate)
         durationBadge.text = "\(tripDurationDays(for: trip)) days"
         locationLabel.text = locationText(for: trip)
+        refreshLiveTime(for: trip)
         progressRing.setProgress(current: trip.packedCount, total: max(trip.totalCount, 1))
         loadImage(for: trip)
+    }
+
+    func refreshLiveTime(for trip: Trip) {
+        let now = Date()
+        guard let info = destinationInfo(for: trip) else {
+            localTimeLabel.text = nil
+            return
+        }
+
+        let localTime = TFDestinationCatalog.locationTimeString(
+            for: info.timeZoneIdentifier,
+            at: now,
+            includeSeconds: false
+        ) ?? "--:--"
+        let gmt = TFDestinationCatalog.gmtOffsetString(for: info.timeZoneIdentifier, at: now) ?? "GMT"
+        let delta = TFDestinationCatalog.localDeltaString(for: info.timeZoneIdentifier, at: now) ?? "Local"
+        localTimeLabel.text = "\(localTime) • \(gmt) • \(delta)"
     }
 
     private func tripDurationDays(for trip: Trip) -> Int {
@@ -188,6 +219,13 @@ final class TripCell: UICollectionViewCell {
             if destination.contains("rome") || destination.contains("milan") { return Self.heroByCountryCode["IT"] ?? Self.fallbackHero }
         }
         return Self.fallbackHero
+    }
+
+    private func destinationInfo(for trip: Trip) -> TFDestinationInfo? {
+        if let byCode = TFDestinationCatalog.info(forCountryCode: trip.destinationCountryCode) {
+            return byCode
+        }
+        return TFDestinationCatalog.info(matchingDestinationText: trip.destination)
     }
 
     private func loadImage(for trip: Trip) {

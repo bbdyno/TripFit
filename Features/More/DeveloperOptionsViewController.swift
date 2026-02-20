@@ -62,10 +62,10 @@ final class DeveloperOptionsViewController: UIViewController {
             make.height.equalTo(56)
         }
         headerView.onLeadingTap = { [weak self] in
-            self?.navigationController?.popViewController(animated: true)
+            self?.morePopOrDismiss()
         }
         headerView.onTrailingTap = { [weak self] in
-            self?.navigationController?.popViewController(animated: true)
+            self?.morePopOrDismiss()
         }
 
         scrollView.showsVerticalScrollIndicator = false
@@ -316,7 +316,7 @@ final class DeveloperOptionsViewController: UIViewController {
             )
         )
         row.addAction(UIAction { [weak self] _ in
-            self?.showNotConnectedAlert(title: title)
+            self?.pushDeveloperAction(title: title, tint: tint)
         }, for: .touchUpInside)
         return row
     }
@@ -339,13 +339,55 @@ final class DeveloperOptionsViewController: UIViewController {
         return view
     }
 
-    private func showNotConnectedAlert(title: String) {
-        let alert = UIAlertController(
+    private func pushDeveloperAction(title: String, tint: UIColor) {
+        let screen = MoreInfoViewController(
             title: title,
-            message: "Developer action hook can be connected to real logic in the next step.",
-            preferredStyle: .alert
+            leadingText: "Back",
+            leadingIcon: "arrow_back_ios_new",
+            leadingTint: MorePalette.blue,
+            hero: .init(
+                icon: "terminal",
+                iconTint: tint,
+                iconBackground: tint.withAlphaComponent(0.18),
+                title: title,
+                subtitle: "This action is now mapped to a dedicated diagnostics page."
+            ),
+            sections: [
+                .init(
+                    title: "Execution",
+                    footer: "Local debug operations are isolated from production data.",
+                    rows: [
+                        .init(
+                            title: "Action Type",
+                            subtitle: nil,
+                            value: "Manual",
+                            icon: "build",
+                            iconTint: MorePalette.blue,
+                            iconBackground: MorePalette.blue.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "Scope",
+                            subtitle: nil,
+                            value: "Local Device",
+                            icon: "smartphone",
+                            iconTint: MorePalette.teal,
+                            iconBackground: MorePalette.teal.withAlphaComponent(0.16),
+                            titleColor: TFColor.Text.primary
+                        ),
+                        .init(
+                            title: "Safety",
+                            subtitle: nil,
+                            value: "Protected",
+                            icon: "verified_user",
+                            iconTint: UIColor(hex: 0x27C16E),
+                            iconBackground: UIColor(hex: 0x27C16E).withAlphaComponent(0.14),
+                            titleColor: TFColor.Text.primary
+                        ),
+                    ]
+                )
+            ]
         )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        navigationController?.pushViewController(screen, animated: true)
     }
 }

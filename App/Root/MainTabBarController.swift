@@ -12,6 +12,9 @@ import UIKit
 
 final class MainTabBarController: UITabBarController {
     private let environment: AppEnvironment
+    private let centerAddButton = UIButton(type: .system)
+    private var isCenterAddVisible = true
+    private var tabNavigationControllers: [UINavigationController] = []
 
     init(environment: AppEnvironment) {
         self.environment = environment
@@ -23,6 +26,7 @@ final class MainTabBarController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        delegate = self
 
         let tabAppearance = UITabBarAppearance()
         tabAppearance.configureWithTransparentBackground()
@@ -127,13 +131,140 @@ final class MainTabBarController: UITabBarController {
         )
         moreVC.tabBarItem.tag = 3
 
-        viewControllers = [wardrobeVC, outfitsVC, tripsVC, moreVC]
+        tabNavigationControllers = [wardrobeVC, outfitsVC, tripsVC, moreVC]
+        tabNavigationControllers.forEach { $0.delegate = self }
+        viewControllers = tabNavigationControllers
+        setupCenterAddButton()
+        updateCenterAddVisibility(animated: false)
         updateSelectionIndicator()
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        layoutCenterAddButton()
+        updateCenterAddVisibility(animated: false)
         updateSelectionIndicator()
+    }
+
+    private func setupCenterAddButton() {
+        centerAddButton.backgroundColor = TFColor.Brand.primary
+        centerAddButton.tintColor = .white
+        centerAddButton.layer.borderWidth = 2
+        centerAddButton.layer.borderColor = TFColor.Surface.card.cgColor
+        centerAddButton.layer.shadowColor = TFColor.Brand.primary.cgColor
+        centerAddButton.layer.shadowOpacity = 0.3
+        centerAddButton.layer.shadowRadius = 10
+        centerAddButton.layer.shadowOffset = CGSize(width: 0, height: 5)
+        centerAddButton.adjustsImageWhenHighlighted = true
+        centerAddButton.setImage(
+            TFMaterialIcon.image(named: "add", pointSize: 30, weight: .medium)
+                ?? UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .bold)),
+            for: .normal
+        )
+        centerAddButton.addAction(UIAction { [weak self] _ in
+            self?.didTapCenterAddButton()
+        }, for: .touchUpInside)
+        view.addSubview(centerAddButton)
+    }
+
+    private func layoutCenterAddButton() {
+        let size: CGFloat = 60
+        centerAddButton.frame = CGRect(
+            x: tabBar.frame.midX - (size / 2),
+            y: tabBar.frame.minY - (size / 2) - 6,
+            width: size,
+            height: size
+        )
+        centerAddButton.layer.cornerRadius = size / 2
+        view.bringSubviewToFront(centerAddButton)
+    }
+
+    private func didTapCenterAddButton() {
+        switch selectedIndex {
+        case 0:
+            presentAddWardrobeItem()
+        case 1:
+            presentAddOutfit()
+        case 2:
+            presentAddTrip()
+        default:
+            return
+        }
+    }
+
+    private func presentAddWardrobeItem() {
+        let editVC = ClothingEditViewController(context: environment.context)
+        let nav = UINavigationController(rootViewController: editVC)
+        nav.modalPresentationStyle = .fullScreen
+        presentFromSelectedHost(nav)
+    }
+
+    private func presentAddOutfit() {
+        let editVC = OutfitEditViewController(context: environment.context)
+        let nav = UINavigationController(rootViewController: editVC)
+        nav.modalPresentationStyle = .fullScreen
+        presentFromSelectedHost(nav)
+    }
+
+    private func presentAddTrip() {
+        let editVC = TripEditViewController(context: environment.context)
+        let nav = UINavigationController(rootViewController: editVC)
+        nav.modalPresentationStyle = .fullScreen
+        presentFromSelectedHost(nav)
+    }
+
+    private func presentFromSelectedHost(_ viewController: UIViewController) {
+        let host: UIViewController
+        if let nav = selectedViewController as? UINavigationController {
+            host = nav.visibleViewController ?? nav
+        } else if let selectedViewController {
+            host = selectedViewController
+        } else {
+            host = self
+        }
+        guard host.presentedViewController == nil else { return }
+        host.present(viewController, animated: true)
+    }
+
+    private func updateCenterAddVisibility(animated: Bool) {
+        let shouldShow = shouldShowCenterAddButton()
+
+        guard shouldShow != isCenterAddVisible || centerAddButton.isHidden else { return }
+
+        let applyState = {
+            self.centerAddButton.alpha = shouldShow ? 1 : 0
+            self.centerAddButton.transform = shouldShow ? .identity : CGAffineTransform(scaleX: 0.88, y: 0.88)
+        }
+
+        if shouldShow {
+            centerAddButton.isHidden = false
+        }
+
+        if animated {
+            UIView.animate(
+                withDuration: 0.22,
+                delay: 0,
+                options: [.curveEaseInOut, .beginFromCurrentState]
+            ) {
+                applyState()
+            } completion: { _ in
+                self.centerAddButton.isHidden = !shouldShow
+                self.centerAddButton.isUserInteractionEnabled = shouldShow
+                self.isCenterAddVisible = shouldShow
+            }
+        } else {
+            applyState()
+            centerAddButton.isHidden = !shouldShow
+            centerAddButton.isUserInteractionEnabled = shouldShow
+            isCenterAddVisible = shouldShow
+        }
+    }
+
+    private func shouldShowCenterAddButton() -> Bool {
+        guard selectedIndex >= 0, selectedIndex <= 2, !tabBar.isHidden else { return false }
+        guard let nav = selectedViewController as? UINavigationController else { return false }
+        guard let root = nav.viewControllers.first else { return false }
+        return nav.topViewController === root
     }
 
     private func updateSelectionIndicator() {
@@ -198,5 +329,22 @@ final class MainTabBarController: UITabBarController {
         default:
             return .black
         }
+    }
+}
+
+extension MainTabBarController: UITabBarControllerDelegate {
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+        updateCenterAddVisibility(animated: true)
+    }
+}
+
+extension MainTabBarController: UINavigationControllerDelegate {
+    func navigationController(
+        _ navigationController: UINavigationController,
+        didShow viewController: UIViewController,
+        animated: Bool
+    ) {
+        guard navigationController === selectedViewController else { return }
+        updateCenterAddVisibility(animated: true)
     }
 }

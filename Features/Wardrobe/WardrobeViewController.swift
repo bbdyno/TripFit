@@ -61,10 +61,10 @@ public final class WardrobeViewController: UIViewController {
     }
 
     private func setupHeader() {
-        headerContainer.backgroundColor = TFColor.Surface.canvas.withAlphaComponent(0.96)
+        headerContainer.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.96)
         view.addSubview(headerContainer)
         headerContainer.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.top.equalToSuperview()
             make.leading.trailing.equalToSuperview()
         }
 
@@ -88,12 +88,13 @@ public final class WardrobeViewController: UIViewController {
         titleRow.spacing = TFSpacing.md
         headerContainer.addSubview(titleRow)
         titleRow.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(8)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
         }
         addButton.snp.makeConstraints { make in
             make.size.equalTo(40)
         }
+        addButton.isHidden = true
 
         searchContainer.backgroundColor = TFColor.Surface.card
         searchContainer.layer.cornerRadius = 12

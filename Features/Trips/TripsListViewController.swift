@@ -14,6 +14,7 @@ import UIKit
 public final class TripsListViewController: UIViewController {
     private let context: ModelContext
     private var trips: [Trip] = []
+    private var clockTimer: Timer?
     private let headerContainer = UIView()
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
@@ -49,11 +50,21 @@ public final class TripsListViewController: UIViewController {
         navigationController?.setNavigationBarHidden(false, animated: animated)
     }
 
+    public override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        startClockTimer()
+    }
+
+    public override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        stopClockTimer()
+    }
+
     private func setupHeader() {
-        headerContainer.backgroundColor = TFColor.Surface.canvas.withAlphaComponent(0.96)
+        headerContainer.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.96)
         view.addSubview(headerContainer)
         headerContainer.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.top.equalToSuperview()
             make.leading.trailing.equalToSuperview()
         }
 
@@ -87,13 +98,14 @@ public final class TripsListViewController: UIViewController {
         titleRow.spacing = TFSpacing.md
         headerContainer.addSubview(titleRow)
         titleRow.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(8)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
             make.bottom.equalToSuperview().inset(8)
         }
         addButton.snp.makeConstraints { make in
             make.size.equalTo(44)
         }
+        addButton.isHidden = true
     }
 
     private func setupCollectionView() {
@@ -141,6 +153,7 @@ public final class TripsListViewController: UIViewController {
     @objc private func addTapped() {
         let editVC = TripEditViewController(context: context)
         let nav = UINavigationController(rootViewController: editVC)
+        nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true)
     }
 
@@ -156,6 +169,34 @@ public final class TripsListViewController: UIViewController {
         snapshot.appendItems(trips.map(\.id))
         dataSource.apply(snapshot, animatingDifferences: true)
         emptyView.isHidden = !trips.isEmpty
+        refreshVisibleLocalTimes()
+    }
+
+    private func startClockTimer() {
+        guard clockTimer == nil else { return }
+        let timer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
+            self?.refreshVisibleLocalTimes()
+        }
+        clockTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+        refreshVisibleLocalTimes()
+    }
+
+    private func stopClockTimer() {
+        clockTimer?.invalidate()
+        clockTimer = nil
+    }
+
+    private func refreshVisibleLocalTimes() {
+        guard collectionView != nil else { return }
+        for indexPath in collectionView.indexPathsForVisibleItems {
+            guard
+                let itemID = dataSource.itemIdentifier(for: indexPath),
+                let trip = trips.first(where: { $0.id == itemID }),
+                let cell = collectionView.cellForItem(at: indexPath) as? TripCell
+            else { continue }
+            cell.refreshLiveTime(for: trip)
+        }
     }
 }
 

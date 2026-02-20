@@ -191,6 +191,7 @@ public final class TripDetailViewController: UIViewController {
     private func editTrip() {
         let editVC = TripEditViewController(context: context, editingTrip: trip)
         let nav = UINavigationController(rootViewController: editVC)
+        nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true)
     }
 
@@ -222,6 +223,7 @@ public final class TripDetailViewController: UIViewController {
             self.rebuildHeader()
         }
         let nav = UINavigationController(rootViewController: selectVC)
+        nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true)
     }
 

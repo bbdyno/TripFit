@@ -60,10 +60,10 @@ public final class OutfitsListViewController: UIViewController {
     }
 
     private func setupHeader() {
-        headerContainer.backgroundColor = TFColor.Surface.canvas.withAlphaComponent(0.96)
+        headerContainer.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.96)
         view.addSubview(headerContainer)
         headerContainer.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.top.equalToSuperview()
             make.leading.trailing.equalToSuperview()
         }
 
@@ -89,13 +89,14 @@ public final class OutfitsListViewController: UIViewController {
         titleRow.spacing = TFSpacing.md
         headerContainer.addSubview(titleRow)
         titleRow.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(8)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
             make.bottom.equalToSuperview().inset(6)
         }
         addButton.snp.makeConstraints { make in
             make.size.equalTo(40)
         }
+        addButton.isHidden = true
     }
 
     private func setupFilterBar() {
@@ -201,6 +202,7 @@ public final class OutfitsListViewController: UIViewController {
     @objc private func addTapped() {
         let editVC = OutfitEditViewController(context: context)
         let nav = UINavigationController(rootViewController: editVC)
+        nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true)
     }
 
