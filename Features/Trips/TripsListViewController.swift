@@ -220,7 +220,7 @@ extension TripsListViewController: UICollectionViewDelegate {
             let trip = trips.first(where: { $0.id == itemID })
         else { return nil }
         return UIContextMenuConfiguration(actionProvider: { [weak self] _ in
-            let delete = UIAction(title: "Delete", attributes: .destructive) { _ in
+            let delete = UIAction(title: CoreStrings.Common.delete, attributes: .destructive) { _ in
                 self?.context.delete(trip)
                 try? self?.context.save()
                 self?.fetchTrips()

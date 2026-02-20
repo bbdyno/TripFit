@@ -15,6 +15,7 @@ let project = Project(
         TripFitTarget.framework(
             name: "Core",
             path: "Core",
+            resources: ["Core/Resources/**"],
             dependencies: [
                 .external(name: "SnapKit"),
             ]

@@ -391,13 +391,13 @@ public final class ClothingDetailViewController: UIViewController {
             return
         }
 
-        let sheet = UIAlertController(title: "Add to Packing List", message: nil, preferredStyle: .actionSheet)
+        let sheet = UIAlertController(title: CoreStrings.Wardrobe.addToPackingList, message: nil, preferredStyle: .actionSheet)
         for trip in trips {
             sheet.addAction(UIAlertAction(title: trip.name, style: .default) { [weak self] _ in
                 self?.addItem(to: trip)
             })
         }
-        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        sheet.addAction(UIAlertAction(title: CoreStrings.Common.cancel, style: .cancel))
         present(sheet, animated: true)
     }
 
@@ -469,7 +469,7 @@ private extension ClothingDetailViewController {
 
     func showAlert(_ message: String) {
         let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        alert.addAction(UIAlertAction(title: CoreStrings.Common.ok, style: .default))
         present(alert, animated: true)
     }
 }

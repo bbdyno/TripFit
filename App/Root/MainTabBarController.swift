@@ -55,7 +55,7 @@ final class MainTabBarController: UITabBarController {
             rootViewController: WardrobeViewController(context: environment.context)
         )
         wardrobeVC.tabBarItem = UITabBarItem(
-            title: "Wardrobe",
+            title: CoreStrings.Tab.wardrobe,
             image: makeMaterialTabIcon(
                 ligature: "checkroom",
                 pointSize: 24,
@@ -75,7 +75,7 @@ final class MainTabBarController: UITabBarController {
             rootViewController: OutfitsListViewController(context: environment.context)
         )
         outfitsVC.tabBarItem = UITabBarItem(
-            title: "Outfits",
+            title: CoreStrings.Tab.outfits,
             image: makeMaterialTabIcon(
                 ligature: "styler",
                 pointSize: 24,
@@ -95,7 +95,7 @@ final class MainTabBarController: UITabBarController {
             rootViewController: TripsListViewController(context: environment.context)
         )
         tripsVC.tabBarItem = UITabBarItem(
-            title: "Trips",
+            title: CoreStrings.Tab.trips,
             image: makeMaterialTabIcon(
                 ligature: "flight_takeoff",
                 pointSize: 24,
@@ -115,7 +115,7 @@ final class MainTabBarController: UITabBarController {
             rootViewController: MoreSettingsHomeViewController(context: environment.context)
         )
         moreVC.tabBarItem = UITabBarItem(
-            title: "More",
+            title: CoreStrings.Tab.more,
             image: makeMaterialTabIcon(
                 ligature: "settings",
                 pointSize: 24,

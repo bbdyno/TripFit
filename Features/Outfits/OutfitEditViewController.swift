@@ -620,7 +620,7 @@ public final class OutfitEditViewController: UIViewController {
 
     private func showAlert(_ message: String) {
         let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        alert.addAction(UIAlertAction(title: CoreStrings.Common.ok, style: .default))
         present(alert, animated: true)
     }
 

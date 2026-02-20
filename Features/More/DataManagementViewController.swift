@@ -12,8 +12,8 @@ import UIKit
 final class DataManagementViewController: UIViewController {
     private let headerBackground = UIView()
     private let headerView = MoreDetailHeaderView(
-        title: "Data Management",
-        leadingText: "Settings",
+        title: CoreStrings.More.Data.title,
+        leadingText: CoreStrings.Common.settings,
         leadingIcon: "chevron_left",
         leadingTint: MorePalette.pink
     )
@@ -98,7 +98,7 @@ final class DataManagementViewController: UIViewController {
         heroText.textAlignment = .center
         heroText.font = TFTypography.bodyRegular.withSize(16)
         heroText.textColor = MorePalette.subtitle
-        heroText.text = "Manage your wardrobe data, export your packing lists, or sync across devices."
+        heroText.text = CoreStrings.More.Data.hero
         heroContainer.addSubview(heroText)
         heroText.snp.makeConstraints { make in
             make.top.equalTo(iconCircle.snp.bottom).offset(16)
@@ -107,55 +107,55 @@ final class DataManagementViewController: UIViewController {
         contentStack.addArrangedSubview(heroContainer)
 
         let actionsSection = MoreSectionCardView(
-            title: "Data Actions",
-            footer: "Your data stays on device unless you enable iCloud sync."
+            title: CoreStrings.More.Data.dataActions,
+            footer: CoreStrings.More.Data.dataFooter
         )
         actionsSection.setRows([
             makeRow(
-                title: "Export Data",
+                title: CoreStrings.More.exportData,
                 icon: "upload",
                 iconTint: MorePalette.pink,
                 iconBackground: MorePalette.pink.withAlphaComponent(0.14),
                 action: { [weak self] in
-                    self?.pushDataAction(title: "Export Data")
+                    self?.pushDataAction(title: CoreStrings.More.exportData, isDanger: false)
                 }
             ),
             makeRow(
-                title: "Import Data",
+                title: CoreStrings.More.importData,
                 icon: "download",
                 iconTint: MorePalette.pink,
                 iconBackground: MorePalette.pink.withAlphaComponent(0.14),
                 action: { [weak self] in
-                    self?.pushDataAction(title: "Import Data")
+                    self?.pushDataAction(title: CoreStrings.More.importData, isDanger: false)
                 }
             ),
         ])
         contentStack.addArrangedSubview(actionsSection)
 
         let dangerSection = MoreSectionCardView(
-            title: "Danger Zone",
-            footer: "This action cannot be undone. All your outfits and trips will be permanently deleted."
+            title: CoreStrings.More.Data.dangerZone,
+            footer: CoreStrings.More.Data.dangerFooter
         )
         dangerSection.setTitleColor(UIColor(hex: 0xF45D5D))
         dangerSection.setRows([
             makeRow(
-                title: "Reset Local Data",
+                title: CoreStrings.More.Data.resetLocal,
                 icon: "phonelink_erase",
                 iconTint: UIColor(hex: 0xF45D5D),
                 iconBackground: UIColor(hex: 0xF45D5D).withAlphaComponent(0.14),
                 titleColor: UIColor(hex: 0xF45D5D),
                 action: { [weak self] in
-                    self?.pushDataAction(title: "Reset Local Data")
+                    self?.pushDataAction(title: CoreStrings.More.Data.resetLocal, isDanger: true)
                 }
             ),
             makeRow(
-                title: "Reset iCloud Data",
+                title: CoreStrings.More.Data.resetIcloud,
                 icon: "cloud_off",
                 iconTint: UIColor(hex: 0xF45D5D),
                 iconBackground: UIColor(hex: 0xF45D5D).withAlphaComponent(0.14),
                 titleColor: UIColor(hex: 0xF45D5D),
                 action: { [weak self] in
-                    self?.pushDataAction(title: "Reset iCloud Data")
+                    self?.pushDataAction(title: CoreStrings.More.Data.resetIcloud, isDanger: true)
                 }
             ),
         ])
@@ -191,8 +191,7 @@ final class DataManagementViewController: UIViewController {
         return row
     }
 
-    private func pushDataAction(title: String) {
-        let isDanger = title.contains("Reset")
+    private func pushDataAction(title: String, isDanger: Bool) {
         let tint = isDanger ? UIColor(hex: 0xF45D5D) : MorePalette.pink
         let screen = MoreInfoViewController(
             title: title,
@@ -203,36 +202,36 @@ final class DataManagementViewController: UIViewController {
                 iconBackground: tint.withAlphaComponent(0.14),
                 title: title,
                 subtitle: isDanger
-                    ? "This flow is protected and requires one more confirmation before execution."
-                    : "This flow prepares a local archive and verifies compatibility before continuing."
+                    ? CoreStrings.More.Data.flowDangerSubtitle
+                    : CoreStrings.More.Data.flowSafeSubtitle
             ),
             sections: [
                 .init(
-                    title: "Checklist",
-                    footer: "No data change is executed until final confirmation.",
+                    title: CoreStrings.More.Data.checklist,
+                    footer: CoreStrings.More.Data.checklistFooter,
                     rows: [
                         .init(
-                            title: "iCloud Connectivity",
+                            title: CoreStrings.More.Data.icloudConnectivity,
                             subtitle: nil,
-                            value: "Checked",
+                            value: CoreStrings.More.Data.checked,
                             icon: "cloud_done",
                             iconTint: MorePalette.blue,
                             iconBackground: MorePalette.blue.withAlphaComponent(0.16),
                             titleColor: TFColor.Text.primary
                         ),
                         .init(
-                            title: "Local Backup Snapshot",
+                            title: CoreStrings.More.Data.localBackupSnapshot,
                             subtitle: nil,
-                            value: isDanger ? "Required" : "Ready",
+                            value: isDanger ? CoreStrings.Common.required : CoreStrings.Common.ready,
                             icon: "backup",
                             iconTint: MorePalette.teal,
                             iconBackground: MorePalette.teal.withAlphaComponent(0.16),
                             titleColor: TFColor.Text.primary
                         ),
                         .init(
-                            title: "Estimated Duration",
+                            title: CoreStrings.More.Data.estimatedDuration,
                             subtitle: nil,
-                            value: "< 1 min",
+                            value: CoreStrings.More.Data.durationUnderOneMinute,
                             icon: "schedule",
                             iconTint: MorePalette.orange,
                             iconBackground: MorePalette.orange.withAlphaComponent(0.16),

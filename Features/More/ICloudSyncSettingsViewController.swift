@@ -7,13 +7,15 @@
 
 import Core
 import SnapKit
+import SwiftData
 import UIKit
 
 final class ICloudSyncSettingsViewController: UIViewController {
+    private let context: ModelContext
     private let headerBackground = UIView()
     private let headerView = MoreDetailHeaderView(
-        title: "iCloud Sync",
-        leadingText: "Settings",
+        title: CoreStrings.More.Icloud.title,
+        leadingText: CoreStrings.Common.settings,
         leadingIcon: "chevron_left",
         leadingTint: MorePalette.blue
     )
@@ -21,6 +23,23 @@ final class ICloudSyncSettingsViewController: UIViewController {
     private let contentStack = UIStackView()
     private let syncNowButton = UIButton(type: .system)
     private let syncNowGradient = CAGradientLayer()
+    private let syncStatusValueLabel = UILabel()
+    private let lastSyncValueLabel = UILabel()
+    private let syncNowSpinner = UIActivityIndicatorView(style: .medium)
+    private var isSyncingNow = false
+    private lazy var lastSyncFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter
+    }()
+
+    init(context: ModelContext) {
+        self.context = context
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -109,12 +128,12 @@ final class ICloudSyncSettingsViewController: UIViewController {
         }
 
         let titleLabel = UILabel()
-        titleLabel.text = "Sync with iCloud"
+        titleLabel.text = CoreStrings.More.Icloud.syncWith
         titleLabel.font = TFTypography.headline.withSize(17)
         titleLabel.textColor = TFColor.Text.primary
 
         let subtitleLabel = UILabel()
-        subtitleLabel.text = "Keep your wardrobe & trips backed up."
+        subtitleLabel.text = CoreStrings.More.Icloud.keepBackedUp
         subtitleLabel.font = TFTypography.footnote.withSize(13)
         subtitleLabel.textColor = MorePalette.subtitle
 
@@ -147,7 +166,7 @@ final class ICloudSyncSettingsViewController: UIViewController {
     private func makeSyncStatusCard() -> UIView {
         let card = makeCardContainer()
 
-        let sectionTitle = makeInnerSectionTitle("Sync Status")
+        let sectionTitle = makeInnerSectionTitle(CoreStrings.More.syncStatus)
         card.addSubview(sectionTitle)
         sectionTitle.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
@@ -187,7 +206,7 @@ final class ICloudSyncSettingsViewController: UIViewController {
         emailLabel.textColor = TFColor.Text.primary
 
         let storageLabel = UILabel()
-        storageLabel.text = "iCloud Drive • 15GB Available"
+        storageLabel.text = CoreStrings.More.Icloud.storage
         storageLabel.font = TFTypography.footnote.withSize(13)
         storageLabel.textColor = MorePalette.subtitle
 
@@ -224,10 +243,20 @@ final class ICloudSyncSettingsViewController: UIViewController {
         }
 
         gridStack.addArrangedSubview(
-            makeStatusBox(title: "Status", value: "Up to date", dotColor: UIColor(hex: 0x27C16E))
+            makeStatusBox(
+                title: CoreStrings.More.syncStatus,
+                value: CoreStrings.More.Icloud.upToDate,
+                dotColor: UIColor(hex: 0x27C16E),
+                valueLabel: syncStatusValueLabel
+            )
         )
         gridStack.addArrangedSubview(
-            makeStatusBox(title: "Last Sync", value: "Just now", dotColor: nil)
+            makeStatusBox(
+                title: CoreStrings.More.Icloud.lastSync,
+                value: CoreStrings.More.Icloud.justNow,
+                dotColor: nil,
+                valueLabel: lastSyncValueLabel
+            )
         )
 
         return card
@@ -236,7 +265,7 @@ final class ICloudSyncSettingsViewController: UIViewController {
     private func makeOptionsCard() -> UIView {
         let card = makeCardContainer()
 
-        let sectionTitle = makeInnerSectionTitle("Options")
+        let sectionTitle = makeInnerSectionTitle(CoreStrings.More.Icloud.options)
         card.addSubview(sectionTitle)
         sectionTitle.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
@@ -244,7 +273,7 @@ final class ICloudSyncSettingsViewController: UIViewController {
         }
 
         let firstRow = MoreToggleRowView(
-            title: "Include Wardrobe Photos",
+            title: CoreStrings.More.Icloud.includePhotos,
             iconLigature: nil,
             isOn: true
         )
@@ -265,7 +294,7 @@ final class ICloudSyncSettingsViewController: UIViewController {
         }
 
         let secondRow = MoreToggleRowView(
-            title: "Sync Settings & Preferences",
+            title: CoreStrings.More.Icloud.syncSettings,
             iconLigature: nil,
             isOn: true
         )
@@ -281,7 +310,7 @@ final class ICloudSyncSettingsViewController: UIViewController {
     private func makeSyncNowButton() -> UIView {
         syncNowButton.layer.cornerRadius = 12
         syncNowButton.clipsToBounds = true
-        syncNowButton.setTitle("Sync Now", for: .normal)
+        syncNowButton.setTitle(CoreStrings.More.Icloud.syncNow, for: .normal)
         syncNowButton.setTitleColor(.white, for: .normal)
         syncNowButton.titleLabel?.font = TFTypography.button.withSize(16)
         syncNowButton.layer.insertSublayer(syncNowGradient, at: 0)
@@ -291,6 +320,17 @@ final class ICloudSyncSettingsViewController: UIViewController {
         ]
         syncNowGradient.startPoint = CGPoint(x: 0, y: 0.5)
         syncNowGradient.endPoint = CGPoint(x: 1, y: 0.5)
+        syncNowButton.addAction(UIAction { [weak self] _ in
+            self?.handleSyncNowTapped()
+        }, for: .touchUpInside)
+
+        syncNowSpinner.color = .white
+        syncNowSpinner.hidesWhenStopped = true
+        syncNowButton.addSubview(syncNowSpinner)
+        syncNowSpinner.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.trailing.equalToSuperview().inset(18)
+        }
         syncNowButton.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
@@ -303,16 +343,63 @@ final class ICloudSyncSettingsViewController: UIViewController {
         label.textAlignment = .center
         label.font = TFTypography.footnote.withSize(13)
         label.textColor = MorePalette.subtitle
-        label.text = "TripFit is offline-first. Your data is stored locally and synced to iCloud when a connection is available to keep your devices in harmony. Privacy Policy"
+        label.text = CoreStrings.More.Icloud.offlineFooter
+        label.isUserInteractionEnabled = true
 
         let text = label.text ?? ""
         let attributed = NSMutableAttributedString(string: text)
-        if let range = text.range(of: "Privacy Policy") {
+        if let range = text.range(of: CoreStrings.More.Icloud.privacyPolicy) {
             let nsRange = NSRange(range, in: text)
             attributed.addAttribute(.foregroundColor, value: MorePalette.blue, range: nsRange)
         }
         label.attributedText = attributed
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openPrivacyPolicy))
+        label.addGestureRecognizer(tapGesture)
         return label
+    }
+
+    @objc
+    private func openPrivacyPolicy() {
+        _ = TFLegalDocuments.open(.privacyPolicy)
+    }
+
+    private func handleSyncNowTapped() {
+        guard !isSyncingNow else { return }
+        isSyncingNow = true
+        syncNowButton.isEnabled = false
+        syncNowButton.alpha = 0.82
+        syncNowButton.setTitle(CoreStrings.More.Icloud.syncing, for: .normal)
+        syncNowSpinner.startAnimating()
+        applyStatusValue(CoreStrings.Misc.syncing, on: syncStatusValueLabel, dotColor: MorePalette.blue)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
+            self?.performSyncNow()
+        }
+    }
+
+    private func performSyncNow() {
+        do {
+            try context.save()
+            completeSyncNow(success: true)
+        } catch {
+            completeSyncNow(success: false)
+        }
+    }
+
+    private func completeSyncNow(success: Bool) {
+        isSyncingNow = false
+        syncNowSpinner.stopAnimating()
+        syncNowButton.isEnabled = true
+        syncNowButton.alpha = 1
+        syncNowButton.setTitle(CoreStrings.More.Icloud.syncNow, for: .normal)
+        if success {
+            lastSyncValueLabel.text = lastSyncFormatter.string(from: Date())
+            applyStatusValue(CoreStrings.More.Icloud.upToDate, on: syncStatusValueLabel, dotColor: UIColor(hex: 0x27C16E))
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        } else {
+            applyStatusValue(CoreStrings.More.Icloud.failed, on: syncStatusValueLabel, dotColor: MorePalette.red)
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
     }
 
     private func makeCardContainer() -> UIView {
@@ -341,7 +428,12 @@ final class ICloudSyncSettingsViewController: UIViewController {
         return container
     }
 
-    private func makeStatusBox(title: String, value: String, dotColor: UIColor?) -> UIView {
+    private func makeStatusBox(
+        title: String,
+        value: String,
+        dotColor: UIColor?,
+        valueLabel: UILabel? = nil
+    ) -> UIView {
         let box = UIView()
         box.backgroundColor = MorePalette.pageBackground
         box.layer.cornerRadius = 8
@@ -355,9 +447,20 @@ final class ICloudSyncSettingsViewController: UIViewController {
             make.top.leading.equalToSuperview().inset(10)
         }
 
-        let valueLabel = UILabel()
-        valueLabel.font = TFTypography.headline.withSize(17)
-        valueLabel.textColor = TFColor.Text.primary
+        let resolvedValueLabel = valueLabel ?? UILabel()
+        resolvedValueLabel.font = TFTypography.headline.withSize(17)
+        resolvedValueLabel.textColor = TFColor.Text.primary
+        applyStatusValue(value, on: resolvedValueLabel, dotColor: dotColor)
+        box.addSubview(resolvedValueLabel)
+        resolvedValueLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(10)
+            make.bottom.equalToSuperview().inset(10)
+        }
+
+        return box
+    }
+
+    private func applyStatusValue(_ value: String, on label: UILabel, dotColor: UIColor?) {
         if let dotColor {
             let attributed = NSMutableAttributedString(string: "● \(value)")
             attributed.addAttributes([
@@ -368,16 +471,10 @@ final class ICloudSyncSettingsViewController: UIViewController {
                 .foregroundColor: TFColor.Text.primary,
                 .font: TFTypography.headline.withSize(16),
             ], range: NSRange(location: 1, length: attributed.length - 1))
-            valueLabel.attributedText = attributed
+            label.attributedText = attributed
         } else {
-            valueLabel.text = value
+            label.attributedText = nil
+            label.text = value
         }
-        box.addSubview(valueLabel)
-        valueLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(10)
-            make.bottom.equalToSuperview().inset(10)
-        }
-
-        return box
     }
 }

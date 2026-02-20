@@ -12,7 +12,7 @@ import UIKit
 final class AppearanceSettingsViewController: UIViewController {
     private let headerBackground = UIView()
     private let headerView = MoreDetailHeaderView(
-        title: "Appearance",
+        title: CoreStrings.More.appearance,
         leadingText: nil,
         leadingIcon: "arrow_back_ios_new",
         leadingTint: MorePalette.pink
@@ -70,23 +70,23 @@ final class AppearanceSettingsViewController: UIViewController {
     }
 
     private func setupContent() {
-        contentStack.addArrangedSubview(makeSectionTitle("Preview"))
+        contentStack.addArrangedSubview(makeSectionTitle(CoreStrings.More.Appearance.preview))
         contentStack.addArrangedSubview(makePreviewCard())
 
-        contentStack.addArrangedSubview(makeSectionTitle("Accent Color"))
+        contentStack.addArrangedSubview(makeSectionTitle(CoreStrings.More.Appearance.accentColor))
         contentStack.addArrangedSubview(makeAccentCard())
 
-        contentStack.addArrangedSubview(makeSectionTitle("Theme"))
+        contentStack.addArrangedSubview(makeSectionTitle(CoreStrings.More.Appearance.theme))
         contentStack.addArrangedSubview(makeThemeCard())
 
-        contentStack.addArrangedSubview(makeSectionTitle("Experience"))
+        contentStack.addArrangedSubview(makeSectionTitle(CoreStrings.More.Appearance.experience))
         contentStack.addArrangedSubview(makeExperienceCard())
 
         let footerLabel = UILabel()
         footerLabel.numberOfLines = 0
         footerLabel.font = TFTypography.footnote.withSize(13)
         footerLabel.textColor = MorePalette.subtitle
-        footerLabel.text = "Turn off animations if you prefer a static interface or want to save battery life."
+        footerLabel.text = CoreStrings.More.Appearance.footer
         contentStack.addArrangedSubview(footerLabel)
     }
 
@@ -133,12 +133,12 @@ final class AppearanceSettingsViewController: UIViewController {
         }
 
         let titleLabel = UILabel()
-        titleLabel.text = "Theme Preview"
+        titleLabel.text = CoreStrings.More.Appearance.themePreview
         titleLabel.font = TFTypography.subtitle.withSize(17)
         titleLabel.textColor = TFColor.Text.primary
 
         let subtitleLabel = UILabel()
-        subtitleLabel.text = "How your app looks"
+        subtitleLabel.text = CoreStrings.More.Appearance.howLooks
         subtitleLabel.font = TFTypography.bodyRegular.withSize(16)
         subtitleLabel.textColor = UIColor(hex: 0x966A80)
 
@@ -162,7 +162,7 @@ final class AppearanceSettingsViewController: UIViewController {
         }
 
         let saveButton = UIButton(type: .system)
-        saveButton.setTitle("Save Changes", for: .normal)
+        saveButton.setTitle(CoreStrings.More.Appearance.saveChanges, for: .normal)
         saveButton.setTitleColor(.white, for: .normal)
         saveButton.titleLabel?.font = TFTypography.headline.withSize(17)
         saveButton.backgroundColor = MorePalette.pink
@@ -175,7 +175,7 @@ final class AppearanceSettingsViewController: UIViewController {
         buttonsRow.addArrangedSubview(saveButton)
 
         let chipButton = UIButton(type: .system)
-        chipButton.setTitle("✓  Active Chip", for: .normal)
+        chipButton.setTitle(CoreStrings.More.Appearance.activeChip, for: .normal)
         chipButton.setTitleColor(MorePalette.pink, for: .normal)
         chipButton.titleLabel?.font = TFTypography.bodyRegular.withSize(16)
         chipButton.backgroundColor = MorePalette.pink.withAlphaComponent(0.12)
@@ -195,9 +195,9 @@ final class AppearanceSettingsViewController: UIViewController {
         }
 
         let colors: [(String, UIColor, Bool)] = [
-            ("Pink", UIColor(hex: 0xFF5DA2), true),
-            ("Sky", UIColor(hex: 0x58C4FF), false),
-            ("Purple", UIColor(hex: 0xB28DFF), false),
+            (CoreStrings.More.Appearance.pink, UIColor(hex: 0xFF5DA2), true),
+            (CoreStrings.More.Appearance.sky, UIColor(hex: 0x58C4FF), false),
+            (CoreStrings.More.Appearance.purple, UIColor(hex: 0xB28DFF), false),
         ]
 
         let stack = UIStackView()
@@ -244,9 +244,9 @@ final class AppearanceSettingsViewController: UIViewController {
             make.edges.equalToSuperview().inset(4)
         }
 
-        stack.addArrangedSubview(makeThemeItem(icon: "settings_brightness", text: "System", isActive: false))
-        stack.addArrangedSubview(makeThemeItem(icon: "light_mode", text: "Light", isActive: true))
-        stack.addArrangedSubview(makeThemeItem(icon: "dark_mode", text: "Dark", isActive: false))
+        stack.addArrangedSubview(makeThemeItem(icon: "settings_brightness", text: CoreStrings.Common.system, isActive: false))
+        stack.addArrangedSubview(makeThemeItem(icon: "light_mode", text: CoreStrings.More.Appearance.light, isActive: true))
+        stack.addArrangedSubview(makeThemeItem(icon: "dark_mode", text: CoreStrings.More.Appearance.dark, isActive: false))
         return card
     }
 
@@ -254,7 +254,7 @@ final class AppearanceSettingsViewController: UIViewController {
         let card = makeCardContainer()
 
         let firstRow = MoreToggleRowView(
-            title: "Haptic Feedback",
+            title: CoreStrings.More.Appearance.haptic,
             iconLigature: "vibration",
             iconTintColor: MorePalette.pink,
             iconBackgroundColor: MorePalette.pageBackground,
@@ -276,7 +276,7 @@ final class AppearanceSettingsViewController: UIViewController {
         }
 
         let secondRow = MoreToggleRowView(
-            title: "Reduce Motion",
+            title: CoreStrings.More.Appearance.reduceMotion,
             iconLigature: "animation",
             iconTintColor: UIColor(hex: 0x966A80),
             iconBackgroundColor: MorePalette.pageBackground,

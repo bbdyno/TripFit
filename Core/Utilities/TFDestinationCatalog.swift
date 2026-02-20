@@ -21,7 +21,13 @@ public struct TFDestinationInfo: Hashable {
     }
 
     public var displayName: String {
-        "\(cityName), \(countryName)"
+        "\(cityName), \(localizedCountryName)"
+    }
+
+    public var localizedCountryName: String {
+        let localeIdentifier = TFAppLanguage.current() == .korean ? "ko_KR" : "en_US"
+        let locale = Locale(identifier: localeIdentifier)
+        return locale.localizedString(forRegionCode: countryCode) ?? countryName
     }
 }
 
@@ -256,6 +262,7 @@ public enum TFDestinationCatalog {
         return all.first { info in
             query.contains(info.cityName.lowercased())
                 || query.contains(info.countryName.lowercased())
+                || query.contains(info.localizedCountryName.lowercased())
                 || query.contains(info.countryCode.lowercased())
         }
     }
@@ -290,16 +297,16 @@ public enum TFDestinationCatalog {
     ) -> String? {
         guard let timeZoneIdentifier, let targetZone = TimeZone(identifier: timeZoneIdentifier) else { return nil }
         let delta = targetZone.secondsFromGMT(for: date) - localTimeZone.secondsFromGMT(for: date)
-        if delta == 0 { return "Local ±0h" }
+        if delta == 0 { return "\(CoreStrings.Common.local) ±0h" }
 
         let sign = delta >= 0 ? "+" : "-"
         let absSeconds = abs(delta)
         let hours = absSeconds / 3600
         let minutes = (absSeconds % 3600) / 60
         if minutes == 0 {
-            return "Local \(sign)\(hours)h"
+            return "\(CoreStrings.Common.local) \(sign)\(hours)h"
         } else {
-            return String(format: "Local %@%02d:%02d", sign, hours, minutes)
+            return String(format: "\(CoreStrings.Common.local) %@%02d:%02d", sign, hours, minutes)
         }
     }
 }

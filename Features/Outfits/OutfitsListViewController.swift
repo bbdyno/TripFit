@@ -241,7 +241,7 @@ extension OutfitsListViewController: UICollectionViewDelegate {
             let outfit = outfits.first(where: { $0.id == itemID })
         else { return nil }
         return UIContextMenuConfiguration(actionProvider: { [weak self] _ in
-            let delete = UIAction(title: "Delete", attributes: .destructive) { _ in
+            let delete = UIAction(title: CoreStrings.Common.delete, attributes: .destructive) { _ in
                 self?.context.delete(outfit)
                 try? self?.context.save()
                 self?.fetchOutfits()

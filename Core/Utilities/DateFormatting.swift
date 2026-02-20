@@ -86,6 +86,8 @@ public final class TFFavoritesStore {
 }
 
 public enum TFAppInfo {
+    public static let appStoreID = TFAppStore.appID
+
     public static var marketingVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
     }
@@ -95,10 +97,10 @@ public enum TFAppInfo {
     }
 
     public static var shortVersionDescription: String {
-        "v\(marketingVersion) (Build \(buildNumber))"
+        CoreStrings.Format.versionBuild("v\(marketingVersion)", buildNumber)
     }
 
     public static var aboutVersionDescription: String {
-        "Version \(marketingVersion) (Build \(buildNumber))"
+        CoreStrings.Format.versionBuild(marketingVersion, buildNumber)
     }
 }

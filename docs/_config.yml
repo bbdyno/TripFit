@@ -1,0 +1,6 @@
+title: TripFit Docs
+description: TripFit legal documents
+url: "https://bbdyno.github.io"
+baseurl: "/TripFit"
+permalink: pretty
+markdown: kramdown

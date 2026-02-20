@@ -15,19 +15,19 @@ public final class CountryPickerViewController: UIViewController {
     private let searchController = UISearchController(searchResultsController: nil)
     private let tableView = UITableView(frame: .zero, style: .plain)
     private var destinationOptions: [TFDestinationInfo] = TFDestinationCatalog.all.sorted {
-        if $0.countryName == $1.countryName {
+        if $0.localizedCountryName == $1.localizedCountryName {
             return $0.cityName < $1.cityName
         }
-        return $0.countryName < $1.countryName
+        return $0.localizedCountryName < $1.localizedCountryName
     }
     private var filtered: [TFDestinationInfo] = []
-    private let allCountryFilterTitle = "All Countries"
+    private let allCountryFilterTitle = CoreStrings.Trips.allCountries
     private var selectedCountryCode: String?
     private var clockTimer: Timer?
     private lazy var countries: [(code: String, name: String)] = {
         Dictionary(grouping: destinationOptions, by: \.countryCode)
             .compactMap { key, value in
-                guard let name = value.first?.countryName else { return nil }
+                guard let name = value.first?.localizedCountryName else { return nil }
                 return (code: key, name: name)
             }
             .sorted { $0.name < $1.name }
@@ -44,7 +44,7 @@ public final class CountryPickerViewController: UIViewController {
             primaryAction: UIAction { [weak self] _ in self?.dismiss(animated: true) }
         )
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "Country",
+            title: CoreStrings.Trips.country,
             image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
             menu: makeCountryFilterMenu()
         )
@@ -55,7 +55,7 @@ public final class CountryPickerViewController: UIViewController {
         searchField.backgroundColor = TFColor.Surface.input
         searchField.font = TFTypography.bodyRegular
         searchField.attributedPlaceholder = NSAttributedString(
-            string: "Search country, city or code",
+            string: CoreStrings.Trips.searchCountryCityCode,
             attributes: [
                 .font: TFTypography.bodyRegular,
                 .foregroundColor: TFColor.Text.tertiary,
@@ -124,6 +124,7 @@ public final class CountryPickerViewController: UIViewController {
             guard !query.isEmpty else { return true }
 
             return destination.countryName.lowercased().contains(query)
+                || destination.localizedCountryName.lowercased().contains(query)
                 || destination.cityName.lowercased().contains(query)
                 || destination.countryCode.lowercased().contains(query)
         }
@@ -156,7 +157,7 @@ public final class CountryPickerViewController: UIViewController {
             }
         }
 
-        return UIMenu(title: "Filter by Country", children: actions)
+        return UIMenu(title: CoreStrings.Trips.filterByCountry, children: actions)
     }
 
     private func updateCountryFilterMenu() {
@@ -168,7 +169,7 @@ public final class CountryPickerViewController: UIViewController {
         let filterName = selectedCountryCode.flatMap { code in
             countries.first(where: { $0.code == code })?.name
         } ?? allCountryFilterTitle
-        searchController.searchBar.prompt = "Country Filter: \(filterName)"
+        searchController.searchBar.prompt = CoreStrings.Format.countryFilterPrompt(filterName)
     }
 }
 
@@ -284,21 +285,21 @@ private final class DestinationOptionCell: UITableViewCell {
     func configure(with destination: TFDestinationInfo, now: Date) {
         self.destination = destination
         cityLabel.text = destination.cityName
-        countryLabel.text = destination.countryName
+        countryLabel.text = destination.localizedCountryName
         updateTime(at: now)
     }
 
     func updateTime(at date: Date) {
         guard let destination else { return }
-        let gmt = TFDestinationCatalog.gmtOffsetString(for: destination.timeZoneIdentifier, at: date) ?? "GMT"
-        let delta = TFDestinationCatalog.localDeltaString(for: destination.timeZoneIdentifier, at: date) ?? "Local"
+        let gmt = TFDestinationCatalog.gmtOffsetString(for: destination.timeZoneIdentifier, at: date) ?? CoreStrings.Common.gmt
+        let delta = TFDestinationCatalog.localDeltaString(for: destination.timeZoneIdentifier, at: date) ?? CoreStrings.Common.local
         let localTime = TFDestinationCatalog.locationTimeString(
             for: destination.timeZoneIdentifier,
             at: date,
             includeSeconds: false
         ) ?? "--:--"
 
-        metaLabel.text = "\(destination.countryCode) • \(gmt) • \(delta)"
+        metaLabel.text = CoreStrings.Format.countryCodeGmtDelta(destination.countryCode, gmt, delta)
         timeLabel.text = localTime
     }
 }

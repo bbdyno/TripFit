@@ -119,7 +119,7 @@ final class MoreInfoViewController: UIViewController {
 
     init(
         title: String,
-        leadingText: String? = "Settings",
+        leadingText: String? = CoreStrings.Common.settings,
         leadingIcon: String = "chevron_left",
         leadingTint: UIColor,
         hero: Hero?,

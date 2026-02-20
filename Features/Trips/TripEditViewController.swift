@@ -504,14 +504,14 @@ public final class TripEditViewController: UIViewController {
     }
 
     @objc private func destinationTapped() {
-        let actionSheet = UIAlertController(title: "Destination", message: nil, preferredStyle: .actionSheet)
-        actionSheet.addAction(UIAlertAction(title: "Choose Country & City", style: .default) { [weak self] _ in
+        let actionSheet = UIAlertController(title: CoreStrings.Trips.destination, message: nil, preferredStyle: .actionSheet)
+        actionSheet.addAction(UIAlertAction(title: CoreStrings.Trips.chooseCountryCity, style: .default) { [weak self] _ in
             self?.openCountryPicker()
         })
-        actionSheet.addAction(UIAlertAction(title: "Enter Manually", style: .default) { [weak self] _ in
+        actionSheet.addAction(UIAlertAction(title: CoreStrings.Trips.enterManually, style: .default) { [weak self] _ in
             self?.presentManualDestinationInput()
         })
-        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        actionSheet.addAction(UIAlertAction(title: CoreStrings.Common.cancel, style: .cancel))
         if let popover = actionSheet.popoverPresentationController {
             popover.sourceView = view
             popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1)
@@ -532,13 +532,13 @@ public final class TripEditViewController: UIViewController {
     }
 
     private func presentManualDestinationInput() {
-        let alert = UIAlertController(title: "Enter Destination", message: nil, preferredStyle: .alert)
+        let alert = UIAlertController(title: CoreStrings.Trips.enterDestination, message: nil, preferredStyle: .alert)
         alert.addTextField { [weak self] textField in
-            textField.placeholder = "e.g., Tokyo, Japan"
+            textField.placeholder = CoreStrings.Trips.destinationPlaceholder
             textField.text = self?.selectedDestinationName
         }
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: CoreStrings.Common.cancel, style: .cancel))
+        alert.addAction(UIAlertAction(title: CoreStrings.Common.save, style: .default) { [weak self] _ in
             let destination = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
             self?.selectedDestinationName = destination
             self?.selectedCountryCode = TFDestinationCatalog.info(matchingDestinationText: destination)?.countryCode
@@ -608,7 +608,7 @@ public final class TripEditViewController: UIViewController {
 
     private func showAlert(_ message: String) {
         let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        alert.addAction(UIAlertAction(title: CoreStrings.Common.ok, style: .default))
         present(alert, animated: true)
     }
 

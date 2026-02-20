@@ -44,6 +44,7 @@ public enum TripFitTarget {
             ]),
             sources: sources,
             resources: resources,
+            entitlements: .file(path: "App/TripFit.entitlements"),
             scripts: [
                 .pre(
                     path: .relativeToRoot("Scripts/swiftlint.sh"),
@@ -64,6 +65,7 @@ public enum TripFitTarget {
     public static func framework(
         name: String,
         path: String,
+        resources: ResourceFileElements = [],
         dependencies: [TargetDependency]
     ) -> Target {
         .target(
@@ -72,7 +74,8 @@ public enum TripFitTarget {
             product: .framework,
             bundleId: "\(TripFitBuild.bundleId).\(name)",
             deploymentTargets: TripFitBuild.deployment,
-            sources: ["\(path)/**"],
+            sources: [.glob("\(path)/**", excluding: ["\(path)/Resources/**"])],
+            resources: resources,
             dependencies: dependencies
         )
     }

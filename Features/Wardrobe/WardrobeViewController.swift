@@ -68,7 +68,7 @@ public final class WardrobeViewController: UIViewController {
             make.leading.trailing.equalToSuperview()
         }
 
-        titleLabel.text = "Wardrobe"
+        titleLabel.text = CoreStrings.Wardrobe.title
         titleLabel.font = TFTypography.largeTitle
         titleLabel.textColor = TFColor.Text.primary
 
@@ -117,7 +117,7 @@ public final class WardrobeViewController: UIViewController {
             make.size.equalTo(18)
         }
 
-        searchField.placeholder = "Search your closet"
+        searchField.placeholder = CoreStrings.Wardrobe.searchPlaceholder
         searchField.textColor = TFColor.Text.primary
         searchField.tintColor = TFColor.Brand.primary
         searchField.clearButtonMode = .whileEditing
@@ -151,14 +151,14 @@ public final class WardrobeViewController: UIViewController {
             make.height.equalToSuperview().offset(-16)
         }
 
-        let allChip = TFChip(title: "All")
+        let allChip = TFChip(title: CoreStrings.Wardrobe.filterAll)
         allChip.setStyle(.neutralFilter)
         allChip.isChipSelected = true
         allChip.addTarget(self, action: #selector(chipTapped(_:)), for: .touchUpInside)
         chipStack.addArrangedSubview(allChip)
 
         for category in ClothingCategory.allCases {
-            let chip = TFChip(title: category.displayName)
+            let chip = TFChip(title: localizedCategoryName(category))
             chip.setStyle(.neutralFilter)
             chip.addTarget(self, action: #selector(chipTapped(_:)), for: .touchUpInside)
             chipStack.addArrangedSubview(chip)
@@ -171,10 +171,13 @@ public final class WardrobeViewController: UIViewController {
         }
 
         let title = sender.titleLabel?.text
-        if title == "All" {
+        let allTitle = CoreStrings.Wardrobe.filterAll
+        if title == allTitle {
             viewModel.selectedCategory = nil
         } else {
-            viewModel.selectedCategory = ClothingCategory.allCases.first { $0.displayName == title }
+            viewModel.selectedCategory = ClothingCategory.allCases.first {
+                localizedCategoryName($0) == title
+            }
         }
         viewModel.fetchItems()
     }
@@ -213,9 +216,9 @@ public final class WardrobeViewController: UIViewController {
     private func setupEmptyView() {
         emptyView = TFEmptyStateView(
             icon: "tshirt",
-            title: "No Clothes Yet",
-            subtitle: "Add your first clothing item\nto get started",
-            buttonTitle: "Add Item"
+            title: CoreStrings.Wardrobe.emptyTitle,
+            subtitle: CoreStrings.Wardrobe.emptySubtitle,
+            buttonTitle: CoreStrings.Wardrobe.emptyAction
         )
         emptyView.isHidden = true
         view.addSubview(emptyView)
@@ -224,6 +227,21 @@ public final class WardrobeViewController: UIViewController {
             make.leading.trailing.bottom.equalToSuperview()
         }
         emptyView.actionButton.addTarget(self, action: #selector(addTapped), for: .touchUpInside)
+    }
+
+    private func localizedCategoryName(_ category: ClothingCategory) -> String {
+        switch category {
+        case .tops:
+            CoreStrings.Category.tops
+        case .bottoms:
+            CoreStrings.Category.bottoms
+        case .outerwear:
+            CoreStrings.Category.outerwear
+        case .shoes:
+            CoreStrings.Category.shoes
+        case .accessories:
+            CoreStrings.Category.accessories
+        }
     }
 
     @objc private func addTapped() {
@@ -274,14 +292,14 @@ extension WardrobeViewController: UICollectionViewDelegate {
             let item = viewModel.items.first(where: { $0.id == itemID })
         else { return nil }
         return UIContextMenuConfiguration(actionProvider: { [weak self] _ in
-            let edit = UIAction(title: "Edit", image: UIImage(systemName: "pencil")) { _ in
+            let edit = UIAction(title: CoreStrings.Common.edit, image: UIImage(systemName: "pencil")) { _ in
                 guard let self else { return }
                 let editVC = ClothingEditViewController(context: self.context, editingItem: item)
                 let nav = UINavigationController(rootViewController: editVC)
                 nav.modalPresentationStyle = .fullScreen
                 self.present(nav, animated: true)
             }
-            let delete = UIAction(title: "Delete", attributes: .destructive) { _ in
+            let delete = UIAction(title: CoreStrings.Common.delete, attributes: .destructive) { _ in
                 self?.viewModel.deleteItem(item)
             }
             return UIMenu(children: [edit, delete])

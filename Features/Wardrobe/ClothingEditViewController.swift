@@ -499,7 +499,10 @@ public final class ClothingEditViewController: UIViewController {
 
     private func makeCategoryMenu() -> UIMenu {
         let actions = ClothingCategory.allCases.map { category in
-            UIAction(title: category.displayName, state: category == selectedCategory ? .on : .off) { [weak self] _ in
+            UIAction(
+                title: localizedCategoryName(category),
+                state: category == selectedCategory ? .on : .off
+            ) { [weak self] _ in
                 guard let self else { return }
                 self.selectedCategory = category
                 self.refreshCategoryButtonTitle()
@@ -510,16 +513,39 @@ public final class ClothingEditViewController: UIViewController {
     }
 
     private func refreshCategoryButtonTitle() {
-        categoryButton.setTitle(selectedCategory?.displayName ?? "Select Category", for: .normal)
+        categoryButton.setTitle(
+            selectedCategory.map(localizedCategoryName(_:)) ?? CoreStrings.Wardrobe.selectCategory,
+            for: .normal
+        )
+    }
+
+    private func localizedCategoryName(_ category: ClothingCategory) -> String {
+        switch category {
+        case .tops:
+            CoreStrings.Category.tops
+        case .bottoms:
+            CoreStrings.Category.bottoms
+        case .outerwear:
+            CoreStrings.Category.outerwear
+        case .shoes:
+            CoreStrings.Category.shoes
+        case .accessories:
+            CoreStrings.Category.accessories
+        }
     }
 
     private func shortSeasonLabel(for season: Season) -> String {
         switch season {
-        case .spring: "Spr"
-        case .summer: "Sum"
-        case .fall: "Aut"
-        case .winter: "Win"
-        case .all: "All"
+        case .spring:
+            CoreStrings.Season.Short.spr
+        case .summer:
+            CoreStrings.Season.Short.sum
+        case .fall:
+            CoreStrings.Season.Short.aut
+        case .winter:
+            CoreStrings.Season.Short.win
+        case .all:
+            CoreStrings.Wardrobe.filterAll
         }
     }
 
@@ -674,7 +700,7 @@ public final class ClothingEditViewController: UIViewController {
 
     private func showAlert(_ message: String) {
         let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        alert.addAction(UIAlertAction(title: CoreStrings.Common.ok, style: .default))
         present(alert, animated: true)
     }
 

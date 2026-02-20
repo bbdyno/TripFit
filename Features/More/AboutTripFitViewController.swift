@@ -10,6 +10,13 @@ import SnapKit
 import UIKit
 
 final class AboutTripFitViewController: UIViewController {
+    private enum AboutLink {
+        case rateAppStore
+        case privacyPolicy
+        case openSource
+        case terms
+    }
+
     private let backButton = UIButton(type: .system)
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -97,7 +104,7 @@ final class AboutTripFitViewController: UIViewController {
         topStack.addArrangedSubview(titleLabel)
 
         let subtitleLabel = UILabel()
-        subtitleLabel.text = "WARDROBE & TRAVEL COMPANION"
+        subtitleLabel.text = CoreStrings.More.About.tagline
         subtitleLabel.font = TFTypography.caption.withSize(11)
         subtitleLabel.textColor = MorePalette.pink
         topStack.addArrangedSubview(subtitleLabel)
@@ -129,32 +136,32 @@ final class AboutTripFitViewController: UIViewController {
 
         let rows = [
             makeRow(
-                title: "Rate on App Store",
+                title: CoreStrings.More.About.rateAppStore,
                 icon: "star",
                 tint: UIColor(hex: 0xF39A35),
                 bg: UIColor(hex: 0xF39A35).withAlphaComponent(0.15),
-                action: { [weak self] in self?.pushLinkDetail(title: "Rate on App Store") }
+                action: { [weak self] in self?.pushLinkDetail(.rateAppStore) }
             ),
             makeRow(
-                title: "Privacy Policy",
+                title: CoreStrings.More.About.privacyPolicy,
                 icon: "shield",
                 tint: UIColor(hex: 0x4B8DF2),
                 bg: UIColor(hex: 0x4B8DF2).withAlphaComponent(0.15),
-                action: { [weak self] in self?.pushLinkDetail(title: "Privacy Policy") }
+                action: { [weak self] in self?.pushLinkDetail(.privacyPolicy) }
             ),
             makeRow(
-                title: "Open Source Licenses",
+                title: CoreStrings.More.About.openSource,
                 icon: "code",
                 tint: UIColor(hex: 0x1FBF84),
                 bg: UIColor(hex: 0x1FBF84).withAlphaComponent(0.15),
-                action: { [weak self] in self?.pushLinkDetail(title: "Open Source Licenses") }
+                action: { [weak self] in self?.pushLinkDetail(.openSource) }
             ),
             makeRow(
-                title: "Terms of Service",
+                title: CoreStrings.More.About.terms,
                 icon: "description",
                 tint: UIColor(hex: 0x9E6BFF),
                 bg: UIColor(hex: 0x9E6BFF).withAlphaComponent(0.15),
-                action: { [weak self] in self?.pushLinkDetail(title: "Terms of Service") }
+                action: { [weak self] in self?.pushLinkDetail(.terms) }
             ),
         ]
         layoutRows(rows, in: menuCard)
@@ -165,7 +172,7 @@ final class AboutTripFitViewController: UIViewController {
         footerStack.alignment = .center
 
         let madeWithLabel = UILabel()
-        madeWithLabel.text = "Made with ❤️ by TaeinKim"
+        madeWithLabel.text = CoreStrings.More.About.madeBy
         madeWithLabel.font = TFTypography.bodyRegular.withSize(16)
         madeWithLabel.textColor = MorePalette.subtitle
         footerStack.addArrangedSubview(madeWithLabel)
@@ -233,22 +240,45 @@ final class AboutTripFitViewController: UIViewController {
         }
     }
 
-    private func pushLinkDetail(title: String) {
+    private func pushLinkDetail(_ link: AboutLink) {
+        if link == .rateAppStore {
+            TFAppStore.requestInAppReview()
+            if TFAppStore.openWriteReview() {
+                return
+            }
+            _ = TFAppStore.openAppStorePage()
+            return
+        }
+
+        let title: String
         let icon: String
         let tint: UIColor
-        switch title {
-        case "Rate on App Store":
-            icon = "star"
-            tint = UIColor(hex: 0xF39A35)
-        case "Privacy Policy":
+        switch link {
+        case .privacyPolicy:
+            title = CoreStrings.More.About.privacyPolicy
+            if TFLegalDocuments.open(.privacyPolicy) {
+                return
+            }
             icon = "shield"
             tint = UIColor(hex: 0x4B8DF2)
-        case "Open Source Licenses":
+        case .openSource:
+            title = CoreStrings.More.About.openSource
+            if TFLegalDocuments.open(.openSourceLicenses) {
+                return
+            }
             icon = "code"
             tint = UIColor(hex: 0x1FBF84)
-        default:
+        case .terms:
+            title = CoreStrings.More.About.terms
+            if TFLegalDocuments.open(.termsOfService) {
+                return
+            }
             icon = "description"
             tint = UIColor(hex: 0x9E6BFF)
+        case .rateAppStore:
+            title = CoreStrings.More.About.rateAppStore
+            icon = "info"
+            tint = MorePalette.slate
         }
 
         let screen = MoreInfoViewController(
@@ -259,24 +289,24 @@ final class AboutTripFitViewController: UIViewController {
                 iconTint: tint,
                 iconBackground: tint.withAlphaComponent(0.14),
                 title: title,
-                subtitle: "This section is now available as an in-app detail page."
+                subtitle: CoreStrings.More.About.placeholderSubtitle
             ),
             sections: [
                 .init(
-                    title: "Details",
-                    footer: "Legal and product metadata can be updated from your release pipeline.",
+                    title: CoreStrings.More.About.details,
+                    footer: CoreStrings.More.About.detailsFooter,
                     rows: [
                         .init(
-                            title: "Status",
+                            title: CoreStrings.More.About.status,
                             subtitle: nil,
-                            value: "Ready",
+                            value: CoreStrings.Common.ready,
                             icon: "check_circle",
                             iconTint: UIColor(hex: 0x27C16E),
                             iconBackground: UIColor(hex: 0x27C16E).withAlphaComponent(0.14),
                             titleColor: TFColor.Text.primary
                         ),
                         .init(
-                            title: "Last Updated",
+                            title: CoreStrings.More.About.lastUpdated,
                             subtitle: nil,
                             value: "2026",
                             icon: "history",

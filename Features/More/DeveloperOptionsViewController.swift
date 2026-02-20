@@ -15,11 +15,11 @@ final class DeveloperOptionsViewController: UIViewController {
 
     private let headerBackground = UIView()
     private let headerView = MoreDetailHeaderView(
-        title: "Developer Options",
-        leadingText: "Back",
+        title: CoreStrings.Dev.title,
+        leadingText: CoreStrings.Common.back,
         leadingIcon: "arrow_back_ios_new",
         leadingTint: MorePalette.blue,
-        trailingText: "Done"
+        trailingText: CoreStrings.Common.done
     )
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -91,18 +91,18 @@ final class DeveloperOptionsViewController: UIViewController {
         contentStack.addArrangedSubview(makeBuildInfoSection())
 
         let dataSection = MoreSectionCardView(
-            title: "Data Management",
-            footer: "Adds mock data to the local database for UI testing."
+            title: CoreStrings.Dev.dataManagement,
+            footer: CoreStrings.Dev.dataFooter
         )
         dataSection.setRows([
             makeActionRow(
-                title: "Seed Sample Wardrobe",
+                title: CoreStrings.Dev.seedWardrobe,
                 icon: "checkroom",
                 tint: UIColor(hex: 0x5A8FEF),
                 bg: UIColor(hex: 0x5A8FEF).withAlphaComponent(0.18)
             ),
             makeActionRow(
-                title: "Seed Upcoming Trip",
+                title: CoreStrings.Dev.seedTrip,
                 icon: "flight_takeoff",
                 tint: UIColor(hex: 0x24BD84),
                 bg: UIColor(hex: 0x24BD84).withAlphaComponent(0.18)
@@ -111,7 +111,7 @@ final class DeveloperOptionsViewController: UIViewController {
         contentStack.addArrangedSubview(dataSection)
 
         let syncSection = UIView()
-        syncSection.addSubview(makeSectionTitle("Sync Testing"))
+        syncSection.addSubview(makeSectionTitle(CoreStrings.Dev.syncTesting))
         let syncTitle = syncSection.subviews[0]
         syncTitle.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
@@ -125,7 +125,7 @@ final class DeveloperOptionsViewController: UIViewController {
         }
 
         let syncRow1 = MoreToggleRowView(
-            title: "Simulate Conflict",
+            title: CoreStrings.Dev.simulateConflict,
             iconLigature: "warning",
             iconTintColor: UIColor(hex: 0xEFBB39),
             iconBackgroundColor: UIColor(hex: 0xEFBB39).withAlphaComponent(0.2),
@@ -147,7 +147,7 @@ final class DeveloperOptionsViewController: UIViewController {
         }
 
         let syncRow2 = MoreToggleRowView(
-            title: "Log Sync Events",
+            title: CoreStrings.Dev.logSyncEvents,
             iconLigature: "cloud_sync",
             iconTintColor: UIColor(hex: 0xA774FF),
             iconBackgroundColor: UIColor(hex: 0xA774FF).withAlphaComponent(0.2),
@@ -162,7 +162,7 @@ final class DeveloperOptionsViewController: UIViewController {
         contentStack.addArrangedSubview(syncSection)
 
         let uiSection = UIView()
-        uiSection.addSubview(makeSectionTitle("UI Debugging"))
+        uiSection.addSubview(makeSectionTitle(CoreStrings.Dev.uiDebugging))
         let uiTitle = uiSection.subviews[0]
         uiTitle.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
@@ -176,7 +176,7 @@ final class DeveloperOptionsViewController: UIViewController {
         }
 
         let uiRow1 = MoreToggleRowView(
-            title: "Show Debug Overlay",
+            title: CoreStrings.Dev.showOverlay,
             iconLigature: "layers",
             iconTintColor: UIColor(hex: 0x6D7DFF),
             iconBackgroundColor: UIColor(hex: 0x6D7DFF).withAlphaComponent(0.18),
@@ -198,7 +198,7 @@ final class DeveloperOptionsViewController: UIViewController {
         }
 
         let uiRow2 = MoreToggleRowView(
-            title: "Force Crash Reporting",
+            title: CoreStrings.Dev.forceCrash,
             iconLigature: "bug_report",
             iconTintColor: UIColor(hex: 0xEA5AAE),
             iconBackgroundColor: UIColor(hex: 0xEA5AAE).withAlphaComponent(0.18),
@@ -213,13 +213,13 @@ final class DeveloperOptionsViewController: UIViewController {
         contentStack.addArrangedSubview(uiSection)
 
         let dangerSection = MoreSectionCardView(
-            title: "Danger Zone",
-            footer: "These actions cannot be undone."
+            title: CoreStrings.Dev.dangerZone,
+            footer: CoreStrings.Dev.actionsFooter
         )
         dangerSection.setTitleColor(UIColor(hex: 0xFF5252))
         dangerSection.setRows([
             makeActionRow(
-                title: "Reset User Cache",
+                title: CoreStrings.Dev.resetCache,
                 icon: "dangerous",
                 tint: UIColor(hex: 0xFF5252),
                 bg: UIColor(hex: 0xFF5252).withAlphaComponent(0.18),
@@ -227,7 +227,7 @@ final class DeveloperOptionsViewController: UIViewController {
                 showsChevron: false
             ),
             makeActionRow(
-                title: "Clear All App Data",
+                title: CoreStrings.Dev.clearAllData,
                 icon: "delete",
                 tint: UIColor(hex: 0xFF5252),
                 bg: UIColor(hex: 0xFF5252).withAlphaComponent(0.18),
@@ -241,13 +241,13 @@ final class DeveloperOptionsViewController: UIViewController {
     private func makeBuildInfoSection() -> UIView {
         let container = UIView()
 
-        let title = makeSectionTitle("Build Information")
+        let title = makeSectionTitle(CoreStrings.Dev.buildInfo)
         container.addSubview(title)
         title.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
         }
 
-        let versionRow = makeInfoRow(left: "Version", right: TFAppInfo.shortVersionDescription)
+        let versionRow = makeInfoRow(left: CoreStrings.Dev.version, right: TFAppInfo.shortVersionDescription)
         container.addSubview(versionRow)
         versionRow.snp.makeConstraints { make in
             make.top.equalTo(title.snp.bottom).offset(8)
@@ -255,8 +255,8 @@ final class DeveloperOptionsViewController: UIViewController {
         }
 
         let envRow = makeInfoRow(
-            left: "Environment",
-            right: "Staging",
+            left: CoreStrings.Dev.environment,
+            right: CoreStrings.Dev.staging,
             rightColor: UIColor(hex: 0x1FD070)
         )
         container.addSubview(envRow)
@@ -342,7 +342,7 @@ final class DeveloperOptionsViewController: UIViewController {
     private func pushDeveloperAction(title: String, tint: UIColor) {
         let screen = MoreInfoViewController(
             title: title,
-            leadingText: "Back",
+            leadingText: CoreStrings.Common.back,
             leadingIcon: "arrow_back_ios_new",
             leadingTint: MorePalette.blue,
             hero: .init(
@@ -350,35 +350,35 @@ final class DeveloperOptionsViewController: UIViewController {
                 iconTint: tint,
                 iconBackground: tint.withAlphaComponent(0.18),
                 title: title,
-                subtitle: "This action is now mapped to a dedicated diagnostics page."
+                subtitle: CoreStrings.Dev.actionMapped
             ),
             sections: [
                 .init(
-                    title: "Execution",
-                    footer: "Local debug operations are isolated from production data.",
+                    title: CoreStrings.Dev.execution,
+                    footer: CoreStrings.Dev.executionFooter,
                     rows: [
                         .init(
-                            title: "Action Type",
+                            title: CoreStrings.Dev.actionType,
                             subtitle: nil,
-                            value: "Manual",
+                            value: CoreStrings.Dev.manual,
                             icon: "build",
                             iconTint: MorePalette.blue,
                             iconBackground: MorePalette.blue.withAlphaComponent(0.16),
                             titleColor: TFColor.Text.primary
                         ),
                         .init(
-                            title: "Scope",
+                            title: CoreStrings.Dev.scope,
                             subtitle: nil,
-                            value: "Local Device",
+                            value: CoreStrings.Dev.localDevice,
                             icon: "smartphone",
                             iconTint: MorePalette.teal,
                             iconBackground: MorePalette.teal.withAlphaComponent(0.16),
                             titleColor: TFColor.Text.primary
                         ),
                         .init(
-                            title: "Safety",
+                            title: CoreStrings.Dev.safety,
                             subtitle: nil,
-                            value: "Protected",
+                            value: CoreStrings.Dev.protected,
                             icon: "verified_user",
                             iconTint: UIColor(hex: 0x27C16E),
                             iconBackground: UIColor(hex: 0x27C16E).withAlphaComponent(0.14),

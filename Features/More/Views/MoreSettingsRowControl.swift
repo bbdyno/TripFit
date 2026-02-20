@@ -66,7 +66,7 @@ final class MoreSettingsRowControl: UIControl {
         ) ?? UIImage(systemName: model.iconLigature)
 
         accessibilityLabel = model.title
-        accessibilityHint = model.showsChevron ? "Opens details" : nil
+        accessibilityHint = model.showsChevron ? CoreStrings.Common.opensDetails : nil
         accessibilityTraits = .button
     }
 

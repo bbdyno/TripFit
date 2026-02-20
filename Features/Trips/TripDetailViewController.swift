@@ -184,7 +184,7 @@ public final class TripDetailViewController: UIViewController {
 
         let message = addedCount > 0 ? "Added \(addedCount) items" : "All items already in list"
         let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        alert.addAction(UIAlertAction(title: CoreStrings.Common.ok, style: .default))
         present(alert, animated: true)
     }
 
@@ -196,14 +196,14 @@ public final class TripDetailViewController: UIViewController {
     }
 
     private func addPackingItem() {
-        let alert = UIAlertController(title: "Add Packing Item", message: nil, preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "From Wardrobe", style: .default) { [weak self] _ in
+        let alert = UIAlertController(title: CoreStrings.Trips.addPackingItem, message: nil, preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: CoreStrings.Trips.fromWardrobe, style: .default) { [weak self] _ in
             self?.addFromWardrobe()
         })
-        alert.addAction(UIAlertAction(title: "Custom Item", style: .default) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: CoreStrings.Trips.customItem, style: .default) { [weak self] _ in
             self?.addCustomItem()
         })
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: CoreStrings.Common.cancel, style: .cancel))
         present(alert, animated: true)
     }
 
@@ -228,10 +228,14 @@ public final class TripDetailViewController: UIViewController {
     }
 
     private func addCustomItem() {
-        let alert = UIAlertController(title: "Custom Item", message: "Enter item name", preferredStyle: .alert)
-        alert.addTextField { $0.placeholder = "Item name" }
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Add", style: .default) { [weak self] _ in
+        let alert = UIAlertController(
+            title: CoreStrings.Trips.customItem,
+            message: CoreStrings.Trips.enterItemName,
+            preferredStyle: .alert
+        )
+        alert.addTextField { $0.placeholder = CoreStrings.Trips.itemNamePlaceholder }
+        alert.addAction(UIAlertAction(title: CoreStrings.Common.cancel, style: .cancel))
+        alert.addAction(UIAlertAction(title: CoreStrings.Common.add, style: .default) { [weak self] _ in
             guard let self, let name = alert.textFields?.first?.text, !name.isEmpty else { return }
             let packing = PackingItem(trip: self.trip, customName: name)
             self.context.insert(packing)
@@ -265,7 +269,7 @@ extension TripDetailViewController: UITableViewDataSource, UITableViewDelegate {
         trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
         let item = trip.packingItems[indexPath.row]
-        let delete = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, completion in
+        let delete = UIContextualAction(style: .destructive, title: CoreStrings.Common.delete) { [weak self] _, _, completion in
             self?.context.delete(item)
             try? self?.context.save()
             self?.tableView.reloadData()
