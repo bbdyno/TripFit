@@ -23,6 +23,9 @@ final class DeveloperOptionsViewController: UIViewController {
     )
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
+    private lazy var selfTestRunner = DeveloperSelfTestRunner(context: context)
+    private var selfTestTask: Task<Void, Never>?
+    private weak var selfTestLoadingAlert: UIAlertController?
 
     init(context: ModelContext) {
         self.context = context
@@ -31,6 +34,10 @@ final class DeveloperOptionsViewController: UIViewController {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    deinit {
+        selfTestTask?.cancel()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,6 +96,26 @@ final class DeveloperOptionsViewController: UIViewController {
 
     private func setupContent() {
         contentStack.addArrangedSubview(makeBuildInfoSection())
+
+        let qualitySection = MoreSectionCardView(
+            title: localized("통합 기능 테스트", "Full Feature Testing"),
+            footer: localized(
+                "앱 핵심 기능과 알림 동작을 자동 점검합니다.",
+                "Runs automated checks for core app features, including notifications."
+            )
+        )
+        qualitySection.setRows([
+            makeActionRow(
+                title: localized("전체 기능 점검 실행", "Run Full Feature Check"),
+                icon: "fact_check",
+                tint: UIColor(hex: 0x27C16E),
+                bg: UIColor(hex: 0x27C16E).withAlphaComponent(0.18),
+                action: { [weak self] in
+                    self?.runFullFeatureSelfTest()
+                }
+            ),
+        ])
+        contentStack.addArrangedSubview(qualitySection)
 
         let dataSection = MoreSectionCardView(
             title: CoreStrings.Dev.dataManagement,
@@ -299,7 +326,8 @@ final class DeveloperOptionsViewController: UIViewController {
         tint: UIColor,
         bg: UIColor,
         titleColor: UIColor = TFColor.Text.primary,
-        showsChevron: Bool = true
+        showsChevron: Bool = true,
+        action: (() -> Void)? = nil
     ) -> MoreSettingsRowControl {
         let row = MoreSettingsRowControl(
             model: .init(
@@ -316,7 +344,11 @@ final class DeveloperOptionsViewController: UIViewController {
             )
         )
         row.addAction(UIAction { [weak self] _ in
-            self?.pushDeveloperAction(title: title, tint: tint)
+            if let action {
+                action()
+            } else {
+                self?.pushDeveloperAction(title: title, tint: tint)
+            }
         }, for: .touchUpInside)
         return row
     }
@@ -337,6 +369,177 @@ final class DeveloperOptionsViewController: UIViewController {
         view.layer.borderColor = UIColor(hex: 0x283039).cgColor
         view.clipsToBounds = true
         return view
+    }
+
+    private func runFullFeatureSelfTest() {
+        guard selfTestTask == nil else {
+            let alert = UIAlertController(
+                title: localized("테스트 진행 중", "Test In Progress"),
+                message: localized(
+                    "이미 전체 기능 점검을 실행 중입니다.",
+                    "A full feature check is already running."
+                ),
+                preferredStyle: .alert
+            )
+            alert.overrideUserInterfaceStyle = .dark
+            alert.addAction(UIAlertAction(title: CoreStrings.Common.ok, style: .default))
+            present(alert, animated: true)
+            return
+        }
+
+        let loadingAlert = makeLoadingAlert(
+            title: localized("전체 기능 점검 실행 중", "Running Full Feature Check"),
+            message: localized(
+                "데이터/유틸/알림 검증을 순차 실행하고 있습니다.",
+                "Validating data, utilities, and notification flows."
+            )
+        )
+        selfTestLoadingAlert = loadingAlert
+        present(loadingAlert, animated: true)
+
+        selfTestTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            let report = await self.selfTestRunner.runAllChecks()
+            guard !Task.isCancelled else { return }
+
+            self.selfTestLoadingAlert?.dismiss(animated: true) { [weak self] in
+                self?.presentSelfTestReport(report)
+            }
+            self.selfTestLoadingAlert = nil
+            self.selfTestTask = nil
+        }
+    }
+
+    private func makeLoadingAlert(title: String, message: String) -> UIAlertController {
+        let alert = UIAlertController(
+            title: title,
+            message: "\(message)\n\n",
+            preferredStyle: .alert
+        )
+        alert.overrideUserInterfaceStyle = .dark
+        let spinner = UIActivityIndicatorView(style: .medium)
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        spinner.startAnimating()
+        alert.view.addSubview(spinner)
+        NSLayoutConstraint.activate([
+            spinner.centerXAnchor.constraint(equalTo: alert.view.centerXAnchor),
+            spinner.bottomAnchor.constraint(equalTo: alert.view.bottomAnchor, constant: -20),
+        ])
+        return alert
+    }
+
+    private func presentSelfTestReport(_ report: DeveloperSelfTestRunner.Report) {
+        let hasWarning = report.warningCount > 0
+        let hasFailure = report.hasBlockingFailure
+
+        let heroTint: UIColor
+        let heroIcon: String
+        let heroTitle: String
+
+        if hasFailure {
+            heroTint = UIColor(hex: 0xFF5B5B)
+            heroIcon = "error"
+            heroTitle = localized("실패 항목이 있습니다", "Blocking Failures Detected")
+        } else if hasWarning {
+            heroTint = UIColor(hex: 0xF2B742)
+            heroIcon = "warning"
+            heroTitle = localized("경고와 함께 완료", "Completed With Warnings")
+        } else {
+            heroTint = UIColor(hex: 0x27C16E)
+            heroIcon = "verified"
+            heroTitle = localized("전체 기능 점검 통과", "All Checks Passed")
+        }
+
+        let summarySubtitle = localized(
+            "성공 \(report.passedCount) · 경고 \(report.warningCount) · 실패 \(report.failedCount)",
+            "Pass \(report.passedCount) · Warn \(report.warningCount) · Fail \(report.failedCount)"
+        )
+
+        let summaryRows: [MoreInfoViewController.Row] = [
+            .init(
+                title: localized("총 검사 항목", "Total Checks"),
+                subtitle: nil,
+                value: "\(report.checks.count)",
+                icon: "playlist_add_check_circle",
+                iconTint: MorePalette.blue,
+                iconBackground: MorePalette.blue.withAlphaComponent(0.16),
+                titleColor: TFColor.Text.primary
+            ),
+            .init(
+                title: localized("실행 시간", "Duration"),
+                subtitle: nil,
+                value: String(format: "%.2fs", report.elapsedSeconds),
+                icon: "timer",
+                iconTint: MorePalette.teal,
+                iconBackground: MorePalette.teal.withAlphaComponent(0.16),
+                titleColor: TFColor.Text.primary
+            ),
+        ]
+
+        let checkRows: [MoreInfoViewController.Row] = report.checks.map { check in
+            let style = style(for: check.status)
+            return .init(
+                title: check.title,
+                subtitle: check.detail,
+                value: style.label,
+                icon: style.icon,
+                iconTint: style.tint,
+                iconBackground: style.tint.withAlphaComponent(0.18),
+                titleColor: TFColor.Text.primary
+            )
+        }
+
+        let endedAt = DateFormatter.localizedString(
+            from: report.finishedAt,
+            dateStyle: .medium,
+            timeStyle: .medium
+        )
+
+        let screen = MoreInfoViewController(
+            title: localized("기능 점검 결과", "Feature Check Report"),
+            leadingText: CoreStrings.Common.back,
+            leadingIcon: "arrow_back_ios_new",
+            leadingTint: MorePalette.blue,
+            hero: .init(
+                icon: heroIcon,
+                iconTint: heroTint,
+                iconBackground: heroTint.withAlphaComponent(0.18),
+                title: heroTitle,
+                subtitle: summarySubtitle
+            ),
+            sections: [
+                .init(
+                    title: localized("요약", "Summary"),
+                    footer: localized("마지막 실행: \(endedAt)", "Last run: \(endedAt)"),
+                    rows: summaryRows
+                ),
+                .init(
+                    title: localized("검사 항목", "Checks"),
+                    footer: localized(
+                        "알림 권한이 거부된 경우 알림 검사는 경고로 표시됩니다.",
+                        "Notification check is marked warning when permission is denied."
+                    ),
+                    rows: checkRows
+                ),
+            ]
+        )
+        screen.overrideUserInterfaceStyle = .dark
+        navigationController?.pushViewController(screen, animated: true)
+    }
+
+    private func style(for status: DeveloperSelfTestRunner.Status) -> (icon: String, tint: UIColor, label: String) {
+        switch status {
+        case .passed:
+            return ("check_circle", UIColor(hex: 0x27C16E), "PASS")
+        case .warning:
+            return ("warning", UIColor(hex: 0xF2B742), "WARN")
+        case .failed:
+            return ("error", UIColor(hex: 0xFF5B5B), "FAIL")
+        }
+    }
+
+    private func localized(_ ko: String, _ en: String) -> String {
+        TFAppLanguage.current() == .korean ? ko : en
     }
 
     private func pushDeveloperAction(title: String, tint: UIColor) {
@@ -388,6 +591,7 @@ final class DeveloperOptionsViewController: UIViewController {
                 )
             ]
         )
+        screen.overrideUserInterfaceStyle = .dark
         navigationController?.pushViewController(screen, animated: true)
     }
 }

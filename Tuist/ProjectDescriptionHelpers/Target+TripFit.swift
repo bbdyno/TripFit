@@ -22,6 +22,7 @@ public enum TripFitTarget {
             infoPlist: .extendingDefault(with: [
                 "CFBundleShortVersionString": "$(MARKETING_VERSION)",
                 "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
+                "UIUserInterfaceStyle": "Dark",
                 "UILaunchScreen": [:],
                 "UIApplicationSupportsIndirectInputEvents": true,
                 "UIAppFonts": [

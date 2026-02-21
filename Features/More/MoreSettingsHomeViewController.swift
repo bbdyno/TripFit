@@ -12,6 +12,8 @@ import UIKit
 
 public final class MoreSettingsHomeViewController: UIViewController {
     private let context: ModelContext
+    // Keep Appearance implementation intact, but hide the entry from More for now.
+    private let showsAppearanceMenu = false
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -117,18 +119,23 @@ public final class MoreSettingsHomeViewController: UIViewController {
         let preferencesSection = MoreSectionCardView(title: CoreStrings.More.preferences)
         let languageRow = makeLanguageRow()
         languageRowControl = languageRow
-        preferencesSection.setRows([
-            makeRow(
-                title: CoreStrings.More.appearance,
-                value: CoreStrings.Common.system,
-                icon: "palette",
-                iconTint: MorePalette.purple,
-                iconBackground: MorePalette.purple.withAlphaComponent(0.16),
-                action: { [weak self] in
-                    self?.pushAppearance()
-                }
-            ),
-            languageRow,
+        var preferenceRows: [MoreSettingsRowControl] = []
+        if showsAppearanceMenu {
+            preferenceRows.append(
+                makeRow(
+                    title: CoreStrings.More.appearance,
+                    value: CoreStrings.Common.system,
+                    icon: "palette",
+                    iconTint: MorePalette.purple,
+                    iconBackground: MorePalette.purple.withAlphaComponent(0.16),
+                    action: { [weak self] in
+                        self?.pushAppearance()
+                    }
+                )
+            )
+        }
+        preferenceRows.append(languageRow)
+        preferenceRows.append(
             makeRow(
                 title: CoreStrings.More.notifications,
                 icon: "notifications",
@@ -137,8 +144,9 @@ public final class MoreSettingsHomeViewController: UIViewController {
                 action: { [weak self] in
                     self?.pushNotifications()
                 }
-            ),
-        ])
+            )
+        )
+        preferencesSection.setRows(preferenceRows)
         contentStack.addArrangedSubview(preferencesSection)
 
         let supportSection = MoreSectionCardView(title: CoreStrings.More.support)

@@ -38,6 +38,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         print("[TripFit] rootVC: \(type(of: rootVC))")
 
         let window = UIWindow(windowScene: windowScene)
+        window.overrideUserInterfaceStyle = .dark
         window.rootViewController = rootVC
         window.makeKeyAndVisible()
         self.window = window
