@@ -117,26 +117,6 @@ final class DeveloperOptionsViewController: UIViewController {
         ])
         contentStack.addArrangedSubview(qualitySection)
 
-        let dataSection = MoreSectionCardView(
-            title: CoreStrings.Dev.dataManagement,
-            footer: CoreStrings.Dev.dataFooter
-        )
-        dataSection.setRows([
-            makeActionRow(
-                title: CoreStrings.Dev.seedWardrobe,
-                icon: "checkroom",
-                tint: UIColor(hex: 0x5A8FEF),
-                bg: UIColor(hex: 0x5A8FEF).withAlphaComponent(0.18)
-            ),
-            makeActionRow(
-                title: CoreStrings.Dev.seedTrip,
-                icon: "flight_takeoff",
-                tint: UIColor(hex: 0x24BD84),
-                bg: UIColor(hex: 0x24BD84).withAlphaComponent(0.18)
-            ),
-        ])
-        contentStack.addArrangedSubview(dataSection)
-
         let syncSection = UIView()
         syncSection.addSubview(makeSectionTitle(CoreStrings.Dev.syncTesting))
         let syncTitle = syncSection.subviews[0]

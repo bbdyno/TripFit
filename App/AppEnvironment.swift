@@ -35,11 +35,6 @@ final class AppEnvironment: @unchecked Sendable {
             onboardingStore: OnboardingStore()
         )
     }
-
-    @MainActor
-    func seedIfNeeded() {
-        SeedService.seedIfNeeded(context: context)
-    }
 }
 
 @MainActor

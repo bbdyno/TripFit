@@ -14,6 +14,7 @@ public final class MoreSettingsHomeViewController: UIViewController {
     private let context: ModelContext
     // Keep Appearance implementation intact, but hide the entry from More for now.
     private let showsAppearanceMenu = false
+    private let developerGitHubURL = URL(string: "https://github.com/bbdyno/TripFit")
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -66,6 +67,7 @@ public final class MoreSettingsHomeViewController: UIViewController {
         titleLabel.font = TFTypography.largeTitle
         titleLabel.textColor = TFColor.Text.primary
         contentStack.addArrangedSubview(titleLabel)
+        contentStack.addArrangedSubview(makeDeveloperGitHubButton())
 
         let syncSection = MoreSectionCardView(
             title: CoreStrings.More.syncStatus,
@@ -254,6 +256,29 @@ public final class MoreSettingsHomeViewController: UIViewController {
             row.isEnabled = false
         }
         return row
+    }
+
+    private func makeDeveloperGitHubButton() -> UIButton {
+        let button = UIButton(type: .system)
+        var config = UIButton.Configuration.filled()
+        config.title = localized("개발자 GitHub 바로가기", "Visit Developer GitHub")
+        config.subtitle = "github.com/bbdyno/TripFit"
+        config.titleAlignment = .leading
+        config.baseBackgroundColor = MorePalette.blue
+        config.baseForegroundColor = .white
+        config.cornerStyle = .large
+        config.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 14)
+        config.image = TFMaterialIcon.image(named: "open_in_new", pointSize: 18, weight: .semibold)
+        config.imagePlacement = .trailing
+        config.imagePadding = 8
+        button.configuration = config
+        button.addAction(UIAction { [weak self] _ in
+            self?.openDeveloperGitHub()
+        }, for: .touchUpInside)
+        button.snp.makeConstraints { make in
+            make.height.greaterThanOrEqualTo(56)
+        }
+        return button
     }
 
     private func pushICloudSync() {
@@ -463,5 +488,14 @@ public final class MoreSettingsHomeViewController: UIViewController {
 
     private func refreshLanguageRow() {
         languageRowControl?.configure(with: makeLanguageRowModel())
+    }
+
+    private func openDeveloperGitHub() {
+        guard let developerGitHubURL else { return }
+        UIApplication.shared.open(developerGitHubURL)
+    }
+
+    private func localized(_ ko: String, _ en: String) -> String {
+        TFAppLanguage.current() == .korean ? ko : en
     }
 }

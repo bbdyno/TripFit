@@ -26,7 +26,6 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         print("[TripFit] Creating AppEnvironment...")
         environment = AppEnvironment.makeDefault()
-        environment.seedIfNeeded()
         print("[TripFit] AppEnvironment created, onboarding completed: \(environment.onboardingStore.hasCompletedOnboarding)")
 
         let rootVC = RootBuilder.makeRoot(
