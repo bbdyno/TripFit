@@ -11,6 +11,7 @@ DerivedData/
 # Firebase local configuration and emulator output
 Resources/Firebase/GoogleService-Info.plist
 .firebaserc
+.firebase/
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
