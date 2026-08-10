@@ -86,4 +86,20 @@ public enum TripFitTarget {
             dependencies: dependencies
         )
     }
+
+    public static func unitTests(
+        name: String,
+        path: String,
+        dependencies: [TargetDependency]
+    ) -> Target {
+        .target(
+            name: name,
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "\(TripFitBuild.bundleId).\(name)",
+            deploymentTargets: TripFitBuild.deployment,
+            sources: ["\(path)/**"],
+            dependencies: dependencies
+        )
+    }
 }

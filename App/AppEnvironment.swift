@@ -35,6 +35,7 @@ final class AppEnvironment: @unchecked Sendable {
             Outfit.self,
             Trip.self,
             PackingItem.self,
+            TripCollaborationLink.self,
         ])
         let container = ModelContainerBootstrap.makeContainer(schema: schema)
         let authService: any AuthService
@@ -209,16 +210,26 @@ private struct PersistenceSnapshot {
         let updatedAt: Date
     }
 
+    struct CollaborationLinkDTO {
+        let roomID: String
+        let localTripID: UUID
+        let revision: Int
+        let createdAt: Date
+        let updatedAt: Date
+    }
+
     let clothingItems: [ClothingDTO]
     let outfits: [OutfitDTO]
     let trips: [TripDTO]
     let packingItems: [PackingDTO]
+    let collaborationLinks: [CollaborationLinkDTO]
 
     static func capture(from context: ModelContext) throws -> PersistenceSnapshot {
         let clothing = try context.fetch(FetchDescriptor<ClothingItem>())
         let outfits = try context.fetch(FetchDescriptor<Outfit>())
         let trips = try context.fetch(FetchDescriptor<Trip>())
         let packing = try context.fetch(FetchDescriptor<PackingItem>())
+        let collaborationLinks = try context.fetch(FetchDescriptor<TripCollaborationLink>())
 
         return PersistenceSnapshot(
             clothingItems: clothing.map {
@@ -266,6 +277,15 @@ private struct PersistenceSnapshot {
                     customName: $0.customName,
                     quantity: $0.quantity,
                     isPacked: $0.isPacked,
+                    createdAt: $0.createdAt,
+                    updatedAt: $0.updatedAt
+                )
+            },
+            collaborationLinks: collaborationLinks.map {
+                CollaborationLinkDTO(
+                    roomID: $0.roomID,
+                    localTripID: $0.localTripID,
+                    revision: $0.revision,
                     createdAt: $0.createdAt,
                     updatedAt: $0.updatedAt
                 )
@@ -334,6 +354,17 @@ private struct PersistenceSnapshot {
             outfit.createdAt = dto.createdAt
             outfit.updatedAt = dto.updatedAt
             context.insert(outfit)
+        }
+
+        for dto in collaborationLinks {
+            let link = TripCollaborationLink(
+                roomID: dto.roomID,
+                localTripID: dto.localTripID,
+                revision: dto.revision
+            )
+            link.createdAt = dto.createdAt
+            link.updatedAt = dto.updatedAt
+            context.insert(link)
         }
 
         try context.save()

@@ -45,6 +45,23 @@ let project = Project(
                 .external(name: "FirebaseAppCheck"),
             ]
         ),
+        TripFitTarget.unitTests(
+            name: "DomainTests",
+            path: "Tests/DomainTests",
+            dependencies: [.target(name: "Domain")]
+        ),
         TripFitTarget.app(),
+    ],
+    schemes: [
+        .scheme(
+            name: "TripFit",
+            shared: true,
+            buildAction: .buildAction(targets: ["TripFit"]),
+            testAction: .targets(["DomainTests"]),
+            runAction: .runAction(configuration: .debug),
+            archiveAction: .archiveAction(configuration: .release),
+            profileAction: .profileAction(configuration: .release),
+            analyzeAction: .analyzeAction(configuration: .debug)
+        ),
     ]
 )

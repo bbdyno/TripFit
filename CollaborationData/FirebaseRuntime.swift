@@ -36,7 +36,11 @@ public final class FirebaseRuntime: @unchecked Sendable {
 
         if environment["TRIPFIT_USE_FIREBASE_EMULATOR"] == "1" {
             Auth.auth().useEmulator(withHost: "127.0.0.1", port: 9099)
-            Firestore.firestore().useEmulator(withHost: "127.0.0.1", port: 8080)
+            let firestore = Firestore.firestore()
+            let settings = firestore.settings
+            settings.cacheSettings = MemoryCacheSettings()
+            firestore.settings = settings
+            firestore.useEmulator(withHost: "127.0.0.1", port: 8080)
         }
 
         state = .configured(projectID: options.projectID ?? "unknown")
