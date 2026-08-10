@@ -92,7 +92,12 @@ final class MainTabBarController: UITabBarController {
         outfitsVC.tabBarItem.tag = 1
 
         let tripsVC = UINavigationController(
-            rootViewController: TripsListViewController(context: environment.context)
+            rootViewController: TripsListViewController(
+                context: environment.context,
+                authService: environment.authService,
+                collaborationRepository: environment.collaborationRepository,
+                pendingInviteStore: environment.pendingInviteStore
+            )
         )
         tripsVC.tabBarItem = UITabBarItem(
             title: CoreStrings.Tab.trips,
@@ -210,6 +215,36 @@ final class MainTabBarController: UITabBarController {
     }
 
     private func presentAddTrip() {
+        let alert = UIAlertController(
+            title: TFAppLanguage.current() == .korean ? "새 여행" : "New Trip",
+            message: TFAppLanguage.current() == .korean
+                ? "날짜가 정해졌나요, 아니면 친구와 먼저 맞춰볼까요?"
+                : "Are the dates fixed, or should we coordinate with friends first?",
+            preferredStyle: .actionSheet
+        )
+        alert.addAction(UIAlertAction(
+            title: TFAppLanguage.current() == .korean ? "날짜가 정해진 개인 여행" : "Personal Trip with Fixed Dates",
+            style: .default
+        ) { [weak self] _ in
+            self?.presentPersonalTrip()
+        })
+        alert.addAction(UIAlertAction(
+            title: TFAppLanguage.current() == .korean ? "친구와 날짜부터 맞추기" : "Coordinate Dates with Friends",
+            style: .default
+        ) { [weak self] _ in
+            guard let self,
+                  let nav = selectedViewController as? UINavigationController,
+                  let trips = nav.viewControllers.first as? TripsListViewController else { return }
+            trips.presentSharedTripCreate()
+        })
+        alert.addAction(UIAlertAction(
+            title: TFAppLanguage.current() == .korean ? "취소" : "Cancel",
+            style: .cancel
+        ))
+        presentFromSelectedHost(alert)
+    }
+
+    private func presentPersonalTrip() {
         let editVC = TripEditViewController(context: environment.context)
         let nav = UINavigationController(rootViewController: editVC)
         nav.modalPresentationStyle = .fullScreen

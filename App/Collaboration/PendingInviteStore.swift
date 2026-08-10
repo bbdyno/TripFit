@@ -3,7 +3,7 @@ import Foundation
 import Security
 
 @MainActor
-final class PendingInviteStore {
+final class PendingInviteStore: PendingInviteHandling {
     static let didChangeNotification = Notification.Name("tripfit.pendingInvite.didChange")
 
     private let service = "com.bbdyno.app.tripFit.pending-invite"

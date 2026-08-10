@@ -21,8 +21,15 @@ public struct UnavailableCollaborationRepository: CollaborationRepository {
     }
 
     public func fetchRoom(id: String) async throws -> SharedTripRoom { throw unavailable }
+    public func fetchMembers(roomID: String) async throws -> [SharedTripMember] { throw unavailable }
+    public func fetchAvailability(roomID: String) async throws -> [AvailabilitySubmission] { throw unavailable }
+    public func fetchPackingItems(roomID: String) async throws -> [SharedPackingItem] { throw unavailable }
+    public func fetchLookPlans(roomID: String) async throws -> [SharedLookPlan] { throw unavailable }
 
     public func submitAvailability(_ submission: AvailabilitySubmission, roomID: String) async throws {
+        throw unavailable
+    }
+    public func confirmSchedule(roomID: String, startDay: String, endDay: String, expectedRevision: Int) async throws {
         throw unavailable
     }
 

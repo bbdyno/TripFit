@@ -97,12 +97,68 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
         return try FirestoreMapper.room(snapshot)
     }
 
+    public func fetchMembers(roomID: String) async throws -> [SharedTripMember] {
+        let snapshot = try await database.collection("rooms").document(roomID)
+            .collection("members").getDocuments()
+        return try snapshot.documents.map(FirestoreMapper.member)
+            .sorted { $0.joinedAt < $1.joinedAt }
+    }
+
+    public func fetchAvailability(roomID: String) async throws -> [AvailabilitySubmission] {
+        let snapshot = try await database.collection("rooms").document(roomID)
+            .collection("availability").getDocuments()
+        return try snapshot.documents.map(FirestoreMapper.availability)
+    }
+
+    public func fetchPackingItems(roomID: String) async throws -> [SharedPackingItem] {
+        let snapshot = try await database.collection("rooms").document(roomID)
+            .collection("packingItems").getDocuments()
+        return try snapshot.documents.map { try FirestoreMapper.packing($0, roomID: roomID) }
+            .sorted { $0.updatedAt > $1.updatedAt }
+    }
+
+    public func fetchLookPlans(roomID: String) async throws -> [SharedLookPlan] {
+        let snapshot = try await database.collection("rooms").document(roomID)
+            .collection("lookPlans").getDocuments()
+        return try snapshot.documents.map { try FirestoreMapper.lookPlan($0, roomID: roomID) }
+            .sorted { $0.day < $1.day }
+    }
+
     public func submitAvailability(_ submission: AvailabilitySubmission, roomID: String) async throws {
         let room = try await fetchRoom(id: roomID)
         try CollaborationValidator.validate(submission: submission, in: room)
         let ref = database.collection("rooms").document(roomID)
             .collection("availability").document(submission.ownerUID)
         try await ref.setData(FirestoreMapper.availabilityData(submission))
+    }
+
+    public func confirmSchedule(
+        roomID: String,
+        startDay: String,
+        endDay: String,
+        expectedRevision: Int
+    ) async throws {
+        let ref = database.collection("rooms").document(roomID)
+        _ = try await database.runTransaction { transaction, errorPointer -> Any? in
+            do {
+                let snapshot = try transaction.getDocument(ref)
+                guard let revision = snapshot.data()?["revision"] as? Int,
+                      revision == expectedRevision else {
+                    throw CollaborationRepositoryError.conflict
+                }
+                transaction.updateData([
+                    "stage": TripRoomStage.confirmed.rawValue,
+                    "confirmedStartDay": startDay,
+                    "confirmedEndDay": endDay,
+                    "updatedAt": FieldValue.serverTimestamp(),
+                    "revision": revision + 1,
+                ], forDocument: ref)
+                return true
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
+            }
+        }
     }
 
     public func upsertPackingItem(_ item: SharedPackingItem) async throws {
@@ -325,6 +381,24 @@ private enum FirestoreMapper {
         return data
     }
 
+    static func member(_ snapshot: DocumentSnapshot) throws -> SharedTripMember {
+        guard let data = snapshot.data(),
+              let uid = data["uid"] as? String,
+              let roleValue = data["role"] as? String,
+              let role = SharedTripMemberRole(rawValue: roleValue),
+              let isRequired = data["isRequired"] as? Bool,
+              let joinedAt = data["joinedAt"] as? Timestamp else {
+            throw CollaborationRepositoryError.invalidData("Malformed member: \(snapshot.documentID)")
+        }
+        return SharedTripMember(
+            userID: uid,
+            displayName: data["displayName"] as? String,
+            role: role,
+            isRequired: isRequired,
+            joinedAt: joinedAt.dateValue()
+        )
+    }
+
     static func availabilityData(_ submission: AvailabilitySubmission) -> [String: Any] {
         let days = submission.days.map { day in
             [
@@ -351,6 +425,44 @@ private enum FirestoreMapper {
         ]
     }
 
+    static func availability(_ snapshot: DocumentSnapshot) throws -> AvailabilitySubmission {
+        guard let data = snapshot.data(),
+              let ownerUID = data["ownerUid"] as? String,
+              let rawDays = data["days"] as? [[String: Any]],
+              let leaveNumber = data["leaveUnits"] as? NSNumber,
+              let lateJoin = data["lateJoin"] as? Bool,
+              let earlyLeave = data["earlyLeave"] as? Bool,
+              let revision = data["revision"] as? Int else {
+            throw CollaborationRepositoryError.invalidData("Malformed availability: \(snapshot.documentID)")
+        }
+        let days: [AvailabilityDay] = try rawDays.map { day in
+            guard let value = day["day"] as? String,
+                  let statusValue = day["status"] as? String,
+                  let status = AvailabilityStatus(rawValue: statusValue),
+                  let sourceValue = day["source"] as? String,
+                  let source = AvailabilitySource(rawValue: sourceValue) else {
+                throw CollaborationRepositoryError.invalidData("Malformed availability day.")
+            }
+            let slots: [AvailabilityTimeSlot: AvailabilityStatus] =
+                (day["slots"] as? [String: String] ?? [:]).reduce(into: [:]) { result, pair in
+                guard let slot = AvailabilityTimeSlot(rawValue: pair.key),
+                      let slotStatus = AvailabilityStatus(rawValue: pair.value) else { return }
+                result[slot] = slotStatus
+            }
+            return AvailabilityDay(day: value, status: status, slots: slots, source: source)
+        }
+        return AvailabilitySubmission(
+            ownerUID: ownerUID,
+            days: days,
+            leaveUnits: leaveNumber.doubleValue,
+            lateJoin: lateJoin,
+            earlyLeave: earlyLeave,
+            note: data["note"] as? String,
+            updatedAt: (data["updatedAt"] as? Timestamp)?.dateValue() ?? Date(),
+            revision: revision
+        )
+    }
+
     static func packingData(_ item: SharedPackingItem) -> [String: Any] {
         [
             "roomId": item.roomID,
@@ -364,6 +476,30 @@ private enum FirestoreMapper {
             "revision": item.revision,
             "schemaVersion": SharedPackingItem.schemaVersion,
         ]
+    }
+
+    static func packing(_ snapshot: DocumentSnapshot, roomID: String) throws -> SharedPackingItem {
+        guard let data = snapshot.data(),
+              let title = data["title"] as? String,
+              let category = data["category"] as? String,
+              let quantity = data["quantity"] as? Int,
+              let isPacked = data["isPacked"] as? Bool,
+              let createdByUID = data["createdByUid"] as? String,
+              let revision = data["revision"] as? Int else {
+            throw CollaborationRepositoryError.invalidData("Malformed packing item: \(snapshot.documentID)")
+        }
+        return SharedPackingItem(
+            id: snapshot.documentID,
+            roomID: roomID,
+            title: title,
+            category: category,
+            quantity: quantity,
+            assigneeUID: data["assigneeUid"] as? String,
+            isPacked: isPacked,
+            createdByUID: createdByUID,
+            updatedAt: (data["updatedAt"] as? Timestamp)?.dateValue() ?? Date(),
+            revision: revision
+        )
     }
 
     static func lookPlanData(_ plan: SharedLookPlan) -> [String: Any] {
@@ -382,5 +518,35 @@ private enum FirestoreMapper {
             "revision": plan.revision,
             "schemaVersion": SharedLookPlan.schemaVersion,
         ]
+    }
+
+    static func lookPlan(_ snapshot: DocumentSnapshot, roomID: String) throws -> SharedLookPlan {
+        guard let data = snapshot.data(),
+              let ownerUID = data["ownerUid"] as? String,
+              let day = data["day"] as? String,
+              let outfitName = data["outfitName"] as? String,
+              let categories = data["categories"] as? [String],
+              let paletteHex = data["paletteHex"] as? [String],
+              let styleTags = data["styleTags"] as? [String],
+              let formality = data["formality"] as? Int,
+              let rainReady = data["rainReady"] as? Bool,
+              let revision = data["revision"] as? Int else {
+            throw CollaborationRepositoryError.invalidData("Malformed look plan: \(snapshot.documentID)")
+        }
+        return SharedLookPlan(
+            id: snapshot.documentID,
+            roomID: roomID,
+            ownerUID: ownerUID,
+            day: day,
+            outfitName: outfitName,
+            categories: categories,
+            paletteHex: paletteHex,
+            styleTags: styleTags,
+            formality: formality,
+            rainReady: rainReady,
+            note: data["note"] as? String,
+            updatedAt: (data["updatedAt"] as? Timestamp)?.dateValue() ?? Date(),
+            revision: revision
+        )
     }
 }
