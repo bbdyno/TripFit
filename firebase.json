@@ -6,6 +6,9 @@
   "hosting": {
     "public": "firebase-hosting",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "/join/**", "destination": "/join/index.html" }
+    ],
     "headers": [
       {
         "source": "/.well-known/apple-app-site-association",

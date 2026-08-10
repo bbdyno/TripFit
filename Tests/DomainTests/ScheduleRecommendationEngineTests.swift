@@ -71,6 +71,21 @@ final class ScheduleRecommendationEngineTests: XCTestCase {
         )
     }
 
+    func testInviteLinkParserAcceptsOnlyExpectedHostingPath() {
+        XCTAssertEqual(
+            InviteLinkParser.rawToken(
+                from: URL(string: "https://tripfit-bbdyno.web.app/join/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ")!
+            ),
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ"
+        )
+        XCTAssertNil(
+            InviteLinkParser.rawToken(
+                from: URL(string: "https://example.com/join/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ")!
+            )
+        )
+        XCTAssertNil(InviteLinkParser.rawToken(from: URL(string: "https://tripfit-bbdyno.web.app/other/token")!))
+    }
+
     private func makeRoom(end: String = "2026-09-04", duration: Int = 2) -> SharedTripRoom {
         SharedTripRoom(
             id: "room", ownerUID: "owner", memberUIDs: ["owner", "guest"],

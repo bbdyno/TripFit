@@ -42,7 +42,14 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.makeKeyAndVisible()
         self.window = window
         registerLanguageObserver()
+        handleInitialUniversalLink(connectionOptions.userActivities)
         print("[TripFit] Window set and visible, frame: \(window.frame)")
+    }
+
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+              let url = userActivity.webpageURL else { return }
+        _ = environment.pendingInviteStore.accept(url: url)
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -58,6 +65,13 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         UIView.transition(with: window, duration: 0.4, options: .transitionCrossDissolve) {
             window.rootViewController = tabBar
         }
+    }
+
+    private func handleInitialUniversalLink(_ activities: Set<NSUserActivity>) {
+        guard let url = activities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb })?.webpageURL else {
+            return
+        }
+        _ = environment.pendingInviteStore.accept(url: url)
     }
 
     private func registerLanguageObserver() {

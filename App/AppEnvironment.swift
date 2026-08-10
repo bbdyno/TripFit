@@ -14,15 +14,21 @@ final class AppEnvironment: @unchecked Sendable {
     let container: ModelContainer
     let onboardingStore: OnboardingStore
     let authService: any AuthService
+    let collaborationRepository: any CollaborationRepository
+    let pendingInviteStore: PendingInviteStore
 
     private init(
         container: ModelContainer,
         onboardingStore: OnboardingStore,
-        authService: any AuthService
+        authService: any AuthService,
+        collaborationRepository: any CollaborationRepository,
+        pendingInviteStore: PendingInviteStore
     ) {
         self.container = container
         self.onboardingStore = onboardingStore
         self.authService = authService
+        self.collaborationRepository = collaborationRepository
+        self.pendingInviteStore = pendingInviteStore
     }
 
     @MainActor
@@ -39,18 +45,26 @@ final class AppEnvironment: @unchecked Sendable {
         ])
         let container = ModelContainerBootstrap.makeContainer(schema: schema)
         let authService: any AuthService
+        let collaborationRepository: any CollaborationRepository
         switch FirebaseRuntime.shared.state {
         case .configured:
             authService = FirebaseAuthService()
+            collaborationRepository = FirestoreCollaborationRepository()
         case let .unavailable(reason):
             authService = DisabledAuthService(reason: reason)
+            collaborationRepository = UnavailableCollaborationRepository(reason: reason)
         case .notConfigured:
             authService = DisabledAuthService(reason: "Firebase has not been configured.")
+            collaborationRepository = UnavailableCollaborationRepository(
+                reason: "Firebase has not been configured."
+            )
         }
         let environment = AppEnvironment(
             container: container,
             onboardingStore: OnboardingStore(),
-            authService: authService
+            authService: authService,
+            collaborationRepository: collaborationRepository,
+            pendingInviteStore: PendingInviteStore()
         )
         Task { _ = await authService.restoreSession() }
         return environment
