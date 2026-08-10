@@ -5,61 +5,77 @@ permalink: /docs/privacy-policy.en/
 
 # TripFit Privacy Policy
 
-Effective date: 2026-02-20
+Effective date: August 10, 2026
 
-TripFit ("we", "our", or "us") respects your privacy. This Privacy Policy explains how TripFit handles your information.
+TripFit (the “App”) processes personal data only as needed to provide its features. The App does not include advertising or cross-app tracking SDKs, and we do not sell personal data.
 
-## 1. Data We Collect
+## 1. Features That Do Not Require an Account
 
-TripFit is designed to work offline-first and can be used without creating an account.
+You can use wardrobe, outfit, private trip, and packing features without creating an account. The following data is stored on your device by default:
 
-Depending on your usage, TripFit may store:
-- Wardrobe data (item names, categories, colors, tags, notes)
-- Outfit and trip planning data (names, dates, destinations, notes)
-- Photos you add to wardrobe items (from camera or photo library)
-- App preferences (theme, UI options, sync toggles)
+- Clothing names, categories, colors, tags, notes, and photos you add
+- Outfit and private trip names, dates, destinations, notes, and packing lists
+- App settings such as language, theme, and sync preferences
 
-## 2. How Data Is Stored
+If you enable iCloud sync, selected data is synchronized across your Apple devices using Apple CloudKit/iCloud. Wardrobe photos are included only when you enable the photo sync option.
 
-- By default, your data is stored locally on your device.
-- If you enable iCloud sync, TripFit uses Apple's CloudKit/iCloud services to sync your data across your devices.
-- If "Include Wardrobe Photos" is enabled in sync settings, wardrobe photos are also included in iCloud sync.
+## 2. Data Processed for Shared Trips
 
-## 3. How We Use Data
+Shared Trips is optional and requires Sign in with Apple. When you use it, the following data is processed through Google Firebase:
 
-Your data is used only to provide app features, including:
-- Managing wardrobe, outfits, and trips
-- Syncing data between your devices (when enabled)
-- Restoring your data on your own Apple devices
+- Account data: Firebase user identifier, Sign in with Apple identifier, and a display name if Apple provides one
+- Shared trip data: room title, destination, country and time zone, candidate and confirmed dates, and member identifiers
+- Availability data: daily and time-slot status, leave units, late arrival or early departure choices, and notes
+- Shared packing data: item, quantity, assignee, and packed status
+- Shared look data: outfit name, date, categories, colors, style tags, and notes
+- Invitation and security data: a hash of the random invitation token, expiration time, and technical data needed for Firebase Authentication and App Check integrity verification
 
-We do not sell your personal data.
+Private wardrobe photos and the contents of calendar events on your device are not uploaded to the Shared Trips service.
 
-## 4. Data Sharing
+## 3. Purposes
 
-We do not share your data with advertisers or data brokers.
+We use data only to:
 
-When iCloud sync is enabled, data is processed by Apple under Apple's iCloud/CloudKit terms and privacy practices.
+- Provide wardrobe, outfit, trip, and packing features
+- Provide iCloud sync and restore when you enable it
+- Synchronize Shared Trips among invited members
+- Authenticate users, prevent abuse, secure the service, and troubleshoot failures
 
-## 5. Data Retention and Deletion
+We do not use this data for advertising, third-party marketing, or tracking across other companies’ apps and websites.
 
-- Local data remains on your device until you delete it or remove the app.
-- Synced iCloud data remains until you delete it from the app or iCloud.
-- In-app reset actions may permanently remove local and/or iCloud data.
+## 4. Service Providers
 
-## 6. Security
+- Apple: Sign in with Apple, iCloud/CloudKit, and App Store payments
+- Google Firebase: Authentication, Cloud Firestore, App Check, and Hosting
 
-We use Apple's platform security mechanisms and reasonable safeguards. However, no storage or transmission method is 100% secure.
+These providers may process data required to operate their services under their own privacy policies.
 
-## 7. Children's Privacy
+## 5. Sharing and Visibility
 
-TripFit is not directed to children under 13. We do not knowingly collect personal information from children under 13.
+Shared Trip data is visible only to users who join that room by invitation. We do not provide public profiles or feeds, and we do not share data with advertisers or data brokers. Anyone who receives an invitation link may request to join until it expires or is revoked, so share links only with people you trust.
 
-## 8. Changes to This Policy
+## 6. Retention and Deletion
 
-We may update this policy from time to time. The latest version is published in this document.
+- Local data may remain on your device until you delete it in the App or remove the App.
+- iCloud data may remain until you delete it through the App or iCloud.
+- Shared Trip data is retained until the room or related collaboration account is deleted.
+- Signing out does not delete server data.
 
-## 9. Contact
+You can delete your collaboration account in **More → Collaboration Account → Delete Collaboration Account**. Completion removes the Firebase Authentication account and that user’s Shared Trip data. Private wardrobe, outfit, and trip data stays on the device unless you delete it separately. See [Collaboration Account Deletion](../account-deletion.en/) for details.
 
-For questions about this Privacy Policy, please use:
-- GitHub: https://github.com/bbdyno/TripFit
-- Issues: https://github.com/bbdyno/TripFit/issues
+## 7. Security
+
+The App uses reasonable safeguards, including Sign in with Apple, Firebase Security Rules, App Check, and encrypted transport. No method of storage or transmission can be guaranteed completely secure.
+
+## 8. Children’s Privacy
+
+TripFit is not designed for children under 13, and we do not knowingly collect personal information from children under 13.
+
+## 9. Changes
+
+If our data practices change, we will update this policy and the App Store privacy disclosures. Material changes may also be communicated through an app update or this page.
+
+## 10. Contact
+
+- Support: [TripFit English Support](../support.en/)
+- Questions and deletion support: [GitHub Issues](https://github.com/bbdyno/TripFit/issues)

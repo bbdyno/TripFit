@@ -1,4 +1,4 @@
-# TripFit Docs
+# TripFit Support & Legal Docs
 
 Repository root: https://github.com/bbdyno/TripFit
 GitHub Pages root: https://bbdyno.github.io/TripFit
@@ -6,6 +6,14 @@ GitHub Pages root: https://bbdyno.github.io/TripFit
 ## Pages Routes
 - Index: `/docs/`
 - Index URL: `https://bbdyno.github.io/TripFit/docs/`
+
+## Support
+- English: `/docs/support.en/`
+- Korean: `/docs/support.ko/`
+
+## Account Deletion
+- English: `/docs/account-deletion.en/`
+- Korean: `/docs/account-deletion.ko/`
 
 ## Privacy Policy
 - English: `/docs/privacy-policy.en.md`
