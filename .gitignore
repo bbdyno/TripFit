@@ -17,3 +17,4 @@ ui-debug.log
 
 # Codex local verification artifacts
 .codex-local/
+firebase-tests/node_modules/

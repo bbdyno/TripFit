@@ -84,7 +84,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
         batch.setData(FirestoreMapper.memberData(owner), forDocument: memberRef)
         batch.setData([
             "uid": owner.userID,
-            "displayName": owner.displayName as Any,
+            "displayName": owner.displayName ?? NSNull(),
             "updatedAt": FieldValue.serverTimestamp(),
             "schemaVersion": 1,
         ], forDocument: userRef, merge: true)
@@ -140,6 +140,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
             "expiresAt": Timestamp(date: expiresAt),
             "revoked": false,
             "createdAt": FieldValue.serverTimestamp(),
+            "revision": 0,
             "schemaVersion": TripInvite.schemaVersion,
         ])
         guard let url = URL(string: "https://\(hostingDomain)/join/\(rawToken)") else {
@@ -158,34 +159,29 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
                 guard let inviteData = invite.data(),
                       let roomID = inviteData["roomId"] as? String,
                       let expiresAt = inviteData["expiresAt"] as? Timestamp,
-                      let revoked = inviteData["revoked"] as? Bool else {
+                      let revoked = inviteData["revoked"] as? Bool,
+                      let inviteRevision = inviteData["revision"] as? Int else {
                     throw CollaborationRepositoryError.notFound
                 }
                 guard revoked == false else { throw CollaborationRepositoryError.inviteRevoked }
                 guard expiresAt.dateValue() > Date() else { throw CollaborationRepositoryError.inviteExpired }
 
                 let roomRef = self.database.collection("rooms").document(roomID)
-                let roomSnapshot = try transaction.getDocument(roomRef)
-                guard let roomData = roomSnapshot.data(),
-                      var memberUIDs = roomData["memberUids"] as? [String],
-                      let revision = roomData["revision"] as? Int else {
-                    throw CollaborationRepositoryError.notFound
-                }
-                if memberUIDs.contains(member.userID) { return roomID }
-                guard memberUIDs.count < SharedTripRoom.hardMemberLimit else {
-                    throw CollaborationRepositoryError.roomFull
-                }
-                memberUIDs.append(member.userID)
                 transaction.updateData([
-                    "memberUids": memberUIDs,
-                    "memberCount": memberUIDs.count,
+                    "memberUids": FieldValue.arrayUnion([member.userID]),
+                    "memberCount": FieldValue.increment(Int64(1)),
                     "updatedAt": FieldValue.serverTimestamp(),
-                    "revision": revision + 1,
+                    "revision": FieldValue.increment(Int64(1)),
                 ], forDocument: roomRef)
                 transaction.setData(
-                    FirestoreMapper.memberData(member),
+                    FirestoreMapper.memberData(member, inviteHash: hash),
                     forDocument: roomRef.collection("members").document(member.userID)
                 )
+                transaction.updateData([
+                    "lastJoinUid": member.userID,
+                    "lastJoinAt": FieldValue.serverTimestamp(),
+                    "revision": inviteRevision + 1,
+                ], forDocument: inviteRef)
                 return roomID
             } catch {
                 errorPointer?.pointee = error as NSError
@@ -260,14 +256,19 @@ private enum FirestoreMapper {
             "memberCount": room.memberCount,
             "title": room.title,
             "destination": room.destination,
-            "countryCode": room.countryCode as Any,
+            "countryCode": room.countryCode ?? NSNull(),
             "timezoneID": room.timezoneID,
             "candidateStartDay": room.candidateStartDay,
             "candidateEndDay": room.candidateEndDay,
+            "candidateDayCount": (try? CalendarDayCodec.days(
+                from: room.candidateStartDay,
+                through: room.candidateEndDay,
+                timezoneID: room.timezoneID
+            ).count) ?? 0,
             "durationDays": room.durationDays,
             "stage": room.stage.rawValue,
-            "confirmedStartDay": room.confirmedStartDay as Any,
-            "confirmedEndDay": room.confirmedEndDay as Any,
+            "confirmedStartDay": room.confirmedStartDay ?? NSNull(),
+            "confirmedEndDay": room.confirmedEndDay ?? NSNull(),
             "updatedAt": FieldValue.serverTimestamp(),
             "revision": room.revision,
             "schemaVersion": SharedTripRoom.schemaVersion,
@@ -310,16 +311,18 @@ private enum FirestoreMapper {
         )
     }
 
-    static func memberData(_ member: SharedTripMember) -> [String: Any] {
-        [
+    static func memberData(_ member: SharedTripMember, inviteHash: String? = nil) -> [String: Any] {
+        var data: [String: Any] = [
             "uid": member.userID,
-            "displayName": member.displayName as Any,
+            "displayName": member.displayName ?? NSNull(),
             "role": member.role.rawValue,
             "isRequired": member.isRequired,
             "joinedAt": Timestamp(date: member.joinedAt),
             "updatedAt": FieldValue.serverTimestamp(),
             "schemaVersion": 1,
         ]
+        if let inviteHash { data["inviteHash"] = inviteHash }
+        return data
     }
 
     static func availabilityData(_ submission: AvailabilitySubmission) -> [String: Any] {
@@ -334,10 +337,14 @@ private enum FirestoreMapper {
         return [
             "ownerUid": submission.ownerUID,
             "days": days,
+            "dayCount": days.count,
+            "firstDay": submission.days.map(\.day).min() ?? NSNull(),
+            "lastDay": submission.days.map(\.day).max() ?? NSNull(),
+            "statusValues": Array(Set(submission.days.map(\.status.rawValue))).sorted(),
             "leaveUnits": submission.leaveUnits,
             "lateJoin": submission.lateJoin,
             "earlyLeave": submission.earlyLeave,
-            "note": submission.note as Any,
+            "note": submission.note ?? NSNull(),
             "updatedAt": FieldValue.serverTimestamp(),
             "revision": submission.revision,
             "schemaVersion": AvailabilitySubmission.schemaVersion,
@@ -350,7 +357,7 @@ private enum FirestoreMapper {
             "title": item.title,
             "category": item.category,
             "quantity": item.quantity,
-            "assigneeUid": item.assigneeUID as Any,
+            "assigneeUid": item.assigneeUID ?? NSNull(),
             "isPacked": item.isPacked,
             "createdByUid": item.createdByUID,
             "updatedAt": FieldValue.serverTimestamp(),
@@ -370,7 +377,7 @@ private enum FirestoreMapper {
             "styleTags": plan.styleTags,
             "formality": plan.formality,
             "rainReady": plan.rainReady,
-            "note": plan.note as Any,
+            "note": plan.note ?? NSNull(),
             "updatedAt": FieldValue.serverTimestamp(),
             "revision": plan.revision,
             "schemaVersion": SharedLookPlan.schemaVersion,

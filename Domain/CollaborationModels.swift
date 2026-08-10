@@ -347,7 +347,8 @@ public enum CollaborationValidator {
     }
 
     public static func validate(submission: AvailabilitySubmission, in room: SharedTripRoom) throws {
-        guard submission.days.count <= SharedTripRoom.maximumCandidateDays,
+        guard submission.days.isEmpty == false,
+              submission.days.count <= SharedTripRoom.maximumCandidateDays,
               submission.leaveUnits >= 0,
               submission.leaveUnits <= Double(room.durationDays),
               (submission.leaveUnits * 2).rounded() == submission.leaveUnits * 2 else {
