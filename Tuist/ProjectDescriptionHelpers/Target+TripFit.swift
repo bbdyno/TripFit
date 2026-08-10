@@ -48,6 +48,11 @@ public enum TripFitTarget {
             entitlements: .file(path: "App/TripFit.entitlements"),
             scripts: [
                 .pre(
+                    path: .relativeToRoot("Scripts/validate-firebase-config.sh"),
+                    name: "Validate Firebase Configuration",
+                    basedOnDependencyAnalysis: false
+                ),
+                .pre(
                     path: .relativeToRoot("Scripts/swiftlint.sh"),
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
@@ -57,6 +62,7 @@ public enum TripFitTarget {
                 .target(name: "Core"),
                 .target(name: "Domain"),
                 .target(name: "Features"),
+                .target(name: "CollaborationData"),
                 .external(name: "SnapKit"),
             ],
             settings: .tripFitTargetSettings()

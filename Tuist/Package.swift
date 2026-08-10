@@ -13,7 +13,11 @@ import ProjectDescriptionHelpers
 
 let packageSettings = PackageSettings(
     productTypes: [
-        "SnapKit": .framework
+        "SnapKit": .framework,
+        "FirebaseCore": .staticFramework,
+        "FirebaseAuth": .staticFramework,
+        "FirebaseFirestore": .staticFramework,
+        "FirebaseAppCheck": .staticFramework,
     ]
 )
 #endif
@@ -21,6 +25,7 @@ let packageSettings = PackageSettings(
 let package = Package(
     name: "TripFit",
     dependencies: [
-        .package(url: "https://github.com/SnapKit/SnapKit.git", from: "5.7.0")
+        .package(url: "https://github.com/SnapKit/SnapKit.git", from: "5.7.0"),
+        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", exact: "12.17.0"),
     ]
 )

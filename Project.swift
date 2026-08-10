@@ -34,6 +34,17 @@ let project = Project(
                 .external(name: "SnapKit"),
             ]
         ),
+        TripFitTarget.framework(
+            name: "CollaborationData",
+            path: "CollaborationData",
+            dependencies: [
+                .target(name: "Domain"),
+                .external(name: "FirebaseCore"),
+                .external(name: "FirebaseAuth"),
+                .external(name: "FirebaseFirestore"),
+                .external(name: "FirebaseAppCheck"),
+            ]
+        ),
         TripFitTarget.app(),
     ]
 )
