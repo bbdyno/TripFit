@@ -10,9 +10,9 @@ import UIKit
 
 public final class TFEmptyStateView: UIView {
     private let iconImageView = UIImageView()
+    private let iconContainer = UIView()
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
-    private let cardView = TFCardView(style: .elevated)
     public let actionButton = TFPrimaryButton(title: "")
 
     public init(icon: String, title: String, subtitle: String, buttonTitle: String?) {
@@ -21,7 +21,13 @@ public final class TFEmptyStateView: UIView {
         iconImageView.image = UIImage(systemName: icon)
         iconImageView.tintColor = TFColor.Brand.primary
         iconImageView.contentMode = .scaleAspectFit
-        iconImageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 48, weight: .light)
+        iconImageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)
+        iconContainer.backgroundColor = TFColor.Surface.highlight
+        iconContainer.layer.cornerRadius = 30
+        iconContainer.layer.cornerCurve = .continuous
+        iconContainer.addSubview(iconImageView)
+        iconContainer.snp.makeConstraints { $0.size.equalTo(60) }
+        iconImageView.snp.makeConstraints { $0.center.equalToSuperview() }
 
         titleLabel.text = title
         titleLabel.font = TFTypography.title
@@ -34,30 +40,24 @@ public final class TFEmptyStateView: UIView {
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
 
-        let stack = UIStackView(arrangedSubviews: [iconImageView, titleLabel, subtitleLabel])
+        let stack = UIStackView(arrangedSubviews: [iconContainer, titleLabel, subtitleLabel])
         stack.axis = .vertical
-        stack.spacing = 12
+        stack.spacing = 10
         stack.alignment = .center
 
         if let buttonTitle {
             actionButton.setTitle(buttonTitle, for: .normal)
             stack.addArrangedSubview(actionButton)
-            stack.setCustomSpacing(24, after: subtitleLabel)
-            actionButton.snp.makeConstraints { $0.width.equalTo(200) }
+            stack.setCustomSpacing(22, after: subtitleLabel)
+            actionButton.snp.makeConstraints { $0.width.equalTo(220) }
         } else {
             actionButton.isHidden = true
         }
 
-        addSubview(cardView)
-        cardView.addSubview(stack)
-
-        cardView.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.leading.trailing.equalToSuperview().inset(24)
-        }
-
+        addSubview(stack)
         stack.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(24)
+            make.center.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(40)
         }
     }
 

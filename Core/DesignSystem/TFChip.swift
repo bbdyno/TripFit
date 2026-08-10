@@ -26,7 +26,8 @@ public final class TFChip: UIButton {
         setTitle(title, for: .normal)
         titleLabel?.font = TFTypography.caption.withSize(14)
         layer.cornerRadius = 18
-        layer.borderWidth = 1
+        layer.cornerCurve = .continuous
+        layer.borderWidth = 0
         if #available(iOS 15.0, *) {
             var config = UIButton.Configuration.plain()
             config.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 18, bottom: 10, trailing: 18)
@@ -60,7 +61,6 @@ public final class TFChip: UIButton {
             } else {
                 backgroundColor = accentColor.withAlphaComponent(0.12)
                 setTitleColor(accentColor, for: .normal)
-                layer.borderColor = accentColor.withAlphaComponent(0.35).cgColor
             }
         case .neutralFilter:
             if isChipSelected {
@@ -68,9 +68,8 @@ public final class TFChip: UIButton {
                 setTitleColor(.white, for: .normal)
                 layer.borderColor = TFColor.Brand.primary.cgColor
             } else {
-                backgroundColor = TFColor.Surface.card
+                backgroundColor = TFColor.Surface.chip
                 setTitleColor(TFColor.Text.secondary, for: .normal)
-                layer.borderColor = TFColor.Border.subtle.cgColor
             }
         case .darkFilter:
             let activeColor = UIColor.dynamic(
@@ -85,9 +84,8 @@ public final class TFChip: UIButton {
                 )
                 layer.borderColor = activeColor.cgColor
             } else {
-                backgroundColor = TFColor.Surface.card
+                backgroundColor = TFColor.Surface.chip
                 setTitleColor(TFColor.Text.secondary, for: .normal)
-                layer.borderColor = TFColor.Border.subtle.cgColor
             }
         }
     }

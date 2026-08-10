@@ -18,8 +18,9 @@ public enum TFSpacing {
 }
 
 public enum TFRadius {
-    public static let sm: CGFloat = 10
-    public static let md: CGFloat = 14
-    public static let lg: CGFloat = 18
+    public static let sm: CGFloat = 8
+    public static let md: CGFloat = 12
+    public static let lg: CGFloat = 16
     public static let xl: CGFloat = 24
+    public static let hero: CGFloat = 30
 }

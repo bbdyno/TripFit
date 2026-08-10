@@ -9,7 +9,8 @@ import CoreText
 import UIKit
 
 public enum TFTypography {
-    public static var largeTitle: UIFont { scaledFont(size: 34, weight: .bold, textStyle: .largeTitle) }
+    public static var display: UIFont { scaledFont(size: 40, weight: .bold, textStyle: .largeTitle) }
+    public static var largeTitle: UIFont { scaledFont(size: 32, weight: .bold, textStyle: .largeTitle) }
     public static var title: UIFont { scaledFont(size: 24, weight: .bold, textStyle: .title2) }
     public static var subtitle: UIFont { scaledFont(size: 20, weight: .semibold, textStyle: .title3) }
     public static var headline: UIFont { scaledFont(size: 17, weight: .semibold, textStyle: .headline) }

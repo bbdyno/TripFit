@@ -11,12 +11,12 @@ public final class TFSecondaryButton: UIButton {
     public init(title: String) {
         super.init(frame: .zero)
         setTitle(title, for: .normal)
-        setTitleColor(TFColor.Brand.accentSky, for: .normal)
+        setTitleColor(TFColor.Text.primary, for: .normal)
         titleLabel?.font = TFTypography.headline
         layer.cornerRadius = TFRadius.md
-        layer.borderWidth = 1
-        layer.borderColor = TFColor.Brand.accentSky.withAlphaComponent(0.35).cgColor
-        backgroundColor = TFColor.Brand.accentSky.withAlphaComponent(0.1)
+        layer.cornerCurve = .continuous
+        layer.borderWidth = 0
+        backgroundColor = TFColor.Surface.input
 
         translatesAutoresizingMaskIntoConstraints = false
         heightAnchor.constraint(equalToConstant: 52).isActive = true

@@ -9,62 +9,74 @@ import UIKit
 
 public enum TFColor {
     public enum Brand {
-        public static let primary = UIColor(hex: 0xFF5CA3)
-        public static let primaryLight = UIColor(hex: 0xFF8BC0)
-        public static let primaryDark = UIColor(hex: 0xD94385)
-        public static let accentSky = UIColor(hex: 0x58C4FF)
-        public static let accentPurple = UIColor(hex: 0xB28DFF)
-        public static let accentMint = UIColor(hex: 0x34D399)
-        public static let accentOrange = UIColor(hex: 0xFB923C)
+        public static let primary = UIColor(hex: 0xF24F91)
+        public static let primaryLight = UIColor(hex: 0xFF8AB8)
+        public static let primaryDark = UIColor(hex: 0xC93472)
+        public static let ink = UIColor.dynamic(
+            light: UIColor(hex: 0x20262B),
+            dark: UIColor(hex: 0xF4F0F2)
+        )
+        public static let accentSky = UIColor(hex: 0x4AA8D8)
+        public static let accentPurple = UIColor(hex: 0x8E78D6)
+        public static let accentMint = UIColor(hex: 0x2EAE83)
+        public static let accentOrange = UIColor(hex: 0xE9853F)
     }
 
     public enum Surface {
         public static let canvas = UIColor.dynamic(
-            light: UIColor(hex: 0xF8F5F7),
-            dark: UIColor(hex: 0x230F18)
+            light: UIColor(hex: 0xF7F5F2),
+            dark: UIColor(hex: 0x0F171D)
         )
         public static let card = UIColor.dynamic(
-            light: .white,
-            dark: UIColor(hex: 0x2D1622)
+            light: UIColor(hex: 0xFFFEFC),
+            dark: UIColor(hex: 0x172129)
         )
         public static let elevated = UIColor.dynamic(
             light: .white,
-            dark: UIColor(hex: 0x351A24)
+            dark: UIColor(hex: 0x1C2730)
         )
         public static let input = UIColor.dynamic(
-            light: UIColor(hex: 0xF0EEF2),
-            dark: UIColor(hex: 0x3A1C29)
+            light: UIColor(hex: 0xEEEAE6),
+            dark: UIColor(hex: 0x222E37)
         )
         public static let chip = UIColor.dynamic(
-            light: UIColor(hex: 0xF8F4F6),
-            dark: UIColor(hex: 0x351A24)
+            light: UIColor(hex: 0xF0ECE8),
+            dark: UIColor(hex: 0x222E37)
+        )
+        public static let hero = UIColor.dynamic(
+            light: UIColor(hex: 0x242B31),
+            dark: UIColor(hex: 0x202C35)
+        )
+        public static let highlight = UIColor.dynamic(
+            light: UIColor(hex: 0xFFE1EC),
+            dark: UIColor(hex: 0x38202C)
         )
     }
 
     public enum Text {
         public static let primary = UIColor.dynamic(
-            light: UIColor(hex: 0x1E1E1E),
-            dark: UIColor(hex: 0xF9F5F7)
+            light: UIColor(hex: 0x20262B),
+            dark: UIColor(hex: 0xF6F2F4)
         )
         public static let secondary = UIColor.dynamic(
-            light: UIColor(hex: 0x8D5E72),
-            dark: UIColor(hex: 0xCBAFBC)
+            light: UIColor(hex: 0x62686D),
+            dark: UIColor(hex: 0xB4BEC5)
         )
         public static let tertiary = UIColor.dynamic(
-            light: UIColor(hex: 0xB794A7),
-            dark: UIColor(hex: 0x9D7E8B)
+            light: UIColor(hex: 0x8E9498),
+            dark: UIColor(hex: 0x81909A)
         )
         public static let inverse = UIColor.white
     }
 
     public enum Border {
         public static let subtle = UIColor.dynamic(
-            light: UIColor(hex: 0xF1E8ED),
-            dark: UIColor(hex: 0x4B2C38)
+            light: UIColor(hex: 0xE8E3DE),
+            dark: UIColor(hex: 0x2B3943)
         )
         public static let strong = UIColor.dynamic(
-            light: UIColor(hex: 0xE5D4DD),
-            dark: UIColor(hex: 0x5B3545)
+            light: UIColor(hex: 0xD7D0CA),
+            dark: UIColor(hex: 0x3A4A56)
         )
     }
 

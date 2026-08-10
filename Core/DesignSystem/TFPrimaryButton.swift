@@ -8,31 +8,21 @@
 import UIKit
 
 public final class TFPrimaryButton: UIButton {
-    private let gradientLayer = CAGradientLayer()
-
     public init(title: String) {
         super.init(frame: .zero)
         setTitle(title, for: .normal)
         setTitleColor(TFColor.Text.inverse, for: .normal)
         titleLabel?.font = TFTypography.button
         layer.cornerRadius = TFRadius.md
+        layer.cornerCurve = .continuous
         clipsToBounds = true
-
-        gradientLayer.colors = [TFColor.Brand.primary.cgColor, TFColor.Brand.primaryLight.cgColor]
-        gradientLayer.startPoint = CGPoint(x: 0, y: 0.5)
-        gradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
-        layer.insertSublayer(gradientLayer, at: 0)
+        backgroundColor = TFColor.Brand.primary
 
         configureHeight()
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-
-    public override func layoutSubviews() {
-        super.layoutSubviews()
-        gradientLayer.frame = bounds
-    }
 
     private func configureHeight() {
         translatesAutoresizingMaskIntoConstraints = false
@@ -42,6 +32,13 @@ public final class TFPrimaryButton: UIButton {
     public override var isEnabled: Bool {
         didSet {
             alpha = isEnabled ? 1 : 0.45
+        }
+    }
+
+    public override var isHighlighted: Bool {
+        didSet {
+            backgroundColor = isHighlighted ? TFColor.Brand.primaryDark : TFColor.Brand.primary
+            transform = isHighlighted ? CGAffineTransform(scaleX: 0.985, y: 0.985) : .identity
         }
     }
 }
