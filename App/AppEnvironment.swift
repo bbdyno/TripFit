@@ -5,6 +5,7 @@
 //  Created by bbdyno on 2/19/26.
 //
 
+import CollaborationData
 import Domain
 import Foundation
 import SwiftData
@@ -12,10 +13,16 @@ import SwiftData
 final class AppEnvironment: @unchecked Sendable {
     let container: ModelContainer
     let onboardingStore: OnboardingStore
+    let authService: any AuthService
 
-    private init(container: ModelContainer, onboardingStore: OnboardingStore) {
+    private init(
+        container: ModelContainer,
+        onboardingStore: OnboardingStore,
+        authService: any AuthService
+    ) {
         self.container = container
         self.onboardingStore = onboardingStore
+        self.authService = authService
     }
 
     @MainActor
@@ -30,10 +37,22 @@ final class AppEnvironment: @unchecked Sendable {
             PackingItem.self,
         ])
         let container = ModelContainerBootstrap.makeContainer(schema: schema)
-        return AppEnvironment(
+        let authService: any AuthService
+        switch FirebaseRuntime.shared.state {
+        case .configured:
+            authService = FirebaseAuthService()
+        case let .unavailable(reason):
+            authService = DisabledAuthService(reason: reason)
+        case .notConfigured:
+            authService = DisabledAuthService(reason: "Firebase has not been configured.")
+        }
+        let environment = AppEnvironment(
             container: container,
-            onboardingStore: OnboardingStore()
+            onboardingStore: OnboardingStore(),
+            authService: authService
         )
+        Task { _ = await authService.restoreSession() }
+        return environment
     }
 }
 

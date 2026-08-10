@@ -112,7 +112,10 @@ final class MainTabBarController: UITabBarController {
         tripsVC.tabBarItem.tag = 2
 
         let moreVC = UINavigationController(
-            rootViewController: MoreSettingsHomeViewController(context: environment.context)
+            rootViewController: MoreSettingsHomeViewController(
+                context: environment.context,
+                authService: environment.authService
+            )
         )
         moreVC.tabBarItem = UITabBarItem(
             title: CoreStrings.Tab.more,
