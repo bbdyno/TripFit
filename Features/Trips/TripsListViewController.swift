@@ -103,7 +103,7 @@ public final class TripsListViewController: UIViewController {
     }
 
     private func setupHeader() {
-        headerContainer.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.96)
+        headerContainer.backgroundColor = TFColor.Surface.canvas
         view.addSubview(headerContainer)
         headerContainer.snp.makeConstraints { make in
             make.top.equalToSuperview()
@@ -111,11 +111,11 @@ public final class TripsListViewController: UIViewController {
         }
 
         titleLabel.text = "Trips"
-        titleLabel.font = TFTypography.largeTitle.withSize(36)
+        titleLabel.font = TFTypography.largeTitle
         titleLabel.textColor = TFColor.Text.primary
 
-        subtitleLabel.text = "Ready for your next adventure?"
-        subtitleLabel.font = TFTypography.caption
+        subtitleLabel.text = localized("개인 여행도, 함께 준비하는 여행도", "Private trips and plans made together")
+        subtitleLabel.font = TFTypography.footnote.withSize(13)
         subtitleLabel.textColor = TFColor.Text.secondary
 
         let titleStack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
@@ -140,9 +140,9 @@ public final class TripsListViewController: UIViewController {
         titleRow.spacing = TFSpacing.md
         headerContainer.addSubview(titleRow)
         titleRow.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
-            make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
-            make.bottom.equalToSuperview().inset(8)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
+            make.bottom.equalToSuperview().inset(10)
         }
         addButton.snp.makeConstraints { make in
             make.size.equalTo(44)
@@ -160,12 +160,12 @@ public final class TripsListViewController: UIViewController {
         }
 
         sharedTitleLabel.text = localized("함께 준비하는 여행", "Trips We Plan Together")
-        sharedTitleLabel.font = TFTypography.headline
+        sharedTitleLabel.font = TFTypography.subtitle.withSize(19)
         sharedTitleLabel.textColor = TFColor.Text.primary
         sharedSection.addSubview(sharedTitleLabel)
         sharedTitleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(12)
-            make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
         }
 
         sharedScrollView.showsHorizontalScrollIndicator = false
@@ -185,12 +185,12 @@ public final class TripsListViewController: UIViewController {
         }
 
         personalTitleLabel.text = localized("내 여행", "My Trips")
-        personalTitleLabel.font = TFTypography.headline
+        personalTitleLabel.font = TFTypography.subtitle.withSize(19)
         personalTitleLabel.textColor = TFColor.Text.primary
         view.addSubview(personalTitleLabel)
         personalTitleLabel.snp.makeConstraints { make in
             make.top.equalTo(sharedSection.snp.bottom).offset(4)
-            make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
         }
         renderSharedRooms()
     }
@@ -367,7 +367,7 @@ extension TripsListViewController {
         let stack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
         stack.axis = .vertical
         stack.spacing = 4
-        let card = TFCardView(style: .outlined)
+        let card = TFCardView(style: .flat)
         card.addSubview(stack)
         stack.snp.makeConstraints { $0.edges.equalToSuperview().inset(TFSpacing.md) }
         sharedStack.addArrangedSubview(card)

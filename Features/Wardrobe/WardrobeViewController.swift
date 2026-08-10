@@ -17,6 +17,7 @@ public final class WardrobeViewController: UIViewController {
 
     private let headerContainer = UIView()
     private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
     private let addButton = UIButton(type: .system)
     private let searchContainer = UIView()
     private let searchIcon = UIImageView(image: UIImage(systemName: "magnifyingglass"))
@@ -61,7 +62,7 @@ public final class WardrobeViewController: UIViewController {
     }
 
     private func setupHeader() {
-        headerContainer.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.96)
+        headerContainer.backgroundColor = TFColor.Surface.canvas
         view.addSubview(headerContainer)
         headerContainer.snp.makeConstraints { make in
             make.top.equalToSuperview()
@@ -71,6 +72,14 @@ public final class WardrobeViewController: UIViewController {
         titleLabel.text = CoreStrings.Wardrobe.title
         titleLabel.font = TFTypography.largeTitle
         titleLabel.textColor = TFColor.Text.primary
+
+        subtitleLabel.text = localized("내 옷을 정리하고 바로 찾아보세요", "Your closet, ready when you need it")
+        subtitleLabel.font = TFTypography.footnote.withSize(13)
+        subtitleLabel.textColor = TFColor.Text.secondary
+
+        let titleStack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
+        titleStack.axis = .vertical
+        titleStack.spacing = 1
 
         addButton.setImage(
             UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 21, weight: .bold)),
@@ -83,29 +92,29 @@ public final class WardrobeViewController: UIViewController {
         addButton.layer.borderColor = TFColor.Brand.primary.withAlphaComponent(0.24).cgColor
         addButton.addAction(UIAction { [weak self] _ in self?.addTapped() }, for: .touchUpInside)
 
-        let titleRow = UIStackView(arrangedSubviews: [titleLabel, UIView(), addButton])
+        let titleRow = UIStackView(arrangedSubviews: [titleStack, UIView(), addButton])
         titleRow.alignment = .center
         titleRow.spacing = TFSpacing.md
         headerContainer.addSubview(titleRow)
         titleRow.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
-            make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
         }
         addButton.snp.makeConstraints { make in
             make.size.equalTo(40)
         }
         addButton.isHidden = true
 
-        searchContainer.backgroundColor = TFColor.Surface.card
-        searchContainer.layer.cornerRadius = 12
-        searchContainer.layer.borderWidth = 1
-        searchContainer.layer.borderColor = TFColor.Border.subtle.cgColor
+        searchContainer.backgroundColor = TFColor.Surface.input
+        searchContainer.layer.cornerRadius = TFRadius.lg
+        searchContainer.layer.cornerCurve = .continuous
+        searchContainer.layer.borderWidth = 0
         headerContainer.addSubview(searchContainer)
         searchContainer.snp.makeConstraints { make in
-            make.top.equalTo(titleRow.snp.bottom).offset(TFSpacing.sm)
-            make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
-            make.height.equalTo(48)
-            make.bottom.equalToSuperview().inset(6)
+            make.top.equalTo(titleRow.snp.bottom).offset(14)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
+            make.height.equalTo(50)
+            make.bottom.equalToSuperview().inset(10)
         }
 
         searchIcon.tintColor = TFColor.Text.tertiary
@@ -242,6 +251,10 @@ public final class WardrobeViewController: UIViewController {
         case .accessories:
             CoreStrings.Category.accessories
         }
+    }
+
+    private func localized(_ korean: String, _ english: String) -> String {
+        TFAppLanguage.current() == .korean ? korean : english
     }
 
     @objc private func addTapped() {

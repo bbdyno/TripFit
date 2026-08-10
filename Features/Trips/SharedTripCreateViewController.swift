@@ -43,7 +43,7 @@ public final class SharedTripCreateViewController: UIViewController {
         let scrollView = UIScrollView()
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = TFSpacing.lg
+        stack.spacing = TFSpacing.md
         view.addSubview(scrollView)
         scrollView.addSubview(stack)
         scrollView.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide) }
@@ -52,15 +52,8 @@ public final class SharedTripCreateViewController: UIViewController {
             $0.width.equalTo(scrollView.frameLayoutGuide).inset(TFSpacing.lg)
         }
 
-        let intro = UILabel()
-        intro.numberOfLines = 0
-        intro.font = TFTypography.bodyRegular
-        intro.textColor = TFColor.Text.secondary
-        intro.text = localized(
-            "아직 날짜가 정해지지 않은 여행방을 만들고 친구와 가능한 날을 맞춰보세요.",
-            "Create a room before dates are fixed and compare availability with friends."
-        )
-        stack.addArrangedSubview(intro)
+        stack.addArrangedSubview(makeIntroHero())
+        stack.setCustomSpacing(TFSpacing.xl, after: stack.arrangedSubviews.last!)
 
         configure(field: titleField, placeholder: localized("방 제목", "Room title"))
         configure(field: destinationField, placeholder: localized("목적지", "Destination"))
@@ -93,6 +86,9 @@ public final class SharedTripCreateViewController: UIViewController {
 
         createButton.setTitle(localized("여행방 만들기", "Create Trip Room"), for: .normal)
         createButton.addTarget(self, action: #selector(createTapped), for: .touchUpInside)
+        if let previousView = stack.arrangedSubviews.last {
+            stack.setCustomSpacing(TFSpacing.xl, after: previousView)
+        }
         stack.addArrangedSubview(createButton)
     }
 
@@ -111,11 +107,62 @@ public final class SharedTripCreateViewController: UIViewController {
         let stack = UIStackView(arrangedSubviews: [titleLabel, control])
         stack.axis = .vertical
         stack.spacing = 8
-        let card = TFCardView()
+        let card = TFCardView(style: .flat)
         card.addSubview(stack)
         stack.snp.makeConstraints { $0.edges.equalToSuperview().inset(TFSpacing.md) }
         card.snp.makeConstraints { $0.height.greaterThanOrEqualTo(72) }
         return card
+    }
+
+    private func makeIntroHero() -> UIView {
+        let hero = UIView()
+        hero.backgroundColor = TFColor.Surface.hero
+        hero.layer.cornerRadius = TFRadius.xl
+        hero.layer.cornerCurve = .continuous
+
+        let eyebrow = UILabel()
+        eyebrow.text = "TRIPFIT TOGETHER"
+        eyebrow.font = TFTypography.caption.withSize(11)
+        eyebrow.textColor = TFColor.Brand.primaryLight
+
+        let title = UILabel()
+        title.text = localized("날짜부터\n함께 맞춰보세요.", "Start with dates\nyou can all make.")
+        title.font = TFTypography.title.withSize(26)
+        title.textColor = .white
+        title.numberOfLines = 0
+
+        let subtitle = UILabel()
+        subtitle.text = localized(
+            "여행방을 만들면 친구들의 가능한 날을 한눈에 비교할 수 있어요.",
+            "Create a private room, invite friends, and compare everyone’s availability."
+        )
+        subtitle.font = TFTypography.bodyRegular.withSize(14)
+        subtitle.textColor = UIColor.white.withAlphaComponent(0.72)
+        subtitle.numberOfLines = 0
+
+        let icon = UIImageView(image: UIImage(systemName: "person.2.fill"))
+        icon.tintColor = TFColor.Brand.primaryLight
+        icon.backgroundColor = UIColor.white.withAlphaComponent(0.1)
+        icon.contentMode = .center
+        icon.layer.cornerRadius = 22
+        icon.layer.cornerCurve = .continuous
+
+        let textStack = UIStackView(arrangedSubviews: [eyebrow, title, subtitle])
+        textStack.axis = .vertical
+        textStack.spacing = 7
+        hero.addSubview(textStack)
+        hero.addSubview(icon)
+        textStack.snp.makeConstraints { make in
+            make.top.bottom.leading.equalToSuperview().inset(TFSpacing.lg)
+            make.trailing.equalTo(icon.snp.leading).offset(-12)
+        }
+        icon.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(TFSpacing.lg)
+            make.top.equalToSuperview().inset(TFSpacing.lg)
+            make.size.equalTo(44)
+        }
+        hero.snp.makeConstraints { $0.height.greaterThanOrEqualTo(176) }
+        return hero
     }
 
     @objc private func dateChanged() {

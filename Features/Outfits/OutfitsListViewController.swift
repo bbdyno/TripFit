@@ -12,16 +12,26 @@ import SwiftData
 import UIKit
 
 public final class OutfitsListViewController: UIViewController {
-    private enum FilterType: String, CaseIterable {
-        case all = "All"
-        case favorites = "Favorites"
-        case summer = "Summer 24"
+    private enum FilterType: CaseIterable {
+        case all
+        case favorites
+        case summer
+
+        var title: String {
+            let korean = TFAppLanguage.current() == .korean
+            switch self {
+            case .all: return korean ? "전체" : "All"
+            case .favorites: return korean ? "즐겨찾기" : "Favorites"
+            case .summer: return korean ? "여름" : "Summer"
+            }
+        }
     }
 
     private let context: ModelContext
     private var outfits: [Outfit] = []
     private let headerContainer = UIView()
     private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
     private let addButton = UIButton(type: .system)
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, UUID>!
@@ -60,7 +70,7 @@ public final class OutfitsListViewController: UIViewController {
     }
 
     private func setupHeader() {
-        headerContainer.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.96)
+        headerContainer.backgroundColor = TFColor.Surface.canvas
         view.addSubview(headerContainer)
         headerContainer.snp.makeConstraints { make in
             make.top.equalToSuperview()
@@ -70,6 +80,14 @@ public final class OutfitsListViewController: UIViewController {
         titleLabel.text = "Outfits"
         titleLabel.font = TFTypography.largeTitle
         titleLabel.textColor = TFColor.Text.primary
+
+        subtitleLabel.text = localized("내 옷으로 완성한 룩", "Looks made from what you own")
+        subtitleLabel.font = TFTypography.footnote.withSize(13)
+        subtitleLabel.textColor = TFColor.Text.secondary
+
+        let titleStack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
+        titleStack.axis = .vertical
+        titleStack.spacing = 1
 
         addButton.setImage(
             UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)),
@@ -84,14 +102,14 @@ public final class OutfitsListViewController: UIViewController {
         addButton.layer.shadowOffset = CGSize(width: 0, height: 4)
         addButton.addAction(UIAction { [weak self] _ in self?.addTapped() }, for: .touchUpInside)
 
-        let titleRow = UIStackView(arrangedSubviews: [titleLabel, UIView(), addButton])
+        let titleRow = UIStackView(arrangedSubviews: [titleStack, UIView(), addButton])
         titleRow.alignment = .center
         titleRow.spacing = TFSpacing.md
         headerContainer.addSubview(titleRow)
         titleRow.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
-            make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
-            make.bottom.equalToSuperview().inset(6)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
+            make.bottom.equalToSuperview().inset(10)
         }
         addButton.snp.makeConstraints { make in
             make.size.equalTo(40)
@@ -118,7 +136,7 @@ public final class OutfitsListViewController: UIViewController {
         }
 
         FilterType.allCases.forEach { filter in
-            let button = TFChip(title: filter.rawValue)
+            let button = TFChip(title: filter.title)
             button.setStyle(.darkFilter)
             button.tag = filterButtons.count
             button.addTarget(self, action: #selector(filterChipTapped(_:)), for: .touchUpInside)
@@ -218,6 +236,10 @@ public final class OutfitsListViewController: UIViewController {
         snapshot.appendItems(filteredOutfits.map(\.id))
         dataSource.apply(snapshot, animatingDifferences: true)
         emptyView.isHidden = !filteredOutfits.isEmpty
+    }
+
+    private func localized(_ korean: String, _ english: String) -> String {
+        TFAppLanguage.current() == .korean ? korean : english
     }
 }
 

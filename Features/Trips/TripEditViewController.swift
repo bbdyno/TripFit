@@ -28,8 +28,6 @@ public final class TripEditViewController: UIViewController {
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
-    private weak var heroContainerView: UIView?
-    private let heroGradientLayer = CAGradientLayer()
 
     private let nameField = UITextField()
     private let destinationValueLabel = UILabel()
@@ -43,7 +41,6 @@ public final class TripEditViewController: UIViewController {
     private let bottomFadeLayer = CAGradientLayer()
     private let bottomBar = UIView()
     private let createButton = UIButton(type: .system)
-    private let createButtonGradientLayer = CAGradientLayer()
 
     public init(context: ModelContext, editingTrip: Trip? = nil) {
         self.context = context
@@ -78,8 +75,6 @@ public final class TripEditViewController: UIViewController {
     public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         bottomFadeLayer.frame = bottomFadeView.bounds
-        createButtonGradientLayer.frame = createButton.bounds
-        heroGradientLayer.frame = heroContainerView?.bounds ?? .zero
     }
 
     private func setupLayout() {
@@ -155,11 +150,9 @@ public final class TripEditViewController: UIViewController {
         createButton.setTitleColor(.white, for: .normal)
         createButton.titleLabel?.font = TFTypography.button.withSize(17)
         createButton.layer.cornerRadius = 22
+        createButton.layer.cornerCurve = .continuous
         createButton.layer.masksToBounds = true
-        createButton.layer.insertSublayer(createButtonGradientLayer, at: 0)
-        createButtonGradientLayer.colors = [TFColor.Brand.primary.cgColor, UIColor(hex: 0xF9963B).cgColor]
-        createButtonGradientLayer.startPoint = CGPoint(x: 0, y: 0.5)
-        createButtonGradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
+        createButton.backgroundColor = TFColor.Brand.primary
 
         let arrow = TFMaterialIcon.image(named: "arrow_forward", pointSize: 18, weight: .medium)
             ?? UIImage(systemName: "arrow.right")
@@ -204,24 +197,44 @@ public final class TripEditViewController: UIViewController {
 
     private func setupHeroSection() {
         let hero = UIView()
-        heroContainerView = hero
+        hero.backgroundColor = TFColor.Surface.hero
         hero.layer.cornerRadius = TFRadius.xl
+        hero.layer.cornerCurve = .continuous
         hero.clipsToBounds = true
         contentStack.addArrangedSubview(hero)
-        hero.snp.makeConstraints { $0.height.equalTo(96) }
+        hero.snp.makeConstraints { $0.height.equalTo(112) }
 
-        heroGradientLayer.colors = [TFColor.Brand.primary.withAlphaComponent(0.18).cgColor, UIColor(hex: 0xC49BFF, alpha: 0.2).cgColor]
-        heroGradientLayer.startPoint = CGPoint(x: 0, y: 0.5)
-        heroGradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
-        hero.layer.insertSublayer(heroGradientLayer, at: 0)
+        let eyebrow = UILabel()
+        eyebrow.text = "NEW TRIP"
+        eyebrow.font = TFTypography.caption.withSize(12)
+        eyebrow.textColor = TFColor.Text.inverse.withAlphaComponent(0.64)
+        hero.addSubview(eyebrow)
+        eyebrow.snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(20)
+            make.top.equalToSuperview().inset(20)
+        }
+
+        let routeLabel = UILabel()
+        routeLabel.text = "Where to next?"
+        routeLabel.font = TFTypography.title.withSize(22)
+        routeLabel.textColor = TFColor.Text.inverse
+        hero.addSubview(routeLabel)
+        routeLabel.snp.makeConstraints { make in
+            make.leading.equalTo(eyebrow)
+            make.top.equalTo(eyebrow.snp.bottom).offset(8)
+        }
 
         let icon = UIImageView(
             image: TFMaterialIcon.image(named: "flight_takeoff", pointSize: 54, weight: .medium)
                 ?? UIImage(systemName: "airplane.departure")
         )
-        icon.tintColor = TFColor.Brand.primary.withAlphaComponent(0.65)
+        icon.tintColor = TFColor.Brand.primaryLight
         hero.addSubview(icon)
-        icon.snp.makeConstraints { $0.center.equalToSuperview() }
+        icon.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(22)
+            make.centerY.equalToSuperview()
+            make.size.equalTo(52)
+        }
     }
 
     private func setupNameSection() {

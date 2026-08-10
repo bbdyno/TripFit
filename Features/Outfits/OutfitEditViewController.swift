@@ -43,7 +43,6 @@ public final class OutfitEditViewController: UIViewController {
     private let bottomFadeLayer = CAGradientLayer()
     private let bottomBar = UIView()
     private let saveButton = UIButton(type: .system)
-    private let saveButtonGradientLayer = CAGradientLayer()
 
     public init(context: ModelContext, editingOutfit: Outfit? = nil) {
         self.context = context
@@ -83,7 +82,6 @@ public final class OutfitEditViewController: UIViewController {
     public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         bottomFadeLayer.frame = bottomFadeView.bounds
-        saveButtonGradientLayer.frame = saveButton.bounds
     }
 
     private func setupLayout() {
@@ -156,11 +154,9 @@ public final class OutfitEditViewController: UIViewController {
         saveButton.setTitleColor(.white, for: .normal)
         saveButton.titleLabel?.font = TFTypography.button.withSize(17)
         saveButton.layer.cornerRadius = 22
+        saveButton.layer.cornerCurve = .continuous
         saveButton.layer.masksToBounds = true
-        saveButton.layer.insertSublayer(saveButtonGradientLayer, at: 0)
-        saveButtonGradientLayer.colors = [UIColor(hex: 0x58C4FF).cgColor, UIColor(hex: 0x3AB0FF).cgColor]
-        saveButtonGradientLayer.startPoint = CGPoint(x: 0, y: 0.5)
-        saveButtonGradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
+        saveButton.backgroundColor = TFColor.Brand.primary
 
         bottomBar.addSubview(saveButton)
         saveButton.snp.makeConstraints { make in

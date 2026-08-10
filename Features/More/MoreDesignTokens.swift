@@ -10,37 +10,22 @@ import SnapKit
 import UIKit
 
 enum MorePalette {
-    static let pageBackground = UIColor.dynamic(
-        light: UIColor(hex: 0xF2F2F7),
-        dark: UIColor(hex: 0x101922)
-    )
-    static let cardBackground = UIColor.dynamic(
-        light: .white,
-        dark: UIColor(hex: 0x1C2127)
-    )
-    static let cardBorder = UIColor.dynamic(
-        light: UIColor(hex: 0xE2E7EE),
-        dark: UIColor(hex: 0x283039)
-    )
-    static let sectionTitle = UIColor.dynamic(
-        light: UIColor(hex: 0x7C8EA7),
-        dark: UIColor(hex: 0x6D7D90)
-    )
-    static let subtitle = UIColor.dynamic(
-        light: UIColor(hex: 0x8EA0B7),
-        dark: UIColor(hex: 0x8A97A8)
-    )
+    static let pageBackground = TFColor.Surface.canvas
+    static let cardBackground = TFColor.Surface.card
+    static let cardBorder = TFColor.Border.subtle
+    static let sectionTitle = TFColor.Text.secondary
+    static let subtitle = TFColor.Text.tertiary
     static let chevron = UIColor.dynamic(
-        light: UIColor(hex: 0xBFCCDC),
-        dark: UIColor(hex: 0x5B6878)
+        light: UIColor(hex: 0xA7ACB0),
+        dark: UIColor(hex: 0x71808A)
     )
     static let separator = UIColor.dynamic(
-        light: UIColor(hex: 0xE7ECF2),
-        dark: UIColor(hex: 0x2E3743)
+        light: UIColor(hex: 0xE8E3DE),
+        dark: UIColor(hex: 0x2B3943)
     )
     static let rowHighlight = UIColor.dynamic(
-        light: UIColor(hex: 0xF6F9FD),
-        dark: UIColor(hex: 0x232B35)
+        light: UIColor(hex: 0xF3F0ED),
+        dark: UIColor(hex: 0x222E37)
     )
 
     static let blue = UIColor(hex: 0x2B8CEE)
@@ -59,7 +44,7 @@ enum MorePalette {
 
 enum MoreMetrics {
     static let horizontalInset: CGFloat = 16
-    static let cardCorner: CGFloat = 14
+    static let cardCorner: CGFloat = 16
     static let iconCorner: CGFloat = 8
     static let rowHeight: CGFloat = 50
 }

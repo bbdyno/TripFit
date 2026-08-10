@@ -70,25 +70,16 @@ public final class SharedTripRoomViewController: UIViewController {
             $0.width.equalTo(scrollView.frameLayoutGuide).inset(TFSpacing.md)
         }
 
-        let hero = UILabel()
-        hero.font = TFTypography.largeTitle
-        hero.textColor = TFColor.Text.primary
-        hero.numberOfLines = 0
-        hero.text = room.title
-        stack.addArrangedSubview(hero)
-
-        summaryLabel.font = TFTypography.bodyRegular
-        summaryLabel.textColor = TFColor.Text.secondary
-        summaryLabel.numberOfLines = 0
-        stack.addArrangedSubview(summaryLabel)
+        stack.addArrangedSubview(makeRoomHero())
+        stack.setCustomSpacing(TFSpacing.xl, after: stack.arrangedSubviews.last!)
 
         recommendationLabel.font = TFTypography.bodyRegular
         recommendationLabel.textColor = TFColor.Text.primary
         recommendationLabel.numberOfLines = 0
-        recommendationLabel.backgroundColor = TFColor.Surface.card
-        recommendationLabel.layer.cornerRadius = TFRadius.md
-        recommendationLabel.clipsToBounds = true
-        stack.addArrangedSubview(recommendationLabel)
+        let recommendationCard = TFCardView(style: .flat)
+        recommendationCard.addSubview(recommendationLabel)
+        recommendationLabel.snp.makeConstraints { $0.edges.equalToSuperview().inset(TFSpacing.lg) }
+        stack.addArrangedSubview(recommendationCard)
 
         stack.addArrangedSubview(makeButton(localized("내 가능한 날짜 제출", "Submit My Availability"), icon: "calendar.badge.check") { [weak self] in
             self?.openAvailability()
@@ -114,6 +105,36 @@ public final class SharedTripRoomViewController: UIViewController {
         stack.addArrangedSubview(addToMyTripsButton)
     }
 
+    private func makeRoomHero() -> UIView {
+        let hero = UIView()
+        hero.backgroundColor = TFColor.Surface.hero
+        hero.layer.cornerRadius = TFRadius.xl
+        hero.layer.cornerCurve = .continuous
+
+        let eyebrow = UILabel()
+        eyebrow.text = localized("함께 준비하는 여행", "PLANNING TOGETHER").uppercased()
+        eyebrow.font = TFTypography.caption.withSize(11)
+        eyebrow.textColor = TFColor.Brand.primaryLight
+
+        let titleLabel = UILabel()
+        titleLabel.font = TFTypography.largeTitle
+        titleLabel.textColor = .white
+        titleLabel.numberOfLines = 0
+        titleLabel.text = room.title
+
+        summaryLabel.font = TFTypography.bodyRegular.withSize(15)
+        summaryLabel.textColor = UIColor.white.withAlphaComponent(0.72)
+        summaryLabel.numberOfLines = 0
+
+        let stack = UIStackView(arrangedSubviews: [eyebrow, titleLabel, summaryLabel])
+        stack.axis = .vertical
+        stack.spacing = 8
+        hero.addSubview(stack)
+        stack.snp.makeConstraints { $0.edges.equalToSuperview().inset(TFSpacing.lg) }
+        hero.snp.makeConstraints { $0.height.greaterThanOrEqualTo(188) }
+        return hero
+    }
+
     private func makeButton(_ title: String, icon: String, action: @escaping () -> Void) -> UIButton {
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.filled()
@@ -123,7 +144,10 @@ public final class SharedTripRoomViewController: UIViewController {
         config.baseBackgroundColor = TFColor.Surface.card
         config.baseForegroundColor = TFColor.Text.primary
         config.cornerStyle = .large
+        config.titleAlignment = .leading
+        config.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 18, bottom: 16, trailing: 18)
         button.configuration = config
+        button.contentHorizontalAlignment = .leading
         button.addAction(UIAction { _ in action() }, for: .touchUpInside)
         button.snp.makeConstraints { $0.height.greaterThanOrEqualTo(54) }
         return button
@@ -153,7 +177,10 @@ public final class SharedTripRoomViewController: UIViewController {
         config.baseBackgroundColor = TFColor.Surface.card
         config.baseForegroundColor = TFColor.Text.primary
         config.cornerStyle = .large
+        config.titleAlignment = .leading
+        config.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 18, bottom: 16, trailing: 18)
         button.configuration = config
+        button.contentHorizontalAlignment = .leading
         button.addAction(UIAction { _ in action() }, for: .touchUpInside)
         button.snp.makeConstraints { $0.height.greaterThanOrEqualTo(54) }
     }

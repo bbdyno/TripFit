@@ -50,7 +50,6 @@ public final class ItemSelectViewController: UIViewController {
     private let bottomFadeLayer = CAGradientLayer()
     private let bottomBar = UIView()
     private let doneButton = UIButton(type: .system)
-    private let doneButtonGradientLayer = CAGradientLayer()
 
     public init(context: ModelContext, selectedItems: [ClothingItem]) {
         self.context = context
@@ -74,7 +73,6 @@ public final class ItemSelectViewController: UIViewController {
     public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         bottomFadeLayer.frame = bottomFadeView.bounds
-        doneButtonGradientLayer.frame = doneButton.bounds
     }
 
     private func setupNavigation() {
@@ -189,11 +187,9 @@ public final class ItemSelectViewController: UIViewController {
         doneButton.setTitleColor(.white, for: .normal)
         doneButton.titleLabel?.font = TFTypography.button.withSize(17)
         doneButton.layer.cornerRadius = 28
+        doneButton.layer.cornerCurve = .continuous
         doneButton.layer.masksToBounds = true
-        doneButton.layer.insertSublayer(doneButtonGradientLayer, at: 0)
-        doneButtonGradientLayer.colors = [UIColor(hex: 0x58C4FF).cgColor, UIColor(hex: 0x3AB0FF).cgColor]
-        doneButtonGradientLayer.startPoint = CGPoint(x: 0, y: 0.5)
-        doneButtonGradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
+        doneButton.backgroundColor = TFColor.Brand.primary
         doneButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
         bottomBar.addSubview(doneButton)
         doneButton.snp.makeConstraints { make in
@@ -333,7 +329,7 @@ private final class SelectableClothingCell: UITableViewCell {
         categoryBadge.layer.masksToBounds = true
 
         checkmarkView.contentMode = .scaleAspectFit
-        checkmarkView.tintColor = UIColor(hex: 0x58C4FF)
+        checkmarkView.tintColor = TFColor.Brand.primary
 
         let textStack = UIStackView(arrangedSubviews: [nameLabel, categoryBadge])
         textStack.axis = .vertical
@@ -378,7 +374,9 @@ private final class SelectableClothingCell: UITableViewCell {
     func configure(with item: ClothingItem, isSelected: Bool) {
         nameLabel.text = item.name
         categoryBadge.text = item.category.displayName
-        card.layer.borderColor = isSelected ? UIColor(hex: 0x58C4FF).withAlphaComponent(0.5).cgColor : TFColor.Border.subtle.cgColor
+        card.layer.borderColor = isSelected
+            ? TFColor.Brand.primary.withAlphaComponent(0.5).cgColor
+            : TFColor.Border.subtle.cgColor
         card.layer.borderWidth = isSelected ? 1.5 : 1
         checkmarkView.image = TFMaterialIcon.image(
             named: isSelected ? "check_circle" : "radio_button_unchecked",

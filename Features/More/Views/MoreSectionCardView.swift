@@ -76,8 +76,8 @@ final class MoreSectionCardView: UIView {
 
         cardView.backgroundColor = MorePalette.cardBackground
         cardView.layer.cornerRadius = MoreMetrics.cardCorner
-        cardView.layer.borderWidth = 1 / UIScreen.main.scale
-        cardView.layer.borderColor = MorePalette.cardBorder.cgColor
+        cardView.layer.cornerCurve = .continuous
+        cardView.layer.borderWidth = 0
         cardView.clipsToBounds = true
         addSubview(cardView)
         cardView.snp.makeConstraints { make in

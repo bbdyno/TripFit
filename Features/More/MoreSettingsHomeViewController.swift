@@ -74,11 +74,26 @@ public final class MoreSettingsHomeViewController: UIViewController {
     }
 
     private func setupContent() {
+        let eyebrowLabel = UILabel()
+        eyebrowLabel.text = "TRIPFIT"
+        eyebrowLabel.font = TFTypography.caption.withSize(11)
+        eyebrowLabel.textColor = TFColor.Brand.primary
+
         let titleLabel = UILabel()
         titleLabel.text = CoreStrings.More.title
         titleLabel.font = TFTypography.largeTitle
         titleLabel.textColor = TFColor.Text.primary
-        contentStack.addArrangedSubview(titleLabel)
+
+        let subtitleLabel = UILabel()
+        subtitleLabel.text = localized("동기화, 계정과 앱 설정을 한곳에서 관리하세요", "Manage sync, your account, and app preferences")
+        subtitleLabel.font = TFTypography.footnote.withSize(13)
+        subtitleLabel.textColor = TFColor.Text.secondary
+        subtitleLabel.numberOfLines = 0
+
+        let titleStack = UIStackView(arrangedSubviews: [eyebrowLabel, titleLabel, subtitleLabel])
+        titleStack.axis = .vertical
+        titleStack.spacing = 3
+        contentStack.addArrangedSubview(titleStack)
         contentStack.addArrangedSubview(makeDeveloperGitHubButton())
 
         let syncSection = MoreSectionCardView(
@@ -297,7 +312,7 @@ public final class MoreSettingsHomeViewController: UIViewController {
         config.title = localized("개발자 GitHub 바로가기", "Visit Developer GitHub")
         config.subtitle = "github.com/bbdyno/TripFit"
         config.titleAlignment = .leading
-        config.baseBackgroundColor = MorePalette.blue
+        config.baseBackgroundColor = TFColor.Surface.hero
         config.baseForegroundColor = .white
         config.cornerStyle = .large
         config.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 14)
