@@ -50,6 +50,14 @@ let project = Project(
             path: "Tests/DomainTests",
             dependencies: [.target(name: "Domain")]
         ),
+        TripFitTarget.unitTests(
+            name: "CollaborationDataTests",
+            path: "Tests/CollaborationDataTests",
+            dependencies: [
+                .target(name: "CollaborationData"),
+                .target(name: "Domain"),
+            ]
+        ),
         TripFitTarget.app(),
     ],
     schemes: [
@@ -57,7 +65,7 @@ let project = Project(
             name: "TripFit",
             shared: true,
             buildAction: .buildAction(targets: ["TripFit"]),
-            testAction: .targets(["DomainTests"]),
+            testAction: .targets(["DomainTests", "CollaborationDataTests"]),
             runAction: .runAction(configuration: .debug),
             archiveAction: .archiveAction(configuration: .release),
             profileAction: .profileAction(configuration: .release),

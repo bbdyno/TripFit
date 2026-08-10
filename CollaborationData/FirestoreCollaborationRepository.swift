@@ -30,7 +30,9 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
                         return
                     }
                     do {
-                        let rooms = try (snapshot?.documents ?? []).map(FirestoreMapper.room)
+                        let documents = snapshot?.documents ?? []
+                        FirestoreUsageEstimate.record("observe-active-rooms", reads: documents.count)
+                        let rooms = try documents.map(FirestoreMapper.room)
                         continuation.yield(rooms)
                     } catch {
                         continuation.finish(throwing: error)
@@ -52,6 +54,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
                     return
                 }
                 do {
+                    FirestoreUsageEstimate.record("observe-room", reads: 1)
                     continuation.yield(try FirestoreMapper.room(snapshot))
                 } catch {
                     continuation.finish(throwing: error)
@@ -72,6 +75,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
             .whereField("stage", in: [TripRoomStage.coordinating.rawValue, TripRoomStage.confirmed.rawValue])
             .limit(to: Self.activeRoomLimit)
             .getDocuments()
+        FirestoreUsageEstimate.record("create-room-preflight", reads: existing.documents.count)
         guard existing.documents.count < Self.activeRoomLimit else {
             throw CollaborationRepositoryError.activeRoomLimitReached
         }
@@ -89,10 +93,12 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
             "schemaVersion": 1,
         ], forDocument: userRef, merge: true)
         try await batch.commit()
+        FirestoreUsageEstimate.record("create-room", writes: 3)
     }
 
     public func fetchRoom(id: String) async throws -> SharedTripRoom {
         let snapshot = try await database.collection("rooms").document(id).getDocument()
+        FirestoreUsageEstimate.record("fetch-room", reads: 1)
         guard snapshot.exists else { throw CollaborationRepositoryError.notFound }
         return try FirestoreMapper.room(snapshot)
     }
@@ -100,6 +106,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
     public func fetchMembers(roomID: String) async throws -> [SharedTripMember] {
         let snapshot = try await database.collection("rooms").document(roomID)
             .collection("members").getDocuments()
+        FirestoreUsageEstimate.record("fetch-members", reads: snapshot.documents.count)
         return try snapshot.documents.map(FirestoreMapper.member)
             .sorted { $0.joinedAt < $1.joinedAt }
     }
@@ -107,12 +114,14 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
     public func fetchAvailability(roomID: String) async throws -> [AvailabilitySubmission] {
         let snapshot = try await database.collection("rooms").document(roomID)
             .collection("availability").getDocuments()
+        FirestoreUsageEstimate.record("fetch-availability", reads: snapshot.documents.count)
         return try snapshot.documents.map(FirestoreMapper.availability)
     }
 
     public func fetchPackingItems(roomID: String) async throws -> [SharedPackingItem] {
         let snapshot = try await database.collection("rooms").document(roomID)
             .collection("packingItems").getDocuments()
+        FirestoreUsageEstimate.record("fetch-packing", reads: snapshot.documents.count)
         return try snapshot.documents.map { try FirestoreMapper.packing($0, roomID: roomID) }
             .sorted { $0.updatedAt > $1.updatedAt }
     }
@@ -120,6 +129,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
     public func fetchLookPlans(roomID: String) async throws -> [SharedLookPlan] {
         let snapshot = try await database.collection("rooms").document(roomID)
             .collection("lookPlans").getDocuments()
+        FirestoreUsageEstimate.record("fetch-look-plans", reads: snapshot.documents.count)
         return try snapshot.documents.map { try FirestoreMapper.lookPlan($0, roomID: roomID) }
             .sorted { $0.day < $1.day }
     }
@@ -130,6 +140,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
         let ref = database.collection("rooms").document(roomID)
             .collection("availability").document(submission.ownerUID)
         try await ref.setData(FirestoreMapper.availabilityData(submission))
+        FirestoreUsageEstimate.record("submit-availability", writes: 1)
     }
 
     public func confirmSchedule(
@@ -159,6 +170,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
                 return nil
             }
         }
+        FirestoreUsageEstimate.record("confirm-schedule", reads: 1, writes: 1)
     }
 
     public func upsertPackingItem(_ item: SharedPackingItem) async throws {
@@ -170,6 +182,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
         let ref = database.collection("rooms").document(item.roomID)
             .collection("packingItems").document(item.id)
         try await ref.setData(FirestoreMapper.packingData(item))
+        FirestoreUsageEstimate.record("upsert-packing", writes: 1)
     }
 
     public func upsertLookPlan(_ plan: SharedLookPlan) async throws {
@@ -184,6 +197,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
         let ref = database.collection("rooms").document(plan.roomID)
             .collection("lookPlans").document(plan.id)
         try await ref.setData(FirestoreMapper.lookPlanData(plan))
+        FirestoreUsageEstimate.record("upsert-look-plan", writes: 1)
     }
 
     public func createInvite(roomID: String, ownerUID: String, expiresAt: Date) async throws -> URL {
@@ -199,6 +213,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
             "revision": 0,
             "schemaVersion": TripInvite.schemaVersion,
         ])
+        FirestoreUsageEstimate.record("create-invite", writes: 1)
         guard let url = URL(string: "https://\(hostingDomain)/join/\(rawToken)") else {
             throw CollaborationRepositoryError.invalidData("Invalid invite hosting domain.")
         }
@@ -245,6 +260,7 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
             }
         }
         guard let roomID = value as? String else { throw CollaborationRepositoryError.conflict }
+        FirestoreUsageEstimate.record("join-invite", reads: 1, writes: 3)
         return roomID
     }
 
@@ -254,6 +270,10 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
             .whereField("ownerUid", isEqualTo: userID).getDocuments()
         let assignedPacking = try await roomRef.collection("packingItems")
             .whereField("assigneeUid", isEqualTo: userID).getDocuments()
+        FirestoreUsageEstimate.record(
+            "leave-room-preflight",
+            reads: lookPlans.documents.count + assignedPacking.documents.count
+        )
         _ = try await database.runTransaction { transaction, errorPointer -> Any? in
             do {
                 let snapshot = try transaction.getDocument(roomRef)
@@ -290,11 +310,16 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
                 return nil
             }
         }
+        FirestoreUsageEstimate.record(
+            "leave-room",
+            reads: 1,
+            writes: 3 + lookPlans.documents.count + assignedPacking.documents.count
+        )
 
     }
 }
 
-private enum InviteTokenFactory {
+enum InviteTokenFactory {
     static func makeRawToken() throws -> String {
         var bytes = [UInt8](repeating: 0, count: 32)
         guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else {
@@ -311,7 +336,7 @@ private enum InviteTokenFactory {
     }
 }
 
-private enum FirestoreMapper {
+enum FirestoreMapper {
     static func roomData(_ room: SharedTripRoom) -> [String: Any] {
         [
             "ownerUid": room.ownerUID,
@@ -339,8 +364,14 @@ private enum FirestoreMapper {
     }
 
     static func room(_ snapshot: DocumentSnapshot) throws -> SharedTripRoom {
-        guard let data = snapshot.data(),
-              let ownerUID = data["ownerUid"] as? String,
+        guard let data = snapshot.data() else {
+            throw CollaborationRepositoryError.invalidData("Malformed room document: \(snapshot.documentID)")
+        }
+        return try room(documentID: snapshot.documentID, data: data)
+    }
+
+    static func room(documentID: String, data: [String: Any]) throws -> SharedTripRoom {
+        guard let ownerUID = data["ownerUid"] as? String,
               let memberUIDs = data["memberUids"] as? [String],
               let memberCount = data["memberCount"] as? Int,
               memberCount == memberUIDs.count,
@@ -353,10 +384,10 @@ private enum FirestoreMapper {
               let stageValue = data["stage"] as? String,
               let stage = TripRoomStage(rawValue: stageValue),
               let revision = data["revision"] as? Int else {
-            throw CollaborationRepositoryError.invalidData("Malformed room document: \(snapshot.documentID)")
+            throw CollaborationRepositoryError.invalidData("Malformed room document: \(documentID)")
         }
         return SharedTripRoom(
-            id: snapshot.documentID,
+            id: documentID,
             ownerUID: ownerUID,
             memberUIDs: memberUIDs,
             title: title,
@@ -555,5 +586,13 @@ private enum FirestoreMapper {
             updatedAt: (data["updatedAt"] as? Timestamp)?.dateValue() ?? Date(),
             revision: revision
         )
+    }
+}
+
+private enum FirestoreUsageEstimate {
+    static func record(_ operation: String, reads: Int = 0, writes: Int = 0) {
+        #if DEBUG
+        print("[TripFit][FirebaseUsage] \(operation) estimatedReads=\(reads) estimatedWrites=\(writes)")
+        #endif
     }
 }
