@@ -74,12 +74,13 @@ public enum TripFitTarget {
         name: String,
         path: String,
         resources: ResourceFileElements = [],
+        product: Product = .framework,
         dependencies: [TargetDependency]
     ) -> Target {
         .target(
             name: name,
             destinations: .iOS,
-            product: .framework,
+            product: product,
             bundleId: "\(TripFitBuild.bundleId).\(name)",
             deploymentTargets: TripFitBuild.deployment,
             sources: [.glob("\(path)/**", excluding: ["\(path)/Resources/**"])],

@@ -37,6 +37,7 @@ let project = Project(
         TripFitTarget.framework(
             name: "CollaborationData",
             path: "CollaborationData",
+            product: .staticFramework,
             dependencies: [
                 .target(name: "Domain"),
                 .external(name: "FirebaseCore"),

@@ -243,7 +243,9 @@ public final class TripsListViewController: UIViewController {
         nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true)
     }
+}
 
+extension TripsListViewController {
     public func presentSharedTripCreate() {
         let create = SharedTripCreateViewController(
             authService: authService,
@@ -305,24 +307,24 @@ public final class TripsListViewController: UIViewController {
             $0.removeFromSuperview()
         }
         if let error {
-            sharedStack.addArrangedSubview(makeSharedPlaceholder(
+            addSharedPlaceholder(
                 title: localized("공유 여행을 불러올 수 없음", "Unable to Load Shared Trips"),
                 subtitle: error.localizedDescription
-            ))
+            )
             return
         }
         guard authService.session != nil else {
-            sharedStack.addArrangedSubview(makeSharedPlaceholder(
+            addSharedPlaceholder(
                 title: localized("로그인 없이 개인 여행을 계속 사용할 수 있어요", "Personal trips stay available without sign-in"),
                 subtitle: localized("공유 여행을 시작할 때만 Apple 로그인이 필요합니다.", "Apple sign-in is needed only when starting a shared trip.")
-            ))
+            )
             return
         }
         guard sharedRooms.isEmpty == false else {
-            sharedStack.addArrangedSubview(makeSharedPlaceholder(
+            addSharedPlaceholder(
                 title: localized("아직 함께 준비하는 여행이 없어요", "No shared trips yet"),
                 subtitle: localized("가운데 + 버튼에서 친구와 날짜부터 맞춰보세요.", "Use the center + button to coordinate dates with friends.")
-            ))
+            )
             return
         }
         for room in sharedRooms {
@@ -351,7 +353,7 @@ public final class TripsListViewController: UIViewController {
         }
     }
 
-    private func makeSharedPlaceholder(title: String, subtitle: String) -> UIView {
+    private func addSharedPlaceholder(title: String, subtitle: String) {
         let titleLabel = UILabel()
         titleLabel.text = title
         titleLabel.font = TFTypography.body
@@ -368,11 +370,11 @@ public final class TripsListViewController: UIViewController {
         let card = TFCardView(style: .outlined)
         card.addSubview(stack)
         stack.snp.makeConstraints { $0.edges.equalToSuperview().inset(TFSpacing.md) }
+        sharedStack.addArrangedSubview(card)
         card.snp.makeConstraints { make in
-            make.width.equalTo(view.snp.width).offset(-(TFSpacing.md * 2))
+            make.width.equalTo(sharedScrollView.frameLayoutGuide).offset(-(TFSpacing.md * 2))
             make.height.equalTo(112)
         }
-        return card
     }
 
     private func openSharedRoom(_ room: SharedTripRoom) {
@@ -454,7 +456,9 @@ public final class TripsListViewController: UIViewController {
     private func localized(_ ko: String, _ en: String) -> String {
         TFAppLanguage.current() == .korean ? ko : en
     }
+}
 
+extension TripsListViewController {
     private func fetchTrips() {
         let descriptor = FetchDescriptor<Trip>(sortBy: [SortDescriptor(\.startDate, order: .reverse)])
         trips = (try? context.fetch(descriptor)) ?? []

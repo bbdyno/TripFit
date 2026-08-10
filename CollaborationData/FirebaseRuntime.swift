@@ -43,7 +43,11 @@ public final class FirebaseRuntime: @unchecked Sendable {
             firestore.useEmulator(withHost: "127.0.0.1", port: 8080)
         }
 
-        state = .configured(projectID: options.projectID ?? "unknown")
+        let projectID = options.projectID ?? "unknown"
+        state = .configured(projectID: projectID)
+#if DEBUG
+        print("[TripFit] Firebase configured once for project: \(projectID)")
+#endif
     }
 
     private func makeAppCheckProviderFactory() -> AppCheckProviderFactory {

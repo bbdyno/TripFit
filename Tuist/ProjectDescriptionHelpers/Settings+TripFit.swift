@@ -35,6 +35,11 @@ public extension Settings {
             "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
             "TARGETED_DEVICE_FAMILY": "1",
             "ENABLE_PREVIEWS": "NO",
+            "OTHER_LDFLAGS": [
+                "$(inherited)",
+                "-force_load",
+                "$(BUILT_PRODUCTS_DIR)/FirebaseAuth.framework/FirebaseAuth",
+            ],
             "DEVELOPMENT_TEAM": .string(env["DEVELOPMENT_TEAM"] ?? TripFitBuild.developmentTeam),
             "CODE_SIGN_STYLE": .string(env["CODE_SIGN_STYLE"] ?? "Manual"),
             "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": .string(
