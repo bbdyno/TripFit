@@ -627,12 +627,12 @@ public final class MoreSettingsHomeViewController: UIViewController {
                     "Your private wardrobe, outfits, and trips remain on this device."
                 )
             )
-        case let .blockedOwnedRooms(roomIDs):
+        case .blockedOwnedRooms:
             presentInfo(
-                title: localized("소유한 여행방 정리 필요", "Owned Rooms Must Be Resolved"),
+                title: localized("소유한 여행방을 삭제하지 못함", "Unable to Delete Owned Rooms"),
                 message: localized(
-                    "다음 방을 삭제하거나 다른 멤버에게 소유권을 이전한 뒤 다시 시도해 주세요:\n\(roomIDs.joined(separator: "\n"))",
-                    "Delete these rooms or transfer ownership before retrying:\n\(roomIDs.joined(separator: "\n"))"
+                    "네트워크 연결을 확인한 뒤 다시 시도해 주세요.",
+                    "Check your network connection and try again."
                 )
             )
         case .requiresReauthentication:

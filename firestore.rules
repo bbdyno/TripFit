@@ -339,7 +339,7 @@ service cloud.firestore {
 
     match /invites/{inviteHash} {
       allow get: if signedIn();
-      allow list: if false;
+      allow list: if signedIn() && resource.data.createdByUid == request.auth.uid;
       allow create: if validInviteCreate(inviteHash, request.resource.data);
       allow update: if isOwner(resource.data.roomId) || validInviteJoinStamp(inviteHash);
       allow delete: if isOwner(resource.data.roomId);

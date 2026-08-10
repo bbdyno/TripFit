@@ -84,6 +84,7 @@ public protocol AuthService: AnyObject {
 
 public enum AccountDeletionStep: String, Equatable, Sendable {
     case checkingRooms
+    case deletingOwnedRooms
     case cleaningMemberships
     case deletingUserDocument
     case deletingAuthentication

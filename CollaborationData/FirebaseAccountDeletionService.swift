@@ -72,10 +72,15 @@ public final class FirebaseAccountDeletionService: AccountDeletionService {
             return state
         }
 
-        let ownedRoomIDs = rooms.filter { $0.ownerUID == userID }.map(\.id)
-        guard ownedRoomIDs.isEmpty else {
-            state = .blockedOwnedRooms(ownedRoomIDs)
-            return state
+        let ownedRooms = rooms.filter { $0.ownerUID == userID }
+        for (index, room) in ownedRooms.enumerated() {
+            state = .working(step: .deletingOwnedRooms, completedRooms: index, totalRooms: ownedRooms.count)
+            do {
+                try await deleteOwnedRoom(roomID: room.id, ownerUID: userID)
+            } catch {
+                state = .failed(step: .deletingOwnedRooms, message: error.localizedDescription)
+                return state
+            }
         }
 
         let memberRooms = rooms.filter { $0.ownerUID != userID }
@@ -118,6 +123,36 @@ public final class FirebaseAccountDeletionService: AccountDeletionService {
             }
         }
         return state
+    }
+
+    private func deleteOwnedRoom(roomID: String, ownerUID: String) async throws {
+        let room = database.collection("rooms").document(roomID)
+        async let members = room.collection("members").getDocuments()
+        async let availability = room.collection("availability").getDocuments()
+        async let packingItems = room.collection("packingItems").getDocuments()
+        async let lookPlans = room.collection("lookPlans").getDocuments()
+        async let invites = database.collection("invites")
+            .whereField("createdByUid", isEqualTo: ownerUID)
+            .whereField("roomId", isEqualTo: roomID)
+            .getDocuments()
+
+        let snapshots = try await (members, availability, packingItems, lookPlans, invites)
+        let childReferences = snapshots.0.documents.map(\.reference)
+            + snapshots.1.documents.map(\.reference)
+            + snapshots.2.documents.map(\.reference)
+            + snapshots.3.documents.map(\.reference)
+            + snapshots.4.documents.map(\.reference)
+
+        for chunkStart in stride(from: 0, to: childReferences.count, by: 400) {
+            let chunkEnd = min(chunkStart + 400, childReferences.count)
+            let batch = database.batch()
+            childReferences[chunkStart..<chunkEnd].forEach { reference in
+                batch.deleteDocument(reference)
+            }
+            try await batch.commit()
+        }
+
+        try await room.delete()
     }
 
     public func reset() { state = .idle }

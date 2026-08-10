@@ -14,10 +14,12 @@ import {
   getDoc,
   getDocs,
   increment,
+  query,
   runTransaction,
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 
 const projectId = 'demo-tripfit';
@@ -301,6 +303,28 @@ describe('invite joins', () => {
     await seedInvite(validHash);
     const db = testEnv.authenticatedContext(memberId).firestore();
     await assertFails(getDocs(collection(db, 'invites')));
+  });
+
+  test('14a owner can query invitations created by that account for deletion', async () => {
+    await seedInvite(validHash);
+    const db = testEnv.authenticatedContext(ownerId).firestore();
+    const ownedInvites = query(
+      collection(db, 'invites'),
+      where('createdByUid', '==', ownerId),
+      where('roomId', '==', roomId),
+    );
+    await assertSucceeds(getDocs(ownedInvites));
+  });
+
+  test('14b another account cannot query the owner invitations', async () => {
+    await seedInvite(validHash);
+    const db = testEnv.authenticatedContext(outsiderId).firestore();
+    const ownedInvites = query(
+      collection(db, 'invites'),
+      where('createdByUid', '==', ownerId),
+      where('roomId', '==', roomId),
+    );
+    await assertFails(getDocs(ownedInvites));
   });
 });
 
