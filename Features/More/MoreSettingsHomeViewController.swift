@@ -14,6 +14,7 @@ import UIKit
 public final class MoreSettingsHomeViewController: UIViewController {
     private let context: ModelContext
     private let authService: any AuthService
+    private let accountDeletionService: any AccountDeletionService
     private let appleSignInCoordinator = AppleSignInCoordinator()
     // Keep Appearance implementation intact, but hide the entry from More for now.
     private let showsAppearanceMenu = false
@@ -24,9 +25,14 @@ public final class MoreSettingsHomeViewController: UIViewController {
     private weak var languageRowControl: MoreSettingsRowControl?
     private weak var collaborationAccountRowControl: MoreSettingsRowControl?
 
-    public init(context: ModelContext, authService: any AuthService) {
+    public init(
+        context: ModelContext,
+        authService: any AuthService,
+        accountDeletionService: any AccountDeletionService
+    ) {
         self.context = context
         self.authService = authService
+        self.accountDeletionService = accountDeletionService
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -578,7 +584,87 @@ public final class MoreSettingsHomeViewController: UIViewController {
                 presentAuthError(error)
             }
         })
+        alert.addAction(UIAlertAction(title: localized("협업 계정 삭제", "Delete Collaboration Account"), style: .destructive) { [weak self] _ in
+            self?.confirmRemoteAccountDeletion()
+        })
         alert.addAction(UIAlertAction(title: localized("취소", "Cancel"), style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func confirmRemoteAccountDeletion() {
+        let alert = UIAlertController(
+            title: localized("협업 계정을 삭제할까요?", "Delete Collaboration Account?"),
+            message: localized(
+                "공유방 데이터와 Firebase 계정만 삭제합니다. 이 기기의 개인 옷장·코디·개인 여행은 유지되며, 개인 데이터 삭제는 데이터 관리에서 별도로 선택해야 합니다.",
+                "Only shared-room data and the Firebase account are deleted. Private wardrobe, outfits, and trips on this device stay intact and must be deleted separately in Data Management."
+            ),
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: localized("Firebase 계정만 삭제", "Delete Firebase Account Only"), style: .destructive) { [weak self] _ in
+            self?.runRemoteAccountDeletion()
+        })
+        alert.addAction(UIAlertAction(title: localized("취소", "Cancel"), style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func runRemoteAccountDeletion() {
+        Task {
+            let state = await accountDeletionService.deleteRemoteAccount()
+            handleAccountDeletionState(state)
+        }
+    }
+
+    private func handleAccountDeletionState(_ state: AccountDeletionState) {
+        switch state {
+        case .completed:
+            try? authService.signOut()
+            Task { await refreshCollaborationAccount() }
+            accountDeletionService.reset()
+            presentInfo(
+                title: localized("협업 계정 삭제 완료", "Collaboration Account Deleted"),
+                message: localized(
+                    "개인 옷장·코디·개인 여행은 이 기기에 그대로 유지됩니다.",
+                    "Your private wardrobe, outfits, and trips remain on this device."
+                )
+            )
+        case let .blockedOwnedRooms(roomIDs):
+            presentInfo(
+                title: localized("소유한 여행방 정리 필요", "Owned Rooms Must Be Resolved"),
+                message: localized(
+                    "다음 방을 삭제하거나 다른 멤버에게 소유권을 이전한 뒤 다시 시도해 주세요:\n\(roomIDs.joined(separator: "\n"))",
+                    "Delete these rooms or transfer ownership before retrying:\n\(roomIDs.joined(separator: "\n"))"
+                )
+            )
+        case .requiresReauthentication:
+            Task {
+                do {
+                    _ = try await appleSignInCoordinator.reauthenticate(using: authService, presenting: self)
+                    runRemoteAccountDeletion()
+                } catch AuthServiceError.cancelled {
+                    return
+                } catch {
+                    presentAuthError(error)
+                }
+            }
+        case let .failed(_, message):
+            let alert = UIAlertController(
+                title: localized("삭제를 완료하지 못함", "Deletion Incomplete"),
+                message: message,
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: localized("재시도", "Retry"), style: .default) { [weak self] _ in
+                self?.runRemoteAccountDeletion()
+            })
+            alert.addAction(UIAlertAction(title: localized("닫기", "Close"), style: .cancel))
+            present(alert, animated: true)
+        case .idle, .working:
+            break
+        }
+    }
+
+    private func presentInfo(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: localized("확인", "OK"), style: .default))
         present(alert, animated: true)
     }
 

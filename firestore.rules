@@ -219,6 +219,12 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
               'isPacked', 'updatedAt', 'revision'
             ]))
+          || (resource.data.assigneeUid == request.auth.uid
+            && request.resource.data.assigneeUid == null
+            && request.resource.data.isPacked == false
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'assigneeUid', 'isPacked', 'updatedAt', 'revision'
+            ]))
           || (resource.data.assigneeUid == null
             && request.resource.data.assigneeUid == request.auth.uid
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly([

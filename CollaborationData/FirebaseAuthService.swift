@@ -21,16 +21,7 @@ public final class FirebaseAuthService: AuthService {
     }
 
     public func signIn(with credential: AppleIdentityCredential) async throws -> AuthSession {
-        var fullName = PersonNameComponents()
-        fullName.givenName = credential.givenName
-        fullName.familyName = credential.familyName
-        let hasName = credential.givenName != nil || credential.familyName != nil
-
-        let firebaseCredential = OAuthProvider.appleCredential(
-            withIDToken: credential.identityToken,
-            rawNonce: credential.rawNonce,
-            fullName: hasName ? fullName : nil
-        )
+        let (firebaseCredential, fullName, hasName) = Self.makeCredential(credential)
 
         do {
             let result = try await auth.signIn(with: firebaseCredential)
@@ -49,6 +40,36 @@ public final class FirebaseAuthService: AuthService {
         } catch {
             throw Self.map(error)
         }
+    }
+
+    public func reauthenticate(with credential: AppleIdentityCredential) async throws -> AuthSession {
+        guard let user = auth.currentUser else { throw AuthServiceError.invalidCredential }
+        let (firebaseCredential, _, _) = Self.makeCredential(credential)
+        do {
+            _ = try await user.reauthenticate(with: firebaseCredential)
+            let restored = Self.makeSession(from: user)
+            session = restored
+            return restored
+        } catch {
+            throw Self.map(error)
+        }
+    }
+
+    private static func makeCredential(
+        _ credential: AppleIdentityCredential
+    ) -> (AuthCredential, PersonNameComponents, Bool) {
+        var fullName = PersonNameComponents()
+        fullName.givenName = credential.givenName
+        fullName.familyName = credential.familyName
+        let hasName = credential.givenName != nil || credential.familyName != nil
+
+        let firebaseCredential = OAuthProvider.appleCredential(
+            withIDToken: credential.identityToken,
+            rawNonce: credential.rawNonce,
+            fullName: hasName ? fullName : nil
+        )
+
+        return (firebaseCredential, fullName, hasName)
     }
 
     public func validateAppleCredential() async {

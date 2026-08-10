@@ -12,11 +12,14 @@ public final class SharedTripRoomViewController: UIViewController {
     private let stack = UIStackView()
     private let summaryLabel = UILabel()
     private let recommendationLabel = UILabel()
+    private let inviteButton = UIButton(type: .system)
     private let confirmButton = UIButton(type: .system)
     private let addToMyTripsButton = UIButton(type: .system)
     private var members: [SharedTripMember] = []
     private var submissions: [AvailabilitySubmission] = []
     private var bestCandidate: ScheduleCandidate?
+    private var roomObservationTask: Task<Void, Never>?
+    private var refreshTask: Task<Void, Never>?
 
     public init(
         room: SharedTripRoom,
@@ -43,7 +46,16 @@ public final class SharedTripRoomViewController: UIViewController {
 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        startRoomObservation()
         refresh()
+    }
+
+    public override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        roomObservationTask?.cancel()
+        roomObservationTask = nil
+        refreshTask?.cancel()
+        refreshTask = nil
     }
 
     private func setupContent() {
@@ -87,9 +99,10 @@ public final class SharedTripRoomViewController: UIViewController {
         stack.addArrangedSubview(makeButton(localized("여행 룩북", "Trip Lookbook"), icon: "square.grid.2x2") { [weak self] in
             self?.openLookbook()
         })
-        stack.addArrangedSubview(makeButton(localized("초대 링크 공유", "Share Invite Link"), icon: "person.badge.plus") { [weak self] in
+        configureSecondaryButton(inviteButton, title: localized("초대 링크 공유", "Share Invite Link"), icon: "person.badge.plus") { [weak self] in
             self?.shareInvite()
-        })
+        }
+        stack.addArrangedSubview(inviteButton)
 
         configureActionButton(confirmButton, title: localized("이 일정으로 확정", "Confirm This Schedule")) { [weak self] in
             self?.confirmBestSchedule()
@@ -127,17 +140,55 @@ public final class SharedTripRoomViewController: UIViewController {
         button.snp.makeConstraints { $0.height.equalTo(54) }
     }
 
-    private func refresh() {
-        Task {
+    private func configureSecondaryButton(
+        _ button: UIButton,
+        title: String,
+        icon: String,
+        action: @escaping () -> Void
+    ) {
+        var config = UIButton.Configuration.filled()
+        config.title = title
+        config.image = UIImage(systemName: icon)
+        config.imagePadding = 10
+        config.baseBackgroundColor = TFColor.Surface.card
+        config.baseForegroundColor = TFColor.Text.primary
+        config.cornerStyle = .large
+        button.configuration = config
+        button.addAction(UIAction { _ in action() }, for: .touchUpInside)
+        button.snp.makeConstraints { $0.height.greaterThanOrEqualTo(54) }
+    }
+
+    private func startRoomObservation() {
+        roomObservationTask?.cancel()
+        roomObservationTask = Task { [weak self] in
+            guard let self else { return }
             do {
-                async let fetchedRoom = repository.fetchRoom(id: room.id)
+                for try await updatedRoom in repository.observeRoom(id: room.id) {
+                    guard !Task.isCancelled else { return }
+                    room = updatedRoom
+                    title = updatedRoom.title
+                    refresh()
+                }
+            } catch is CancellationError {
+                return
+            } catch {
+                guard !Task.isCancelled else { return }
+                showMessage(error.localizedDescription)
+            }
+        }
+    }
+
+    private func refresh() {
+        refreshTask?.cancel()
+        refreshTask = Task {
+            do {
                 async let fetchedMembers = repository.fetchMembers(roomID: room.id)
                 async let fetchedAvailability = repository.fetchAvailability(roomID: room.id)
                 async let packing = repository.fetchPackingItems(roomID: room.id)
-                room = try await fetchedRoom
                 members = try await fetchedMembers
                 submissions = try await fetchedAvailability
                 let packingItems = try await packing
+                guard !Task.isCancelled else { return }
                 let packedCount = packingItems.filter(\.isPacked).count
                 summaryLabel.text = localized(
                     "\(room.destination)\n\(stageText)\n제출 \(submissions.count)/\(room.memberCount) · 준비물 \(packedCount)/\(packingItems.count)",
@@ -157,9 +208,13 @@ public final class SharedTripRoomViewController: UIViewController {
                 } else {
                     recommendationLabel.text = localized("  제출된 가능 날짜를 기다리는 중입니다.  ", "  Waiting for availability submissions.  ")
                 }
+                inviteButton.isHidden = room.ownerUID != authService.session?.user.id
                 confirmButton.isHidden = room.ownerUID != authService.session?.user.id || room.stage != .coordinating || bestCandidate == nil
                 addToMyTripsButton.isHidden = room.stage != .confirmed
+            } catch is CancellationError {
+                return
             } catch {
+                guard !Task.isCancelled else { return }
                 showMessage(error.localizedDescription)
             }
         }

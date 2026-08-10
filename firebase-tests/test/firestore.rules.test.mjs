@@ -101,6 +101,24 @@ function packingData(assigneeUid = null) {
   };
 }
 
+function lookPlanData(uid) {
+  return {
+    roomId,
+    ownerUid: uid,
+    day: '2026-09-01',
+    outfitName: 'Rainy city walk',
+    categories: ['outerwear'],
+    paletteHex: ['#223344'],
+    styleTags: ['casual'],
+    formality: 1,
+    rainReady: true,
+    note: null,
+    updatedAt: Timestamp.now(),
+    revision: 0,
+    schemaVersion: 1,
+  };
+}
+
 async function seedBase() {
   await testEnv.withSecurityRulesDisabled(async (context) => {
     const db = context.firestore();
@@ -151,6 +169,8 @@ async function joinWithInvite(db, hash, uid, targetRoom = roomId, extraRoomField
 }
 
 async function leaveRoom(db, uid, deleteMember = true) {
+  const lookPlans = await getDocs(collection(db, 'rooms', roomId, 'lookPlans'));
+  const packingItems = await getDocs(collection(db, 'rooms', roomId, 'packingItems'));
   return runTransaction(db, async (transaction) => {
     const roomRef = doc(db, 'rooms', roomId);
     const snapshot = await transaction.get(roomRef);
@@ -163,6 +183,17 @@ async function leaveRoom(db, uid, deleteMember = true) {
     });
     if (deleteMember) transaction.delete(doc(db, 'rooms', roomId, 'members', uid));
     transaction.delete(doc(db, 'rooms', roomId, 'availability', uid));
+    lookPlans.docs
+      .filter((snapshot) => snapshot.data().ownerUid === uid)
+      .forEach((snapshot) => transaction.delete(snapshot.ref));
+    packingItems.docs
+      .filter((snapshot) => snapshot.data().assigneeUid === uid)
+      .forEach((snapshot) => transaction.update(snapshot.ref, {
+        assigneeUid: null,
+        isPacked: false,
+        revision: snapshot.data().revision + 1,
+        updatedAt: serverTimestamp(),
+      }));
   });
 }
 
@@ -306,9 +337,12 @@ describe('shared packing and account leave', () => {
 
   test('18 member leave transaction succeeds with own document cleanup', async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(doc(context.firestore(), 'rooms', roomId, 'availability', memberId), {
+      const db = context.firestore();
+      await setDoc(doc(db, 'rooms', roomId, 'availability', memberId), {
         ...availabilityData(memberId), updatedAt: Timestamp.now(),
       });
+      await setDoc(doc(db, 'rooms', roomId, 'lookPlans', 'member_2026-09-01'), lookPlanData(memberId));
+      await setDoc(doc(db, 'rooms', roomId, 'packingItems', 'charger'), packingData(memberId));
     });
     const db = testEnv.authenticatedContext(memberId).firestore();
     await assertSucceeds(leaveRoom(db, memberId, true));

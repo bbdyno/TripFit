@@ -16,19 +16,22 @@ final class AppEnvironment: @unchecked Sendable {
     let authService: any AuthService
     let collaborationRepository: any CollaborationRepository
     let pendingInviteStore: PendingInviteStore
+    let accountDeletionService: any AccountDeletionService
 
     private init(
         container: ModelContainer,
         onboardingStore: OnboardingStore,
         authService: any AuthService,
         collaborationRepository: any CollaborationRepository,
-        pendingInviteStore: PendingInviteStore
+        pendingInviteStore: PendingInviteStore,
+        accountDeletionService: any AccountDeletionService
     ) {
         self.container = container
         self.onboardingStore = onboardingStore
         self.authService = authService
         self.collaborationRepository = collaborationRepository
         self.pendingInviteStore = pendingInviteStore
+        self.accountDeletionService = accountDeletionService
     }
 
     @MainActor
@@ -46,16 +49,22 @@ final class AppEnvironment: @unchecked Sendable {
         let container = ModelContainerBootstrap.makeContainer(schema: schema)
         let authService: any AuthService
         let collaborationRepository: any CollaborationRepository
+        let accountDeletionService: any AccountDeletionService
         switch FirebaseRuntime.shared.state {
         case .configured:
             authService = FirebaseAuthService()
             collaborationRepository = FirestoreCollaborationRepository()
+            accountDeletionService = FirebaseAccountDeletionService(repository: collaborationRepository)
         case let .unavailable(reason):
             authService = DisabledAuthService(reason: reason)
             collaborationRepository = UnavailableCollaborationRepository(reason: reason)
+            accountDeletionService = DisabledAccountDeletionService(reason: reason)
         case .notConfigured:
             authService = DisabledAuthService(reason: "Firebase has not been configured.")
             collaborationRepository = UnavailableCollaborationRepository(
+                reason: "Firebase has not been configured."
+            )
+            accountDeletionService = DisabledAccountDeletionService(
                 reason: "Firebase has not been configured."
             )
         }
@@ -64,7 +73,8 @@ final class AppEnvironment: @unchecked Sendable {
             onboardingStore: OnboardingStore(),
             authService: authService,
             collaborationRepository: collaborationRepository,
-            pendingInviteStore: PendingInviteStore()
+            pendingInviteStore: PendingInviteStore(),
+            accountDeletionService: accountDeletionService
         )
         Task { _ = await authService.restoreSession() }
         return environment

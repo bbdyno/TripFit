@@ -11,16 +11,33 @@ public final class AppleSignInCoordinator: NSObject {
     private var continuation: CheckedContinuation<AuthSession, Error>?
     private var rawNonce: String?
     private var authService: (any AuthService)?
+    private var isReauthentication = false
 
     public func signIn(
         using authService: any AuthService,
         presenting viewController: UIViewController
+    ) async throws -> AuthSession {
+        try await authorize(using: authService, presenting: viewController, reauthentication: false)
+    }
+
+    public func reauthenticate(
+        using authService: any AuthService,
+        presenting viewController: UIViewController
+    ) async throws -> AuthSession {
+        try await authorize(using: authService, presenting: viewController, reauthentication: true)
+    }
+
+    private func authorize(
+        using authService: any AuthService,
+        presenting viewController: UIViewController,
+        reauthentication: Bool
     ) async throws -> AuthSession {
         guard continuation == nil else {
             throw AuthServiceError.underlying("A Sign in with Apple request is already in progress.")
         }
 
         self.authService = authService
+        self.isReauthentication = reauthentication
         presentingViewController = viewController
         let nonce = try Self.makeNonce()
         rawNonce = nonce
@@ -44,6 +61,7 @@ public final class AppleSignInCoordinator: NSObject {
         self.continuation = nil
         rawNonce = nil
         authService = nil
+        isReauthentication = false
         presentingViewController = nil
         continuation?.resume(with: result)
     }
@@ -85,7 +103,12 @@ extension AppleSignInCoordinator: ASAuthorizationControllerDelegate {
         )
         Task {
             do {
-                finish(.success(try await authService.signIn(with: credential)))
+                let session = if isReauthentication {
+                    try await authService.reauthenticate(with: credential)
+                } else {
+                    try await authService.signIn(with: credential)
+                }
+                finish(.success(session))
             } catch {
                 finish(.failure(error))
             }

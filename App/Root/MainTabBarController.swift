@@ -119,7 +119,8 @@ final class MainTabBarController: UITabBarController {
         let moreVC = UINavigationController(
             rootViewController: MoreSettingsHomeViewController(
                 context: environment.context,
-                authService: environment.authService
+                authService: environment.authService,
+                accountDeletionService: environment.accountDeletionService
             )
         )
         moreVC.tabBarItem = UITabBarItem(

@@ -75,6 +75,32 @@ public protocol AuthService: AnyObject {
     @discardableResult
     func signIn(with credential: AppleIdentityCredential) async throws -> AuthSession
 
+    @discardableResult
+    func reauthenticate(with credential: AppleIdentityCredential) async throws -> AuthSession
+
     func validateAppleCredential() async
     func signOut() throws
+}
+
+public enum AccountDeletionStep: String, Equatable, Sendable {
+    case checkingRooms
+    case cleaningMemberships
+    case deletingUserDocument
+    case deletingAuthentication
+}
+
+public enum AccountDeletionState: Equatable, Sendable {
+    case idle
+    case working(step: AccountDeletionStep, completedRooms: Int, totalRooms: Int)
+    case blockedOwnedRooms([String])
+    case requiresReauthentication
+    case completed
+    case failed(step: AccountDeletionStep, message: String)
+}
+
+@MainActor
+public protocol AccountDeletionService: AnyObject {
+    var state: AccountDeletionState { get }
+    func deleteRemoteAccount() async -> AccountDeletionState
+    func reset()
 }

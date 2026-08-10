@@ -250,6 +250,10 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
 
     public func leaveRoom(roomID: String, userID: String) async throws {
         let roomRef = database.collection("rooms").document(roomID)
+        let lookPlans = try await roomRef.collection("lookPlans")
+            .whereField("ownerUid", isEqualTo: userID).getDocuments()
+        let assignedPacking = try await roomRef.collection("packingItems")
+            .whereField("assigneeUid", isEqualTo: userID).getDocuments()
         _ = try await database.runTransaction { transaction, errorPointer -> Any? in
             do {
                 let snapshot = try transaction.getDocument(roomRef)
@@ -270,6 +274,16 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
                 ], forDocument: roomRef)
                 transaction.deleteDocument(roomRef.collection("members").document(userID))
                 transaction.deleteDocument(roomRef.collection("availability").document(userID))
+                lookPlans.documents.forEach { transaction.deleteDocument($0.reference) }
+                for document in assignedPacking.documents {
+                    let itemRevision = document.data()["revision"] as? Int ?? 0
+                    transaction.updateData([
+                        "assigneeUid": NSNull(),
+                        "isPacked": false,
+                        "updatedAt": FieldValue.serverTimestamp(),
+                        "revision": itemRevision + 1,
+                    ], forDocument: document.reference)
+                }
                 return true
             } catch {
                 errorPointer?.pointee = error as NSError
@@ -277,13 +291,6 @@ public final class FirestoreCollaborationRepository: CollaborationRepository, @u
             }
         }
 
-        let lookPlans = try await roomRef.collection("lookPlans")
-            .whereField("ownerUid", isEqualTo: userID).getDocuments()
-        if lookPlans.documents.isEmpty == false {
-            let batch = database.batch()
-            lookPlans.documents.forEach { batch.deleteDocument($0.reference) }
-            try await batch.commit()
-        }
     }
 }
 
