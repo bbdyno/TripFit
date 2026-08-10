@@ -5,61 +5,58 @@ permalink: /docs/terms-of-service.en/
 
 # TripFit Terms of Service
 
-Effective date: 2026-02-20
+Effective date: August 10, 2026
 
-These Terms of Service ("Terms") govern your use of TripFit. By using TripFit, you agree to these Terms.
+These Terms govern your use of TripFit (the “App”). By using the App, you agree to these Terms and the [Privacy Policy](../privacy-policy.en/).
 
-## 1. Use of the App
+## 1. Service and License
 
-You may use TripFit only in compliance with applicable laws and these Terms.
+You may use the App for personal, non-commercial purposes in compliance with applicable law and these Terms. We grant you a limited, non-exclusive, non-transferable, revocable license to use the App.
 
-## 2. License
+## 2. Your Content
 
-We grant you a limited, non-exclusive, non-transferable, revocable license to use TripFit for personal, non-commercial use.
+You are responsible for photos, notes, trip information, and shared data you enter or upload, and you must have the right to store and share them. You must not submit unlawful content, infringe another person’s rights, or interfere with the service.
 
-## 3. Your Content
+## 3. Shared Trips and Invitations
 
-You are responsible for data and content you add, including photos, notes, and trip information.
+- Shared Trips is a private, invitation-based feature that requires Sign in with Apple.
+- Room members can view that room’s schedule, availability, packing, and shared look information.
+- Share invitation links only with people you trust and consider that recipients may forward them.
+- Room owners are responsible for managing members and shared data.
 
-You represent that you have the necessary rights to upload and store that content.
+## 4. Sync and Third-Party Services
 
-## 4. iCloud Sync and Backup
+The App may rely on Apple iCloud/CloudKit, Sign in with Apple, the App Store, and Google Firebase. Network conditions, account status, storage limits, outages, or third-party policy changes may limit some features.
 
-TripFit can operate locally without cloud sync. If you enable iCloud sync:
-- Data is synced through Apple's CloudKit/iCloud services.
-- If photo sync is enabled, wardrobe photos may also be synced to iCloud.
+## 5. Subscriptions and Payments
 
-You are responsible for your Apple account status, iCloud availability, and storage limits.
+Some features may be offered through an App Store auto-renewable subscription.
 
-## 5. Prohibited Conduct
+- Payment is charged to your Apple Account when you confirm the purchase.
+- A subscription may renew automatically unless canceled before the current period ends.
+- You can manage or cancel subscriptions in your device’s Apple Account subscription settings.
+- Use the in-app restore feature to restore eligible purchases.
+- If a free trial is offered, the subscription may begin at the displayed price unless canceled before the trial ends.
+- Billing, refunds, and localized prices are governed by Apple’s policies and applicable local law.
 
-You agree not to:
-- Use TripFit for unlawful purposes
-- Attempt to reverse engineer, disrupt, or abuse the app
-- Upload content that infringes rights of others
+Free features identified in the App remain available without a subscription. The purchase screen will clearly identify subscription benefits and prices.
 
-## 6. Third-Party Services
+## 6. Prohibited Conduct
 
-TripFit may rely on Apple platform services (including iCloud/CloudKit, App Store). Those services are governed by Apple's terms.
+You must not use the App unlawfully; reverse engineer or improperly access the App or service; bypass security; send abusive automated traffic; impersonate others; misuse invitations; or violate another user’s rights.
 
-## 7. Disclaimer
+## 7. Changes and Availability
 
-TripFit is provided "as is" and "as available" without warranties of any kind, to the fullest extent permitted by law.
+Features, prices, and availability may change for reasonable operational reasons. Material changes affecting paid subscribers will be communicated as required by applicable law and App Store policies.
 
-## 8. Limitation of Liability
+## 8. Disclaimer and Limitation of Liability
 
-To the maximum extent permitted by law, we are not liable for indirect, incidental, special, consequential, or punitive damages, or for data loss resulting from your use of TripFit.
+To the maximum extent permitted by law, the App is provided “as is.” We are not responsible for indirect or incidental loss or data loss caused by third-party outages, user settings or actions, lost devices, or events beyond our reasonable control. Rights that cannot be excluded under applicable law remain unaffected.
 
-## 9. Termination
+## 9. Termination and Account Deletion
 
-You may stop using TripFit at any time. We may update, suspend, or discontinue parts of the app as needed.
+You may stop using the App and delete your collaboration account at any time. Save any data you need before deletion. Canceling a subscription and deleting an account are separate actions; deleting an account does not automatically cancel an Apple subscription.
 
-## 10. Changes to Terms
+## 10. Changes and Contact
 
-We may update these Terms from time to time. Continued use after updates means you accept the revised Terms.
-
-## 11. Contact
-
-For questions about these Terms:
-- GitHub: https://github.com/bbdyno/TripFit
-- Issues: https://github.com/bbdyno/TripFit/issues
+When these Terms change, we will update the effective date on this page. Contact us through [TripFit English Support](../support.en/) or [GitHub Issues](https://github.com/bbdyno/TripFit/issues).
