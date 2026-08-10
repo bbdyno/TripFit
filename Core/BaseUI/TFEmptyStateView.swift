@@ -16,18 +16,47 @@ public final class TFEmptyStateView: UIView {
     public let actionButton = TFPrimaryButton(title: "")
 
     public init(icon: String, title: String, subtitle: String, buttonTitle: String?) {
+        self.systemIcon = icon
+        self.pictogram = nil
         super.init(frame: .zero)
+        setup(title: title, subtitle: subtitle, buttonTitle: buttonTitle)
+    }
 
-        iconImageView.image = UIImage(systemName: icon)
+    public init(pictogram: TFPictogram, title: String, subtitle: String, buttonTitle: String?) {
+        self.systemIcon = nil
+        self.pictogram = pictogram
+        super.init(frame: .zero)
+        setup(title: title, subtitle: subtitle, buttonTitle: buttonTitle)
+    }
+
+    private let systemIcon: String?
+    private let pictogram: TFPictogram?
+
+    private func setup(title: String, subtitle: String, buttonTitle: String?) {
+        iconImageView.image = pictogram?.image ?? systemIcon.flatMap { UIImage(systemName: $0) }
         iconImageView.tintColor = TFColor.Brand.primary
         iconImageView.contentMode = .scaleAspectFit
-        iconImageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)
+        if pictogram == nil {
+            iconImageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)
+        }
+
         iconContainer.backgroundColor = TFColor.Surface.highlight
         iconContainer.layer.cornerRadius = 30
         iconContainer.layer.cornerCurve = .continuous
+        iconContainer.layer.borderWidth = 1
+        iconContainer.layer.borderColor = TFColor.Brand.primary.withAlphaComponent(0.12).cgColor
+        iconContainer.layer.shadowColor = TFColor.Brand.primary.cgColor
+        iconContainer.layer.shadowOpacity = 0.08
+        iconContainer.layer.shadowRadius = 18
+        iconContainer.layer.shadowOffset = CGSize(width: 0, height: 8)
+
         iconContainer.addSubview(iconImageView)
-        iconContainer.snp.makeConstraints { $0.size.equalTo(60) }
-        iconImageView.snp.makeConstraints { $0.center.equalToSuperview() }
+        iconContainer.snp.makeConstraints { make in
+            make.size.equalTo(108)
+        }
+        iconImageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(pictogram == nil ? 30 : 18)
+        }
 
         titleLabel.text = title
         titleLabel.font = TFTypography.title
@@ -42,22 +71,24 @@ public final class TFEmptyStateView: UIView {
 
         let stack = UIStackView(arrangedSubviews: [iconContainer, titleLabel, subtitleLabel])
         stack.axis = .vertical
-        stack.spacing = 10
+        stack.spacing = 8
         stack.alignment = .center
+        stack.setCustomSpacing(24, after: iconContainer)
 
         if let buttonTitle {
             actionButton.setTitle(buttonTitle, for: .normal)
             stack.addArrangedSubview(actionButton)
-            stack.setCustomSpacing(22, after: subtitleLabel)
-            actionButton.snp.makeConstraints { $0.width.equalTo(220) }
+            stack.setCustomSpacing(24, after: subtitleLabel)
+            actionButton.snp.makeConstraints { $0.width.equalTo(200) }
         } else {
             actionButton.isHidden = true
         }
 
         addSubview(stack)
         stack.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.leading.trailing.equalToSuperview().inset(40)
+            make.centerX.equalToSuperview()
+            make.centerY.equalToSuperview().offset(-34)
+            make.leading.trailing.equalToSuperview().inset(44)
         }
     }
 

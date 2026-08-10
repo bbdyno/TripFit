@@ -333,9 +333,9 @@ public final class ClothingDetailViewController: UIViewController {
             return
         }
 
-        heroImageView.image = UIImage(systemName: item.category.icon)
+        heroImageView.image = item.category.pictogram.image
         heroImageView.contentMode = .scaleAspectFit
-        heroImageView.tintColor = item.category.tintColor
+        heroImageView.tintColor = nil
 
         let requestID = imageRequestID
         imageToken = TFRemoteImageLoader.shared.load(from: item.imageURL) { [weak self] image in

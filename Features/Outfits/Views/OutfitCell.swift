@@ -149,8 +149,8 @@ final class OutfitCell: UICollectionViewCell {
         guard !items.isEmpty else {
             singleImageView.isHidden = false
             gridContainer.isHidden = true
-            singleImageView.image = UIImage(systemName: "person.crop.rectangle.stack")
-            singleImageView.tintColor = TFColor.Brand.primary
+            singleImageView.image = TFPictogram.outfit.image
+            singleImageView.tintColor = nil
             singleImageView.contentMode = .scaleAspectFit
             singleImageView.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.12)
             return
@@ -213,9 +213,9 @@ final class OutfitCell: UICollectionViewCell {
             return
         }
 
-        imageView.image = UIImage(systemName: item.category.icon)
+        imageView.image = item.category.pictogram.image
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = item.category.tintColor
+        imageView.tintColor = nil
         imageView.backgroundColor = item.category.tintColor.withAlphaComponent(0.12)
 
         let requestID = imageRequestID

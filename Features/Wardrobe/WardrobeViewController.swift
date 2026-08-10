@@ -20,6 +20,8 @@ public final class WardrobeViewController: UIViewController {
     private let subtitleLabel = UILabel()
     private let addButton = UIButton(type: .system)
     private let searchContainer = UIView()
+    private let searchMaterialView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
+    private let searchTintView = UIView()
     private let searchIcon = UIImageView(image: UIImage(systemName: "magnifyingglass"))
     private let searchField = UITextField()
     private var collectionView: UICollectionView!
@@ -105,10 +107,12 @@ public final class WardrobeViewController: UIViewController {
         }
         addButton.isHidden = true
 
-        searchContainer.backgroundColor = TFColor.Surface.input
+        searchContainer.backgroundColor = .clear
         searchContainer.layer.cornerRadius = TFRadius.lg
         searchContainer.layer.cornerCurve = .continuous
-        searchContainer.layer.borderWidth = 0
+        searchContainer.layer.borderWidth = 1
+        searchContainer.layer.borderColor = UIColor.white.withAlphaComponent(0.28).cgColor
+        searchContainer.clipsToBounds = true
         headerContainer.addSubview(searchContainer)
         searchContainer.snp.makeConstraints { make in
             make.top.equalTo(titleRow.snp.bottom).offset(14)
@@ -116,6 +120,14 @@ public final class WardrobeViewController: UIViewController {
             make.height.equalTo(50)
             make.bottom.equalToSuperview().inset(10)
         }
+
+        searchMaterialView.isUserInteractionEnabled = false
+        searchTintView.backgroundColor = TFColor.Surface.input.withAlphaComponent(0.58)
+        searchTintView.isUserInteractionEnabled = false
+        searchContainer.addSubview(searchMaterialView)
+        searchMaterialView.contentView.addSubview(searchTintView)
+        searchMaterialView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        searchTintView.snp.makeConstraints { $0.edges.equalToSuperview() }
 
         searchIcon.tintColor = TFColor.Text.tertiary
         searchIcon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
@@ -224,7 +236,7 @@ public final class WardrobeViewController: UIViewController {
 
     private func setupEmptyView() {
         emptyView = TFEmptyStateView(
-            icon: "tshirt",
+            pictogram: .wardrobe,
             title: CoreStrings.Wardrobe.emptyTitle,
             subtitle: CoreStrings.Wardrobe.emptySubtitle,
             buttonTitle: CoreStrings.Wardrobe.emptyAction

@@ -128,7 +128,7 @@ public final class OnboardingViewController: UIViewController {
 
         let changes = {
             self.skipButton.alpha = isLast ? 0 : 1
-            self.nextButton.backgroundColor = isLast ? TFColor.Brand.primaryDark : TFColor.Brand.primary
+            self.nextButton.backgroundColor = TFColor.Brand.primary
         }
         if animated && !UIAccessibility.isReduceMotionEnabled {
             UIView.animate(withDuration: 0.22, animations: changes)
@@ -339,7 +339,7 @@ private final class WalkthroughArtworkView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = TFColor.Surface.hero
+        backgroundColor = .clear
         addSubview(content)
         content.snp.makeConstraints { $0.edges.equalToSuperview() }
     }
@@ -349,231 +349,76 @@ private final class WalkthroughArtworkView: UIView {
 
     func configure(kind: WalkthroughPage.Kind, accentColor: UIColor) {
         content.subviews.forEach { $0.removeFromSuperview() }
-        layer.sublayers?.filter { $0.name == "accent" }.forEach { $0.removeFromSuperlayer() }
+        let backdrop = TFAuroraBackdropView()
+        content.addSubview(backdrop)
+        backdrop.snp.makeConstraints { $0.edges.equalToSuperview() }
 
-        let glow = CAGradientLayer()
-        glow.name = "accent"
-        glow.colors = [accentColor.withAlphaComponent(0.48).cgColor, UIColor.clear.cgColor]
-        glow.startPoint = CGPoint(x: 0.05, y: 0.05)
-        glow.endPoint = CGPoint(x: 0.72, y: 0.75)
-        glow.frame = bounds.isEmpty ? CGRect(x: 0, y: 0, width: 420, height: 340) : bounds
-        layer.insertSublayer(glow, at: 0)
-
-        switch kind {
-        case .wardrobe:
-            makeWardrobe(accentColor: accentColor)
-        case .outfits:
-            makeOutfits(accentColor: accentColor)
-        case .trips:
-            makeTrips(accentColor: accentColor)
-        }
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        layer.sublayers?.first(where: { $0.name == "accent" })?.frame = bounds
-    }
-
-    private func makeWardrobe(accentColor: UIColor) {
-        let number = makeOversizedNumber("01")
+        let number = UILabel()
+        number.text = kind.serial
+        number.font = TFTypography.display.withSize(104)
+        number.textColor = UIColor.white.withAlphaComponent(0.08)
         content.addSubview(number)
         number.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(-20)
+            make.top.equalToSuperview().offset(-24)
             make.trailing.equalToSuperview().offset(10)
         }
 
-        let rail = UIView()
-        rail.backgroundColor = UIColor.white.withAlphaComponent(0.28)
-        content.addSubview(rail)
-        rail.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(34)
-            make.top.equalToSuperview().offset(68)
-            make.height.equalTo(2)
+        let glass = TFGlassPanelView(
+            style: .systemUltraThinMaterialDark,
+            cornerRadius: 30,
+            tintColor: UIColor.white.withAlphaComponent(0.08)
+        )
+        content.addSubview(glass)
+        glass.snp.makeConstraints { make in
+            make.top.bottom.equalToSuperview().inset(20)
+            make.leading.equalToSuperview().inset(24)
+            make.width.equalTo(glass.snp.height)
         }
 
-        let garments = UIStackView()
-        garments.axis = .horizontal
-        garments.alignment = .fill
-        garments.distribution = .fillEqually
-        garments.spacing = 12
-        content.addSubview(garments)
-        garments.snp.makeConstraints { make in
-            make.top.equalTo(rail.snp.bottom).offset(18)
-            make.leading.trailing.equalToSuperview().inset(32)
-            make.height.equalTo(150)
-        }
+        let heroImage = UIImageView(image: kind.hero.image)
+        heroImage.contentMode = .scaleAspectFill
+        heroImage.clipsToBounds = true
+        heroImage.layer.cornerRadius = 24
+        heroImage.layer.cornerCurve = .continuous
+        glass.contentView.addSubview(heroImage)
+        heroImage.snp.makeConstraints { $0.edges.equalToSuperview().inset(12) }
 
-        let items = [
-            ("tshirt.fill", UIColor(hex: 0xF9D4E3), "LINEN"),
-            ("jacket.fill", UIColor(hex: 0xB8D9EA), "DENIM"),
-            ("shoe.2.fill", UIColor(hex: 0xCDE7D9), "TRAVEL"),
-        ]
-        for (index, item) in items.enumerated() {
-            let tile = ArtworkTile(icon: item.0, tint: item.1, caption: item.2)
-            tile.transform = CGAffineTransform(rotationAngle: CGFloat(index - 1) * 0.025)
-            garments.addArrangedSubview(tile)
-        }
-
-        let tag = makeTag(title: localized("24개 아이템", "24 PIECES"), color: accentColor)
-        content.addSubview(tag)
-        tag.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(32)
-            make.bottom.equalToSuperview().inset(24)
-        }
-    }
-
-    private func makeOutfits(accentColor: UIColor) {
-        let number = makeOversizedNumber("02")
-        content.addSubview(number)
-        number.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(-20)
-            make.trailing.equalToSuperview().offset(10)
-        }
-
-        let board = UIView()
-        board.backgroundColor = UIColor.white.withAlphaComponent(0.96)
-        board.layer.cornerRadius = 22
-        board.layer.cornerCurve = .continuous
-        board.transform = CGAffineTransform(rotationAngle: -0.035)
-        content.addSubview(board)
-        board.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(34)
-            make.trailing.equalToSuperview().inset(54)
-            make.top.equalToSuperview().offset(38)
-            make.bottom.equalToSuperview().inset(30)
-        }
-
-        let label = UILabel()
-        label.text = "LOOK 07"
-        label.font = TFTypography.caption.withSize(11)
-        label.textColor = UIColor(hex: 0x20262B)
-        board.addSubview(label)
-        label.snp.makeConstraints { make in
-            make.top.leading.equalToSuperview().inset(18)
-        }
-
-        let date = UILabel()
-        date.text = localized("일요일 브런치", "SUNDAY BRUNCH")
-        date.font = TFTypography.footnote.withSize(10)
-        date.textColor = UIColor(hex: 0x62686D)
-        board.addSubview(date)
-        date.snp.makeConstraints { make in
-            make.top.equalTo(label.snp.bottom).offset(3)
-            make.leading.equalTo(label)
-        }
-
-        let collage = UIStackView()
-        collage.axis = .horizontal
-        collage.distribution = .fillEqually
-        collage.spacing = 10
-        board.addSubview(collage)
-        collage.snp.makeConstraints { make in
-            make.top.equalTo(date.snp.bottom).offset(14)
-            make.leading.trailing.bottom.equalToSuperview().inset(18)
-        }
-        collage.addArrangedSubview(ArtworkTile(icon: "tshirt.fill", tint: UIColor(hex: 0xF2C7D9), caption: "TOP"))
-        collage.addArrangedSubview(ArtworkTile(icon: "shoe.2.fill", tint: UIColor(hex: 0xBFDDEB), caption: "SHOES"))
-
-        let tag = makeTag(title: localized("저장된 코디", "SAVED LOOK"), color: accentColor)
-        content.addSubview(tag)
-        tag.transform = CGAffineTransform(rotationAngle: 0.055)
-        tag.snp.makeConstraints { make in
+        let primaryMini = makeFloatingPictogram(kind.miniatures.0)
+        let secondaryMini = makeFloatingPictogram(kind.miniatures.1)
+        content.addSubview(primaryMini)
+        content.addSubview(secondaryMini)
+        primaryMini.transform = CGAffineTransform(rotationAngle: 0.06)
+        secondaryMini.transform = CGAffineTransform(rotationAngle: -0.05)
+        primaryMini.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(34)
             make.trailing.equalToSuperview().inset(24)
-            make.bottom.equalToSuperview().inset(18)
+            make.size.equalTo(76)
         }
-    }
-
-    private func makeTrips(accentColor: UIColor) {
-        let number = makeOversizedNumber("03")
-        content.addSubview(number)
-        number.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(-20)
-            make.trailing.equalToSuperview().offset(10)
+        secondaryMini.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(40)
+            make.bottom.equalToSuperview().inset(30)
+            make.size.equalTo(68)
         }
 
-        let ticket = UIView()
-        ticket.backgroundColor = UIColor.white.withAlphaComponent(0.96)
-        ticket.layer.cornerRadius = 24
-        ticket.layer.cornerCurve = .continuous
-        content.addSubview(ticket)
-        ticket.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(30)
-            make.top.equalToSuperview().offset(42)
-            make.height.equalTo(190)
-        }
-
-        let route = UILabel()
-        route.text = "SEOUL   →   TOKYO"
-        route.font = TFTypography.headline.withSize(17)
-        route.textColor = UIColor(hex: 0x20262B)
-        ticket.addSubview(route)
-        route.snp.makeConstraints { make in
-            make.top.leading.equalToSuperview().inset(20)
-        }
-
-        let date = UILabel()
-        date.text = localized("8월 18–21일  ·  3박 4일", "AUG 18–21  ·  4 DAYS")
-        date.font = TFTypography.footnote.withSize(11)
-        date.textColor = UIColor(hex: 0x62686D)
-        ticket.addSubview(date)
-        date.snp.makeConstraints { make in
-            make.top.equalTo(route.snp.bottom).offset(6)
-            make.leading.equalTo(route)
-        }
-
-        let divider = UIView()
-        divider.backgroundColor = UIColor(hex: 0xD7D0CA)
-        ticket.addSubview(divider)
-        divider.snp.makeConstraints { make in
-            make.top.equalTo(date.snp.bottom).offset(16)
-            make.leading.trailing.equalToSuperview().inset(20)
-            make.height.equalTo(1)
-        }
-
-        let members = UIStackView()
-        members.axis = .horizontal
-        members.spacing = -7
-        ticket.addSubview(members)
-        members.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(20)
-            make.bottom.equalToSuperview().inset(20)
-        }
-        ["person.fill", "person.fill", "person.fill"].enumerated().forEach { index, symbol in
-            let avatar = UIImageView(image: UIImage(systemName: symbol))
-            avatar.backgroundColor = [UIColor(hex: 0xF2C7D9), UIColor(hex: 0xBFDDEB), UIColor(hex: 0xCDE7D9)][index]
-            avatar.tintColor = UIColor(hex: 0x20262B)
-            avatar.contentMode = .center
-            avatar.layer.cornerRadius = 17
-            avatar.layer.borderWidth = 2
-            avatar.layer.borderColor = UIColor.white.cgColor
-            avatar.clipsToBounds = true
-            avatar.snp.makeConstraints { $0.size.equalTo(34) }
-            members.addArrangedSubview(avatar)
-        }
-
-        let progress = UILabel()
-        progress.text = localized("준비물  8 / 12", "PACKED  8 / 12")
-        progress.font = TFTypography.caption.withSize(11)
-        progress.textColor = UIColor(hex: 0x20262B)
-        ticket.addSubview(progress)
-        progress.snp.makeConstraints { make in
-            make.trailing.bottom.equalToSuperview().inset(20)
-        }
-
-        let tag = makeTag(title: localized("3명이 함께", "3 TRAVELERS"), color: accentColor)
+        let tag = makeTag(title: kind.tag, color: accentColor)
         content.addSubview(tag)
         tag.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(28)
-            make.bottom.equalToSuperview().inset(20)
+            make.leading.equalTo(glass.snp.trailing).offset(-18)
+            make.centerY.equalToSuperview().offset(34)
         }
     }
 
-    private func makeOversizedNumber(_ text: String) -> UILabel {
-        let label = UILabel()
-        label.text = text
-        label.font = TFTypography.display.withSize(96)
-        label.textColor = UIColor.white.withAlphaComponent(0.08)
-        return label
+    private func makeFloatingPictogram(_ pictogram: TFPictogram) -> TFGlassPanelView {
+        let panel = TFGlassPanelView(
+            style: .systemUltraThinMaterialDark,
+            cornerRadius: 24,
+            tintColor: UIColor.white.withAlphaComponent(0.09)
+        )
+        let image = UIImageView(image: pictogram.image)
+        image.contentMode = .scaleAspectFit
+        panel.contentView.addSubview(image)
+        image.snp.makeConstraints { $0.edges.equalToSuperview().inset(8) }
+        return panel
     }
 
     private func makeTag(title: String, color: UIColor) -> UILabel {
@@ -593,39 +438,39 @@ private final class WalkthroughArtworkView: UIView {
     }
 }
 
-private final class ArtworkTile: UIView {
-    init(icon: String, tint: UIColor, caption: String) {
-        super.init(frame: .zero)
-        backgroundColor = tint
-        layer.cornerRadius = 18
-        layer.cornerCurve = .continuous
-        clipsToBounds = true
-
-        let image = UIImageView(image: UIImage(systemName: icon))
-        image.tintColor = UIColor(hex: 0x20262B)
-        image.contentMode = .scaleAspectFit
-        image.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 38, weight: .medium)
-        addSubview(image)
-        image.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.centerY.equalToSuperview().offset(-10)
-            make.size.lessThanOrEqualTo(54)
-        }
-
-        let label = UILabel()
-        label.text = caption
-        label.font = TFTypography.footnote.withSize(9)
-        label.textColor = UIColor(hex: 0x20262B).withAlphaComponent(0.72)
-        label.textAlignment = .center
-        addSubview(label)
-        label.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(4)
-            make.bottom.equalToSuperview().inset(10)
+private extension WalkthroughPage.Kind {
+    var serial: String {
+        switch self {
+        case .wardrobe: "01"
+        case .outfits: "02"
+        case .trips: "03"
         }
     }
 
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    var hero: TFHeroPictogram {
+        switch self {
+        case .wardrobe: .wardrobe
+        case .outfits: .outfit
+        case .trips: .trip
+        }
+    }
+
+    var miniatures: (TFPictogram, TFPictogram) {
+        switch self {
+        case .wardrobe: (.top, .accessories)
+        case .outfits: (.outfit, .shoes)
+        case .trips: (.calendar, .together)
+        }
+    }
+
+    var tag: String {
+        let korean = TFAppLanguage.current() == .korean
+        return switch self {
+        case .wardrobe: korean ? "나만의 옷장" : "YOUR CLOSET"
+        case .outfits: korean ? "저장된 코디" : "SAVED LOOKS"
+        case .trips: korean ? "함께 준비" : "PLAN TOGETHER"
+        }
+    }
 }
 
 private final class WalkthroughProgressView: UIView {

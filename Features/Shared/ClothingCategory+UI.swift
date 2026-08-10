@@ -10,6 +10,16 @@ import Domain
 import UIKit
 
 extension ClothingCategory {
+    var pictogram: TFPictogram {
+        switch self {
+        case .tops: .top
+        case .bottoms: .bottom
+        case .outerwear: .outerwear
+        case .shoes: .shoes
+        case .accessories: .accessories
+        }
+    }
+
     var tintColor: UIColor {
         switch self {
         case .tops:

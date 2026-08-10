@@ -203,10 +203,10 @@ public final class OutfitsListViewController: UIViewController {
 
     private func setupEmptyView() {
         emptyView = TFEmptyStateView(
-            icon: "person.crop.rectangle.stack",
-            title: "No Outfits Yet",
-            subtitle: "Create your first outfit\ncombination",
-            buttonTitle: "Create Outfit"
+            pictogram: .outfit,
+            title: localized("아직 저장된 코디가 없어요", "No Outfits Yet"),
+            subtitle: localized("내 옷으로 첫 번째 코디를 만들어보세요", "Create your first look from pieces you own"),
+            buttonTitle: localized("코디 만들기", "Create Outfit")
         )
         emptyView.isHidden = true
         view.addSubview(emptyView)

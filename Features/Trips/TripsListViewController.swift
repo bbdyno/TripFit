@@ -223,10 +223,10 @@ public final class TripsListViewController: UIViewController {
 
     private func setupEmptyView() {
         emptyView = TFEmptyStateView(
-            icon: "suitcase",
-            title: "No Trips Yet",
-            subtitle: "Plan your first trip\nand start packing",
-            buttonTitle: "Create Trip"
+            pictogram: .suitcase,
+            title: localized("아직 만든 여행이 없어요", "No Trips Yet"),
+            subtitle: localized("첫 여행을 계획하고 가볍게 짐을 챙겨보세요", "Plan your first trip and start packing lighter"),
+            buttonTitle: localized("여행 만들기", "Create Trip")
         )
         emptyView.isHidden = true
         view.addSubview(emptyView)
@@ -340,7 +340,7 @@ extension TripsListViewController {
             config.baseBackgroundColor = TFColor.Surface.card
             config.baseForegroundColor = TFColor.Text.primary
             config.cornerStyle = .large
-            config.image = UIImage(systemName: "person.2.fill")
+            config.image = TFPictogram.together.image(pointSize: 38)
             config.imagePlacement = .leading
             config.imagePadding = 10
             button.configuration = config
@@ -364,12 +364,30 @@ extension TripsListViewController {
         subtitleLabel.font = TFTypography.footnote
         subtitleLabel.textColor = TFColor.Text.secondary
         subtitleLabel.numberOfLines = 2
-        let stack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
-        stack.axis = .vertical
-        stack.spacing = 4
-        let card = TFCardView(style: .flat)
-        card.addSubview(stack)
-        stack.snp.makeConstraints { $0.edges.equalToSuperview().inset(TFSpacing.md) }
+        let textStack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
+        textStack.axis = .vertical
+        textStack.spacing = 4
+
+        let iconStage = UIView()
+        iconStage.backgroundColor = TFColor.Surface.highlight.withAlphaComponent(0.72)
+        iconStage.layer.cornerRadius = 20
+        iconStage.layer.cornerCurve = .continuous
+        let icon = UIImageView(image: TFPictogram.together.image)
+        icon.contentMode = .scaleAspectFit
+        iconStage.addSubview(icon)
+        icon.snp.makeConstraints { $0.edges.equalToSuperview().inset(5) }
+        iconStage.snp.makeConstraints { $0.size.equalTo(64) }
+
+        let contentStack = UIStackView(arrangedSubviews: [iconStage, textStack])
+        contentStack.axis = .horizontal
+        contentStack.alignment = .center
+        contentStack.spacing = 12
+        let card = TFGlassPanelView(
+            cornerRadius: 22,
+            tintColor: TFColor.Surface.card.withAlphaComponent(0.52)
+        )
+        card.contentView.addSubview(contentStack)
+        contentStack.snp.makeConstraints { $0.edges.equalToSuperview().inset(TFSpacing.md) }
         sharedStack.addArrangedSubview(card)
         card.snp.makeConstraints { make in
             make.width.equalTo(sharedScrollView.frameLayoutGuide).offset(-(TFSpacing.md * 2))

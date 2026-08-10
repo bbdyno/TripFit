@@ -233,9 +233,9 @@ final class TripCell: UICollectionViewCell {
         imageRequestToken = nil
         imageRequestID = UUID()
 
-        tripImageView.image = UIImage(systemName: "airplane")
+        tripImageView.image = TFPictogram.suitcase.image
         tripImageView.contentMode = .scaleAspectFit
-        tripImageView.tintColor = TFColor.Brand.primary
+        tripImageView.tintColor = nil
 
         let requestID = imageRequestID
         imageRequestToken = TFRemoteImageLoader.shared.load(from: imageURL(for: trip)) { [weak self] image in

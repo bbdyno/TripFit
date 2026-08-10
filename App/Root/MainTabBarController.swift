@@ -31,7 +31,7 @@ final class MainTabBarController: UITabBarController {
         let tabAppearance = UITabBarAppearance()
         tabAppearance.configureWithTransparentBackground()
         tabAppearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
-        tabAppearance.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.94)
+        tabAppearance.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.64)
         tabAppearance.shadowColor = UIColor.clear
         tabAppearance.stackedLayoutAppearance.selected.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 1)
         tabAppearance.stackedLayoutAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 1)
@@ -156,20 +156,27 @@ final class MainTabBarController: UITabBarController {
     }
 
     private func setupCenterAddButton() {
-        centerAddButton.backgroundColor = TFColor.Brand.primary
-        centerAddButton.tintColor = .white
-        centerAddButton.layer.borderWidth = 2
-        centerAddButton.layer.borderColor = TFColor.Surface.card.cgColor
-        centerAddButton.layer.shadowColor = TFColor.Brand.primary.cgColor
-        centerAddButton.layer.shadowOpacity = 0.3
-        centerAddButton.layer.shadowRadius = 10
-        centerAddButton.layer.shadowOffset = CGSize(width: 0, height: 5)
-        centerAddButton.adjustsImageWhenHighlighted = true
-        centerAddButton.setImage(
-            TFMaterialIcon.image(named: "add", pointSize: 30, weight: .medium)
-                ?? UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .bold)),
-            for: .normal
-        )
+        let addImage = TFMaterialIcon.image(named: "add", pointSize: 30, weight: .medium)
+            ?? UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .bold))
+
+        if #available(iOS 26.0, *) {
+            var config = UIButton.Configuration.prominentGlass()
+            config.image = addImage
+            config.baseBackgroundColor = TFColor.Brand.primary
+            config.baseForegroundColor = .white
+            config.cornerStyle = .capsule
+            centerAddButton.configuration = config
+        } else {
+            centerAddButton.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.82)
+            centerAddButton.tintColor = .white
+            centerAddButton.layer.borderWidth = 1
+            centerAddButton.layer.borderColor = UIColor.white.withAlphaComponent(0.42).cgColor
+            centerAddButton.layer.shadowColor = TFColor.Brand.primary.cgColor
+            centerAddButton.layer.shadowOpacity = 0.22
+            centerAddButton.layer.shadowRadius = 12
+            centerAddButton.layer.shadowOffset = CGSize(width: 0, height: 6)
+            centerAddButton.setImage(addImage, for: .normal)
+        }
         centerAddButton.addAction(UIAction { [weak self] _ in
             self?.didTapCenterAddButton()
         }, for: .touchUpInside)
@@ -216,33 +223,16 @@ final class MainTabBarController: UITabBarController {
     }
 
     private func presentAddTrip() {
-        let alert = UIAlertController(
-            title: TFAppLanguage.current() == .korean ? "새 여행" : "New Trip",
-            message: TFAppLanguage.current() == .korean
-                ? "날짜가 정해졌나요, 아니면 친구와 먼저 맞춰볼까요?"
-                : "Are the dates fixed, or should we coordinate with friends first?",
-            preferredStyle: .actionSheet
+        let menu = TripCreationMenuViewController(
+            onPersonal: { [weak self] in self?.presentPersonalTrip() },
+            onTogether: { [weak self] in
+                guard let self,
+                      let nav = selectedViewController as? UINavigationController,
+                      let trips = nav.viewControllers.first as? TripsListViewController else { return }
+                trips.presentSharedTripCreate()
+            }
         )
-        alert.addAction(UIAlertAction(
-            title: TFAppLanguage.current() == .korean ? "날짜가 정해진 개인 여행" : "Personal Trip with Fixed Dates",
-            style: .default
-        ) { [weak self] _ in
-            self?.presentPersonalTrip()
-        })
-        alert.addAction(UIAlertAction(
-            title: TFAppLanguage.current() == .korean ? "친구와 날짜부터 맞추기" : "Coordinate Dates with Friends",
-            style: .default
-        ) { [weak self] _ in
-            guard let self,
-                  let nav = selectedViewController as? UINavigationController,
-                  let trips = nav.viewControllers.first as? TripsListViewController else { return }
-            trips.presentSharedTripCreate()
-        })
-        alert.addAction(UIAlertAction(
-            title: TFAppLanguage.current() == .korean ? "취소" : "Cancel",
-            style: .cancel
-        ))
-        presentFromSelectedHost(alert)
+        presentFromSelectedHost(menu)
     }
 
     private func presentPersonalTrip() {

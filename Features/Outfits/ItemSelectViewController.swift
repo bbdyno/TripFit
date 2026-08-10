@@ -395,9 +395,9 @@ private final class SelectableClothingCell: UITableViewCell {
             return
         }
 
-        thumbnailImageView.image = UIImage(systemName: item.category.icon)
+        thumbnailImageView.image = item.category.pictogram.image
         thumbnailImageView.contentMode = .scaleAspectFit
-        thumbnailImageView.tintColor = item.category.tintColor
+        thumbnailImageView.tintColor = nil
 
         let requestID = imageRequestID
         imageRequestToken = TFRemoteImageLoader.shared.load(from: item.imageURL) { [weak self] image in

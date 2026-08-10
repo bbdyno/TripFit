@@ -153,9 +153,9 @@ final class ClothingCell: UICollectionViewCell {
     }
 
     private func setPlaceholder(for item: ClothingItem) {
-        imageView.image = UIImage(systemName: item.category.icon)
+        imageView.image = item.category.pictogram.image
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = item.category.tintColor
+        imageView.tintColor = nil
         imageView.backgroundColor = item.category.tintColor.withAlphaComponent(0.12)
     }
 }

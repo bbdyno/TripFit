@@ -513,8 +513,9 @@ public final class OutfitEditViewController: UIViewController {
         if let data = item.imageData, let image = UIImage(data: data) {
             imageView.image = image
         } else {
-            imageView.image = UIImage(systemName: "photo")
-            imageView.tintColor = TFColor.Text.tertiary
+            imageView.image = item.category.pictogram.image
+            imageView.contentMode = .scaleAspectFit
+            imageView.tintColor = nil
             if let token = TFRemoteImageLoader.shared.load(
                 from: item.imageURL,
                 completion: { [weak imageView] image in

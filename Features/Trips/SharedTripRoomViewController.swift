@@ -81,16 +81,16 @@ public final class SharedTripRoomViewController: UIViewController {
         recommendationLabel.snp.makeConstraints { $0.edges.equalToSuperview().inset(TFSpacing.lg) }
         stack.addArrangedSubview(recommendationCard)
 
-        stack.addArrangedSubview(makeButton(localized("내 가능한 날짜 제출", "Submit My Availability"), icon: "calendar.badge.check") { [weak self] in
+        stack.addArrangedSubview(makeButton(localized("내 가능한 날짜 제출", "Submit My Availability"), pictogram: .calendar) { [weak self] in
             self?.openAvailability()
         })
-        stack.addArrangedSubview(makeButton(localized("공동 준비물", "Shared Packing"), icon: "shippingbox") { [weak self] in
+        stack.addArrangedSubview(makeButton(localized("공동 준비물", "Shared Packing"), pictogram: .packing) { [weak self] in
             self?.openPacking()
         })
-        stack.addArrangedSubview(makeButton(localized("여행 룩북", "Trip Lookbook"), icon: "square.grid.2x2") { [weak self] in
+        stack.addArrangedSubview(makeButton(localized("여행 룩북", "Trip Lookbook"), pictogram: .outfit) { [weak self] in
             self?.openLookbook()
         })
-        configureSecondaryButton(inviteButton, title: localized("초대 링크 공유", "Share Invite Link"), icon: "person.badge.plus") { [weak self] in
+        configureSecondaryButton(inviteButton, title: localized("초대 링크 공유", "Share Invite Link"), pictogram: .together) { [weak self] in
             self?.shareInvite()
         }
         stack.addArrangedSubview(inviteButton)
@@ -107,9 +107,14 @@ public final class SharedTripRoomViewController: UIViewController {
 
     private func makeRoomHero() -> UIView {
         let hero = UIView()
-        hero.backgroundColor = TFColor.Surface.hero
+        hero.backgroundColor = .clear
         hero.layer.cornerRadius = TFRadius.xl
         hero.layer.cornerCurve = .continuous
+        hero.clipsToBounds = true
+
+        let backdrop = TFAuroraBackdropView()
+        hero.addSubview(backdrop)
+        backdrop.snp.makeConstraints { $0.edges.equalToSuperview() }
 
         let eyebrow = UILabel()
         eyebrow.text = localized("함께 준비하는 여행", "PLANNING TOGETHER").uppercased()
@@ -126,20 +131,38 @@ public final class SharedTripRoomViewController: UIViewController {
         summaryLabel.textColor = UIColor.white.withAlphaComponent(0.72)
         summaryLabel.numberOfLines = 0
 
+        let iconPanel = TFGlassPanelView(
+            style: .systemUltraThinMaterialDark,
+            cornerRadius: 28,
+            tintColor: UIColor.white.withAlphaComponent(0.08)
+        )
+        let icon = UIImageView(image: TFPictogram.together.image)
+        icon.contentMode = .scaleAspectFit
+        iconPanel.contentView.addSubview(icon)
+        icon.snp.makeConstraints { $0.edges.equalToSuperview().inset(7) }
+
         let stack = UIStackView(arrangedSubviews: [eyebrow, titleLabel, summaryLabel])
         stack.axis = .vertical
         stack.spacing = 8
         hero.addSubview(stack)
-        stack.snp.makeConstraints { $0.edges.equalToSuperview().inset(TFSpacing.lg) }
+        hero.addSubview(iconPanel)
+        stack.snp.makeConstraints { make in
+            make.top.bottom.leading.equalToSuperview().inset(TFSpacing.lg)
+            make.trailing.equalTo(iconPanel.snp.leading).offset(-12)
+        }
+        iconPanel.snp.makeConstraints { make in
+            make.top.trailing.equalToSuperview().inset(TFSpacing.lg)
+            make.size.equalTo(72)
+        }
         hero.snp.makeConstraints { $0.height.greaterThanOrEqualTo(188) }
         return hero
     }
 
-    private func makeButton(_ title: String, icon: String, action: @escaping () -> Void) -> UIButton {
+    private func makeButton(_ title: String, pictogram: TFPictogram, action: @escaping () -> Void) -> UIButton {
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.filled()
         config.title = title
-        config.image = UIImage(systemName: icon)
+        config.image = pictogram.image(pointSize: 34)
         config.imagePadding = 10
         config.baseBackgroundColor = TFColor.Surface.card
         config.baseForegroundColor = TFColor.Text.primary
@@ -167,12 +190,12 @@ public final class SharedTripRoomViewController: UIViewController {
     private func configureSecondaryButton(
         _ button: UIButton,
         title: String,
-        icon: String,
+        pictogram: TFPictogram,
         action: @escaping () -> Void
     ) {
         var config = UIButton.Configuration.filled()
         config.title = title
-        config.image = UIImage(systemName: icon)
+        config.image = pictogram.image(pointSize: 34)
         config.imagePadding = 10
         config.baseBackgroundColor = TFColor.Surface.card
         config.baseForegroundColor = TFColor.Text.primary

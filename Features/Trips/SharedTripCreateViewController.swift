@@ -116,9 +116,14 @@ public final class SharedTripCreateViewController: UIViewController {
 
     private func makeIntroHero() -> UIView {
         let hero = UIView()
-        hero.backgroundColor = TFColor.Surface.hero
+        hero.backgroundColor = .clear
         hero.layer.cornerRadius = TFRadius.xl
         hero.layer.cornerCurve = .continuous
+        hero.clipsToBounds = true
+
+        let backdrop = TFAuroraBackdropView()
+        hero.addSubview(backdrop)
+        backdrop.snp.makeConstraints { $0.edges.equalToSuperview() }
 
         let eyebrow = UILabel()
         eyebrow.text = "TRIPFIT TOGETHER"
@@ -140,26 +145,29 @@ public final class SharedTripCreateViewController: UIViewController {
         subtitle.textColor = UIColor.white.withAlphaComponent(0.72)
         subtitle.numberOfLines = 0
 
-        let icon = UIImageView(image: UIImage(systemName: "person.2.fill"))
-        icon.tintColor = TFColor.Brand.primaryLight
-        icon.backgroundColor = UIColor.white.withAlphaComponent(0.1)
-        icon.contentMode = .center
-        icon.layer.cornerRadius = 22
-        icon.layer.cornerCurve = .continuous
+        let iconPanel = TFGlassPanelView(
+            style: .systemUltraThinMaterialDark,
+            cornerRadius: 28,
+            tintColor: UIColor.white.withAlphaComponent(0.08)
+        )
+        let icon = UIImageView(image: TFPictogram.together.image)
+        icon.contentMode = .scaleAspectFit
+        iconPanel.contentView.addSubview(icon)
+        icon.snp.makeConstraints { $0.edges.equalToSuperview().inset(8) }
 
         let textStack = UIStackView(arrangedSubviews: [eyebrow, title, subtitle])
         textStack.axis = .vertical
         textStack.spacing = 7
         hero.addSubview(textStack)
-        hero.addSubview(icon)
+        hero.addSubview(iconPanel)
         textStack.snp.makeConstraints { make in
             make.top.bottom.leading.equalToSuperview().inset(TFSpacing.lg)
-            make.trailing.equalTo(icon.snp.leading).offset(-12)
+            make.trailing.equalTo(iconPanel.snp.leading).offset(-12)
         }
-        icon.snp.makeConstraints { make in
+        iconPanel.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(TFSpacing.lg)
             make.top.equalToSuperview().inset(TFSpacing.lg)
-            make.size.equalTo(44)
+            make.size.equalTo(72)
         }
         hero.snp.makeConstraints { $0.height.greaterThanOrEqualTo(176) }
         return hero
