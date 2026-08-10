@@ -9,8 +9,8 @@ import ProjectDescription
 import Foundation
 
 public enum TripFitBuild {
-    public static let marketingVersion = "1.0.0"
-    public static let buildNumber = "2026.02.21.2"
+    public static let marketingVersion = "1.1.0"
+    public static let buildNumber = "2026.08.10.1"
     public static let bundleId = "com.bbdyno.app.tripFit"
     public static let developmentTeam = "M79H9K226Y"
     public static let provisioningProfileSpecifier = "TripFit App Provisioning"
