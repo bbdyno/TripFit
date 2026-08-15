@@ -9,8 +9,8 @@ import ProjectDescription
 import Foundation
 
 public enum TripFitBuild {
-    public static let marketingVersion = "1.0.0"
-    public static let buildNumber = "2026.02.21.2"
+    public static let marketingVersion = "1.1.0"
+    public static let buildNumber = "2026.08.10.1"
     public static let bundleId = "com.bbdyno.app.tripFit"
     public static let developmentTeam = "M79H9K226Y"
     public static let provisioningProfileSpecifier = "TripFit App Provisioning"
@@ -35,6 +35,11 @@ public extension Settings {
             "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
             "TARGETED_DEVICE_FAMILY": "1",
             "ENABLE_PREVIEWS": "NO",
+            "OTHER_LDFLAGS": [
+                "$(inherited)",
+                "-force_load",
+                "$(BUILT_PRODUCTS_DIR)/FirebaseAuth.framework/FirebaseAuth",
+            ],
             "DEVELOPMENT_TEAM": .string(env["DEVELOPMENT_TEAM"] ?? TripFitBuild.developmentTeam),
             "CODE_SIGN_STYLE": .string(env["CODE_SIGN_STYLE"] ?? "Manual"),
             "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": .string(

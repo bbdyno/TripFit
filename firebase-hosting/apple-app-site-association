@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["M79H9K226Y.com.bbdyno.app.tripFit"],
+        "components": [
+          {
+            "/": "/join/*",
+            "comment": "TripFit private collaboration invitations"
+          }
+        ]
+      }
+    ]
+  }
+}

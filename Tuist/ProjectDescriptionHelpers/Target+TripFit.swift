@@ -25,6 +25,7 @@ public enum TripFitTarget {
                 "UIUserInterfaceStyle": "Dark",
                 "UILaunchScreen": [:],
                 "UIApplicationSupportsIndirectInputEvents": true,
+                "NSCalendarsFullAccessUsageDescription": "TripFit은 사용자가 선택한 여행 후보 날짜의 바쁜 시간만 기기에서 확인하며, 일정 제목이나 내용은 업로드하지 않습니다. TripFit checks only busy times for selected travel dates on this device and never uploads calendar details.",
                 "UIAppFonts": [
                     "PlusJakartaSans-Variable.ttf",
                     "Fonts/PlusJakartaSans-Variable.ttf",
@@ -48,6 +49,11 @@ public enum TripFitTarget {
             entitlements: .file(path: "App/TripFit.entitlements"),
             scripts: [
                 .pre(
+                    path: .relativeToRoot("Scripts/validate-firebase-config.sh"),
+                    name: "Validate Firebase Configuration",
+                    basedOnDependencyAnalysis: false
+                ),
+                .pre(
                     path: .relativeToRoot("Scripts/swiftlint.sh"),
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
@@ -57,6 +63,7 @@ public enum TripFitTarget {
                 .target(name: "Core"),
                 .target(name: "Domain"),
                 .target(name: "Features"),
+                .target(name: "CollaborationData"),
                 .external(name: "SnapKit"),
             ],
             settings: .tripFitTargetSettings()
@@ -67,16 +74,33 @@ public enum TripFitTarget {
         name: String,
         path: String,
         resources: ResourceFileElements = [],
+        product: Product = .framework,
         dependencies: [TargetDependency]
     ) -> Target {
         .target(
             name: name,
             destinations: .iOS,
-            product: .framework,
+            product: product,
             bundleId: "\(TripFitBuild.bundleId).\(name)",
             deploymentTargets: TripFitBuild.deployment,
             sources: [.glob("\(path)/**", excluding: ["\(path)/Resources/**"])],
             resources: resources,
+            dependencies: dependencies
+        )
+    }
+
+    public static func unitTests(
+        name: String,
+        path: String,
+        dependencies: [TargetDependency]
+    ) -> Target {
+        .target(
+            name: name,
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "\(TripFitBuild.bundleId).\(name)",
+            deploymentTargets: TripFitBuild.deployment,
+            sources: ["\(path)/**"],
             dependencies: dependencies
         )
     }

@@ -34,6 +34,43 @@ let project = Project(
                 .external(name: "SnapKit"),
             ]
         ),
+        TripFitTarget.framework(
+            name: "CollaborationData",
+            path: "CollaborationData",
+            product: .staticFramework,
+            dependencies: [
+                .target(name: "Domain"),
+                .external(name: "FirebaseCore"),
+                .external(name: "FirebaseAuth"),
+                .external(name: "FirebaseFirestore"),
+                .external(name: "FirebaseAppCheck"),
+            ]
+        ),
+        TripFitTarget.unitTests(
+            name: "DomainTests",
+            path: "Tests/DomainTests",
+            dependencies: [.target(name: "Domain")]
+        ),
+        TripFitTarget.unitTests(
+            name: "CollaborationDataTests",
+            path: "Tests/CollaborationDataTests",
+            dependencies: [
+                .target(name: "CollaborationData"),
+                .target(name: "Domain"),
+            ]
+        ),
         TripFitTarget.app(),
+    ],
+    schemes: [
+        .scheme(
+            name: "TripFit",
+            shared: true,
+            buildAction: .buildAction(targets: ["TripFit"]),
+            testAction: .targets(["DomainTests", "CollaborationDataTests"]),
+            runAction: .runAction(configuration: .debug),
+            archiveAction: .archiveAction(configuration: .release),
+            profileAction: .profileAction(configuration: .release),
+            analyzeAction: .analyzeAction(configuration: .debug)
+        ),
     ]
 )

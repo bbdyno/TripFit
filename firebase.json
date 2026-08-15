@@ -1,0 +1,30 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "firebase-hosting",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "/join/**", "destination": "/join/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "/.well-known/apple-app-site-association",
+        "headers": [{ "key": "Content-Type", "value": "application/json" }]
+      },
+      {
+        "source": "/apple-app-site-association",
+        "headers": [{ "key": "Content-Type", "value": "application/json" }]
+      }
+    ]
+  },
+  "emulators": {
+    "ui": { "enabled": true, "port": 4000 },
+    "firestore": { "port": 8080 },
+    "auth": { "port": 9099 },
+    "hosting": { "port": 5000 },
+    "singleProjectMode": true
+  }
+}

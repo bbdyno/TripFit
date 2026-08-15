@@ -5,6 +5,7 @@
 //  Created by bbdyno on 2/19/26.
 //
 
+import CollaborationData
 import Core
 import CoreText
 import UIKit
@@ -16,6 +17,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         TFLocalizationRuntime.enable()
+        FirebaseRuntime.shared.configure()
         configureAppearance()
         return true
     }
