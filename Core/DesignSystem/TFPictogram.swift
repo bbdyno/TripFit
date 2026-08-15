@@ -7,42 +7,87 @@
 
 import UIKit
 
-public enum TFPictogram: String, CaseIterable {
-    case wardrobe = "TFIconWardrobe"
-    case outfit = "TFIconOutfit"
-    case suitcase = "TFIconSuitcase"
-    case together = "TFIconTogether"
-    case top = "TFIconTop"
-    case bottom = "TFIconBottom"
-    case outerwear = "TFIconOuterwear"
-    case shoes = "TFIconShoes"
-    case accessories = "TFIconAccessories"
-    case packing = "TFIconPacking"
-    case calendar = "TFIconCalendar"
-    case destination = "TFIconDestination"
+public enum TFPictogram: CaseIterable {
+    case wardrobe
+    case outfit
+    case suitcase
+    case together
+    case top
+    case bottom
+    case outerwear
+    case shoes
+    case accessories
+    case packing
+    case calendar
+    case destination
 
     public var image: UIImage? {
-        UIImage(named: rawValue, in: .main, compatibleWith: nil)?.withRenderingMode(.alwaysOriginal)
+        image(pointSize: 34)
     }
 
     public func image(pointSize: CGFloat) -> UIImage? {
-        guard let image else { return nil }
-        let size = CGSize(width: pointSize, height: pointSize)
-        let format = UIGraphicsImageRendererFormat.preferred()
-        format.opaque = false
-        return UIGraphicsImageRenderer(size: size, format: format).image { _ in
-            image.draw(in: CGRect(origin: .zero, size: size))
-        }.withRenderingMode(.alwaysOriginal)
+        if self == .bottom {
+            return Self.pantsImage(pointSize: pointSize, color: tintColor)
+        }
+
+        return UIImage(
+            systemName: symbolName,
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: pointSize, weight: .medium)
+        )?.withTintColor(tintColor, renderingMode: .alwaysOriginal)
     }
-}
 
-public enum TFHeroPictogram: String {
-    case wardrobe = "TFHeroWardrobe"
-    case outfit = "TFHeroOutfit"
-    case trip = "TFHeroTrip"
-    case together = "TFHeroTogether"
+    private var symbolName: String {
+        switch self {
+        case .wardrobe: "tshirt.fill"
+        case .outfit: "sparkles"
+        case .suitcase: "suitcase.rolling.fill"
+        case .together: "person.2.fill"
+        case .top: "tshirt.fill"
+        case .bottom: "hanger"
+        case .outerwear: "jacket.fill"
+        case .shoes: "shoe.2.fill"
+        case .accessories: "handbag.fill"
+        case .packing: "checklist"
+        case .calendar: "calendar"
+        case .destination: "map.fill"
+        }
+    }
 
-    public var image: UIImage? {
-        UIImage(named: rawValue, in: .main, compatibleWith: nil)?.withRenderingMode(.alwaysOriginal)
+    private var tintColor: UIColor {
+        switch self {
+        case .wardrobe, .top, .packing:
+            TFColor.Brand.primary
+        case .outfit, .outerwear, .calendar:
+            TFColor.Brand.accentPurple
+        case .suitcase, .shoes, .destination:
+            TFColor.Brand.accentSky
+        case .together, .accessories:
+            TFColor.Brand.accentMint
+        case .bottom:
+            TFColor.Text.secondary
+        }
+    }
+
+    private static func pantsImage(pointSize: CGFloat, color: UIColor) -> UIImage {
+        let scale = pointSize / 34
+        return UIGraphicsImageRenderer(size: CGSize(width: pointSize, height: pointSize)).image { _ in
+            let legs = UIBezierPath()
+            legs.move(to: CGPoint(x: 8 * scale, y: 5 * scale))
+            legs.addLine(to: CGPoint(x: 26 * scale, y: 5 * scale))
+            legs.addLine(to: CGPoint(x: 24.2 * scale, y: 28.5 * scale))
+            legs.addLine(to: CGPoint(x: 18.2 * scale, y: 28.5 * scale))
+            legs.addLine(to: CGPoint(x: 17 * scale, y: 17.2 * scale))
+            legs.addLine(to: CGPoint(x: 15.8 * scale, y: 28.5 * scale))
+            legs.addLine(to: CGPoint(x: 9.8 * scale, y: 28.5 * scale))
+            legs.close()
+            color.setFill()
+            legs.fill()
+
+            let waistband = UIBezierPath(
+                roundedRect: CGRect(x: 7.5 * scale, y: 4 * scale, width: 19 * scale, height: 4.5 * scale),
+                cornerRadius: 1.5 * scale
+            )
+            waistband.fill()
+        }.withRenderingMode(.alwaysOriginal)
     }
 }

@@ -61,14 +61,15 @@ public final class TFEmptyStateView: UIView {
         iconContainer.backgroundColor = usesHeroImage ? TFColor.Surface.card : TFColor.Surface.highlight
         iconContainer.layer.cornerRadius = 22
         iconContainer.layer.cornerCurve = .continuous
+        iconContainer.clipsToBounds = usesHeroImage
         iconContainer.layer.borderWidth = 1
         iconContainer.layer.borderColor = TFColor.Brand.primary.withAlphaComponent(0.18).cgColor
 
         iconContainer.addSubview(iconImageView)
         iconContainer.snp.makeConstraints { make in
             if usesHeroImage {
-                make.width.equalTo(184)
-                make.height.equalTo(112)
+                make.width.equalTo(244)
+                make.height.equalTo(152)
             } else {
                 make.size.equalTo(76)
             }

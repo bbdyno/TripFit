@@ -38,24 +38,24 @@ final class OutfitCell: UICollectionViewCell {
     private func setupUI() {
         contentView.addSubview(card)
         card.snp.makeConstraints { $0.edges.equalToSuperview() }
-        card.layer.cornerRadius = 16
-        card.layer.borderColor = TFColor.Border.subtle.cgColor
+        card.layer.cornerRadius = 18
+        card.layer.borderWidth = 0
 
         collageContainer.layer.cornerRadius = 14
         collageContainer.clipsToBounds = true
         collageContainer.backgroundColor = TFColor.Surface.highlight
 
-        singleImageView.contentMode = .scaleAspectFit
+        singleImageView.contentMode = .scaleAspectFill
         singleImageView.clipsToBounds = true
         singleImageView.backgroundColor = TFColor.Surface.input
 
         for (index, imageView) in gridImageViews.enumerated() {
-            imageView.contentMode = .scaleAspectFit
+            imageView.contentMode = .scaleAspectFill
             imageView.clipsToBounds = true
             imageView.backgroundColor = index.isMultiple(of: 2)
                 ? TFColor.Surface.card
                 : TFColor.Brand.accentSky.withAlphaComponent(0.12)
-            imageView.layer.cornerRadius = 10
+            imageView.layer.cornerRadius = 12
             imageView.layer.cornerCurve = .continuous
             imageView.layer.borderWidth = 1 / UIScreen.main.scale
             imageView.layer.borderColor = TFColor.Border.subtle.cgColor
@@ -95,35 +95,12 @@ final class OutfitCell: UICollectionViewCell {
         card.addSubview(countLabel)
 
         collageContainer.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview().inset(12)
-            make.height.equalTo(collageContainer.snp.width).multipliedBy(1.08)
+            make.top.leading.trailing.equalToSuperview().inset(8)
+            make.height.equalTo(collageContainer.snp.width).multipliedBy(1.06)
         }
 
         singleImageView.snp.makeConstraints { $0.edges.equalToSuperview() }
         gridContainer.snp.makeConstraints { $0.edges.equalToSuperview() }
-        gridImageViews[0].snp.makeConstraints { make in
-            make.top.leading.equalToSuperview().inset(8)
-            make.width.equalToSuperview().multipliedBy(0.48)
-            make.height.equalToSuperview().multipliedBy(0.56)
-        }
-        gridImageViews[1].snp.makeConstraints { make in
-            make.top.equalToSuperview().inset(16)
-            make.trailing.equalToSuperview().inset(8)
-            make.width.equalToSuperview().multipliedBy(0.43)
-            make.height.equalToSuperview().multipliedBy(0.48)
-        }
-        gridImageViews[2].snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(14)
-            make.bottom.equalToSuperview().inset(8)
-            make.width.equalToSuperview().multipliedBy(0.40)
-            make.height.equalToSuperview().multipliedBy(0.42)
-        }
-        gridImageViews[3].snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(10)
-            make.bottom.equalToSuperview().inset(12)
-            make.width.equalToSuperview().multipliedBy(0.47)
-            make.height.equalToSuperview().multipliedBy(0.44)
-        }
         overflowBadge.snp.makeConstraints { make in
             make.center.equalToSuperview()
         }
@@ -136,19 +113,21 @@ final class OutfitCell: UICollectionViewCell {
         }
 
         nameLabel.snp.makeConstraints { make in
-            make.top.equalTo(collageContainer.snp.bottom).offset(10)
-            make.leading.trailing.equalToSuperview().inset(12)
+            make.top.equalTo(collageContainer.snp.bottom).offset(9)
+            make.leading.trailing.equalToSuperview().inset(10)
         }
 
         countLabel.snp.makeConstraints { make in
             make.top.equalTo(nameLabel.snp.bottom).offset(3)
-            make.leading.trailing.bottom.equalToSuperview().inset(12)
+            make.leading.trailing.bottom.equalToSuperview().inset(10)
         }
     }
 
     func configure(with outfit: Outfit) {
         nameLabel.text = outfit.name
-        countLabel.text = "\(outfit.items.count) items"
+        countLabel.text = TFAppLanguage.current() == .korean
+            ? "아이템 \(outfit.items.count)개"
+            : "\(outfit.items.count) items"
 
         imageRequestTokens.forEach { TFRemoteImageLoader.shared.cancel($0) }
         imageRequestTokens = Array(repeating: nil, count: 4)
@@ -157,20 +136,14 @@ final class OutfitCell: UICollectionViewCell {
         favoriteBadge.isHidden = (outfit.note?.isEmpty ?? true)
 
         let items = outfit.items
-        card.layer.borderColor = TFColor.Border.subtle.cgColor
-
         guard !items.isEmpty else {
             singleImageView.isHidden = false
             gridContainer.isHidden = true
-            singleImageView.image = UIImage(named: "TFOutfitBoardCool")
+            singleImageView.image = UIImage(named: "TFOutfitEditorialV2")
             singleImageView.tintColor = nil
             singleImageView.contentMode = .scaleAspectFill
             singleImageView.backgroundColor = TFColor.Surface.input
             return
-        }
-
-        if let first = items.first {
-            card.layer.borderColor = first.category.tintColor.withAlphaComponent(0.16).cgColor
         }
 
         if items.count == 1 {
@@ -182,6 +155,7 @@ final class OutfitCell: UICollectionViewCell {
 
         singleImageView.isHidden = true
         gridContainer.isHidden = false
+        layoutGrid(for: min(items.count, 4))
 
         if items.count > 4 {
             for index in 0..<3 {
@@ -192,14 +166,8 @@ final class OutfitCell: UICollectionViewCell {
             overflowBadge.text = "+\(items.count - 3)"
             overflowBadge.isHidden = false
         } else {
-            for index in 0..<4 {
-                if index < items.count {
-                    load(item: items[index], into: gridImageViews[index], at: index)
-                } else {
-                    gridImageViews[index].image = nil
-                    gridImageViews[index].backgroundColor = TFColor.Surface.input
-                    gridImageViews[index].tintColor = nil
-                }
+            for index in 0..<items.count {
+                load(item: items[index], into: gridImageViews[index], at: index)
             }
         }
     }
@@ -221,12 +189,13 @@ final class OutfitCell: UICollectionViewCell {
     private func load(item: ClothingItem, into imageView: UIImageView, at index: Int) {
         if let data = item.imageData, let image = UIImage(data: data) {
             imageView.image = image
-            imageView.contentMode = .scaleAspectFit
+            imageView.contentMode = .scaleAspectFill
             imageView.tintColor = nil
+            imageView.backgroundColor = TFColor.Surface.input
             return
         }
 
-        imageView.image = UIImage(systemName: placeholderSymbol(for: item.category))
+        imageView.image = placeholderImage(for: item.category)
         imageView.contentMode = .scaleAspectFit
         imageView.tintColor = item.category.tintColor
         imageView.backgroundColor = item.category.tintColor.withAlphaComponent(0.12)
@@ -235,18 +204,79 @@ final class OutfitCell: UICollectionViewCell {
         imageRequestTokens[index] = TFRemoteImageLoader.shared.load(from: item.imageURL) { [weak self, weak imageView] image in
             guard let self, self.imageRequestID == requestID, let image, let imageView else { return }
             imageView.image = image
-            imageView.contentMode = .scaleAspectFit
+            imageView.contentMode = .scaleAspectFill
             imageView.tintColor = nil
+            imageView.backgroundColor = TFColor.Surface.input
         }
     }
 
-    private func placeholderSymbol(for category: ClothingCategory) -> String {
+    private func layoutGrid(for itemCount: Int) {
+        gridImageViews.forEach { imageView in
+            imageView.isHidden = false
+            imageView.snp.removeConstraints()
+        }
+
+        let gap: CGFloat = 6
+        let inset: CGFloat = 7
+        switch itemCount {
+        case 2:
+            gridImageViews[0].snp.makeConstraints { make in
+                make.top.bottom.leading.equalToSuperview().inset(inset)
+                make.trailing.equalTo(gridContainer.snp.centerX).offset(-gap / 2)
+            }
+            gridImageViews[1].snp.makeConstraints { make in
+                make.top.bottom.trailing.equalToSuperview().inset(inset)
+                make.leading.equalTo(gridContainer.snp.centerX).offset(gap / 2)
+            }
+            gridImageViews[2].isHidden = true
+            gridImageViews[3].isHidden = true
+        case 3:
+            gridImageViews[0].snp.makeConstraints { make in
+                make.top.bottom.leading.equalToSuperview().inset(inset)
+                make.width.equalToSuperview().multipliedBy(0.54)
+            }
+            gridImageViews[1].snp.makeConstraints { make in
+                make.top.trailing.equalToSuperview().inset(inset)
+                make.leading.equalTo(gridImageViews[0].snp.trailing).offset(gap)
+                make.bottom.equalTo(gridContainer.snp.centerY).offset(-gap / 2)
+            }
+            gridImageViews[2].snp.makeConstraints { make in
+                make.bottom.trailing.equalToSuperview().inset(inset)
+                make.leading.equalTo(gridImageViews[0].snp.trailing).offset(gap)
+                make.top.equalTo(gridContainer.snp.centerY).offset(gap / 2)
+            }
+            gridImageViews[3].isHidden = true
+        default:
+            gridImageViews[0].snp.makeConstraints { make in
+                make.top.leading.equalToSuperview().inset(inset)
+                make.trailing.equalTo(gridContainer.snp.centerX).offset(-gap / 2)
+                make.bottom.equalTo(gridContainer.snp.centerY).offset(-gap / 2)
+            }
+            gridImageViews[1].snp.makeConstraints { make in
+                make.top.trailing.equalToSuperview().inset(inset)
+                make.leading.equalTo(gridContainer.snp.centerX).offset(gap / 2)
+                make.bottom.equalTo(gridContainer.snp.centerY).offset(-gap / 2)
+            }
+            gridImageViews[2].snp.makeConstraints { make in
+                make.bottom.leading.equalToSuperview().inset(inset)
+                make.trailing.equalTo(gridContainer.snp.centerX).offset(-gap / 2)
+                make.top.equalTo(gridContainer.snp.centerY).offset(gap / 2)
+            }
+            gridImageViews[3].snp.makeConstraints { make in
+                make.bottom.trailing.equalToSuperview().inset(inset)
+                make.leading.equalTo(gridContainer.snp.centerX).offset(gap / 2)
+                make.top.equalTo(gridContainer.snp.centerY).offset(gap / 2)
+            }
+        }
+    }
+
+    private func placeholderImage(for category: ClothingCategory) -> UIImage? {
         switch category {
-        case .tops: "tshirt.fill"
-        case .bottoms: "figure.walk"
-        case .outerwear: "wind"
-        case .shoes: "shoe.2.fill"
-        case .accessories: "handbag.fill"
+        case .tops: TFPictogram.top.image(pointSize: 32)
+        case .bottoms: TFPictogram.bottom.image(pointSize: 32)
+        case .outerwear: TFPictogram.outerwear.image(pointSize: 32)
+        case .shoes: TFPictogram.shoes.image(pointSize: 32)
+        case .accessories: TFPictogram.accessories.image(pointSize: 32)
         }
     }
 }

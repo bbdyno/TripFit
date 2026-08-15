@@ -14,16 +14,14 @@ final class TripCell: UICollectionViewCell {
     static let reuseId = "TripCell"
 
     private static let heroByCountryCode: [String: String] = [
-        "FR": "https://lh3.googleusercontent.com/aida-public/AB6AXuB0J5YyvNmfHfw7AP99Ngfg8KzIsXMNML3qMXHenWYb7d9AtiHqsDsGX00-MrMq31hHMKYHrDgevIeGYspq8T6Jp1x7AuV2bHRMZza3DCDQYvVkuNyLm9hTe-tOWcb5BMoaNNByO6gtpujMGfZ0zYTieorkVgb9lHAWeFO82XLpxysVtHMzmMeTxwHWzSACo1OiX8gT4SI3inAkw12rxB7u-0d9Gc6fegVfqWdrHt2u_ddFIUX9HKzkuh6VS8y1fWIw3tbTga-QB_I",
-        "JP": "https://lh3.googleusercontent.com/aida-public/AB6AXuBNErgL5xReDbrn1naYRZj2j968_6XOw7TAJuwkUEcAjZPiLXXfUvNPn9Inw2nK0QnmR8x1GZkwXj542olle6Od2izQz5YxulFOsJxbtKxuHMUkohqQteS-ajkTSGImYLMMVXbcxJjNKkqAK30xKTkBa6XCyYhf1FPffAwQJMnx-jI8qx7DDKvcKLVlRRXu1j9ZfvSBdT0z0tVbB2XsMt8m0O7di9Igxzily6GMRz0s0-JCmkn5jbEJfZxDzrUl5koDk_dO-llqxVM",
-        "IT": "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80",
-        "ES": "https://images.unsplash.com/photo-1543785734-4b1ad6e5fd15?auto=format&fit=crop&w=1200&q=80",
-        "US": "https://images.unsplash.com/photo-1496588152823-e7d8f8c7f8b9?auto=format&fit=crop&w=1200&q=80",
+        "FR": "TFDestinationParisV2",
+        "JP": "TFDestinationTokyoV2",
+        "IT": "TFDestinationAmalfiV2",
     ]
 
-    private static let fallbackHero = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80"
+    private static let fallbackHero = "TFDestinationGenericV2"
 
-    private let card = TFCardView(style: .elevated)
+    private let card = TFCardView(style: .flat)
     private let photoContainer = UIView()
     private let tripImageView = UIImageView()
     private let locationLabel = UILabel()
@@ -35,9 +33,6 @@ final class TripCell: UICollectionViewCell {
     private let packingLabel = UILabel()
     private let packingProgressView = UIProgressView(progressViewStyle: .default)
 
-    private var imageRequestToken: UUID?
-    private var imageRequestID = UUID()
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -46,22 +41,14 @@ final class TripCell: UICollectionViewCell {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        TFRemoteImageLoader.shared.cancel(imageRequestToken)
-        imageRequestToken = nil
-        imageRequestID = UUID()
-        tripImageView.image = nil
-        tripImageView.tintColor = nil
-    }
-
     private func setupUI() {
         contentView.addSubview(card)
         card.snp.makeConstraints { $0.edges.equalToSuperview() }
-        card.layer.cornerRadius = 20
-        card.layer.borderColor = TFColor.Border.subtle.cgColor
+        card.layer.cornerRadius = 18
+        card.layer.borderWidth = 0
 
-        photoContainer.layer.cornerRadius = 36
+        photoContainer.layer.cornerRadius = 16
+        photoContainer.layer.cornerCurve = .continuous
         photoContainer.clipsToBounds = true
         photoContainer.backgroundColor = TFColor.Surface.input
 
@@ -73,7 +60,7 @@ final class TripCell: UICollectionViewCell {
         locationLabel.textColor = TFColor.Text.secondary
         locationLabel.numberOfLines = 1
 
-        titleLabel.font = TFTypography.headline.withSize(18)
+        titleLabel.font = TFTypography.headline.withSize(17)
         titleLabel.textColor = TFColor.Text.primary
         titleLabel.numberOfLines = 1
 
@@ -85,15 +72,14 @@ final class TripCell: UICollectionViewCell {
 
         durationBadge.font = TFTypography.footnote.withSize(11)
         durationBadge.textColor = TFColor.Brand.primary
-        durationBadge.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.12)
-        durationBadge.layer.cornerRadius = 8
+        durationBadge.backgroundColor = .clear
         durationBadge.clipsToBounds = true
 
         dateLabel.font = TFTypography.footnote
         dateLabel.textColor = TFColor.Text.secondary
 
         localTimeLabel.font = .monospacedDigitSystemFont(ofSize: 11, weight: .medium)
-        localTimeLabel.textColor = TFColor.Brand.accentSky
+        localTimeLabel.textColor = TFColor.Text.tertiary
         localTimeLabel.numberOfLines = 1
 
         packingLabel.font = TFTypography.footnote.withSize(11)
@@ -115,25 +101,25 @@ final class TripCell: UICollectionViewCell {
         card.addSubview(packingProgressView)
 
         photoContainer.snp.makeConstraints { make in
-            make.top.leading.equalToSuperview().inset(14)
-            make.size.equalTo(72)
+            make.top.leading.equalToSuperview().inset(12)
+            make.size.equalTo(60)
         }
         tripImageView.snp.makeConstraints { $0.edges.equalToSuperview() }
 
         titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().inset(14)
-            make.leading.equalTo(photoContainer.snp.trailing).offset(12)
+            make.top.equalToSuperview().inset(12)
+            make.leading.equalTo(photoContainer.snp.trailing).offset(11)
             make.trailing.lessThanOrEqualTo(statusBadge.snp.leading).offset(-8)
         }
 
         statusBadge.snp.makeConstraints { make in
-            make.top.trailing.equalToSuperview().inset(14)
+            make.top.trailing.equalToSuperview().inset(12)
         }
 
         locationLabel.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
             make.top.equalTo(titleLabel.snp.bottom).offset(2)
-            make.trailing.equalToSuperview().inset(14)
+            make.trailing.equalToSuperview().inset(12)
         }
 
         durationBadge.snp.makeConstraints { make in
@@ -144,27 +130,26 @@ final class TripCell: UICollectionViewCell {
         dateLabel.snp.makeConstraints { make in
             make.leading.equalTo(durationBadge.snp.trailing).offset(8)
             make.centerY.equalTo(durationBadge)
-            make.trailing.lessThanOrEqualToSuperview().inset(14)
+            make.trailing.lessThanOrEqualToSuperview().inset(12)
         }
 
         localTimeLabel.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
             make.top.equalTo(durationBadge.snp.bottom).offset(3)
-            make.trailing.equalToSuperview().inset(14)
+            make.trailing.equalToSuperview().inset(12)
         }
 
         packingLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(14)
-            make.trailing.equalToSuperview().inset(14)
-            make.top.equalTo(photoContainer.snp.bottom).offset(8)
+            make.leading.equalToSuperview().inset(12)
+            make.trailing.equalToSuperview().inset(12)
+            make.top.equalTo(photoContainer.snp.bottom).offset(7)
         }
 
         packingProgressView.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(14)
-            make.trailing.equalToSuperview().inset(14)
-            make.top.equalTo(packingLabel.snp.bottom).offset(4)
-            make.height.equalTo(4)
-            make.bottom.lessThanOrEqualToSuperview().inset(13)
+            make.leading.trailing.equalToSuperview().inset(12)
+            make.top.equalTo(packingLabel.snp.bottom).offset(3)
+            make.height.equalTo(3)
+            make.bottom.lessThanOrEqualToSuperview().inset(10)
         }
     }
 
@@ -197,9 +182,11 @@ final class TripCell: UICollectionViewCell {
             at: now,
             includeSeconds: false
         ) ?? "--:--"
-        let gmt = TFDestinationCatalog.gmtOffsetString(for: info.timeZoneIdentifier, at: now) ?? "GMT"
         let delta = TFDestinationCatalog.localDeltaString(for: info.timeZoneIdentifier, at: now) ?? "Local"
-        localTimeLabel.text = "\(localTime) • \(gmt) • \(delta)"
+        let localizedDelta = TFAppLanguage.current() == .korean
+            ? delta.replacingOccurrences(of: "Local", with: "현지").replacingOccurrences(of: "h", with: "시간")
+            : delta
+        localTimeLabel.text = "\(localTime) · \(localizedDelta)"
     }
 
     private func tripDurationDays(for trip: Trip) -> Int {
@@ -232,14 +219,16 @@ final class TripCell: UICollectionViewCell {
         return TFAppLanguage.current() == .korean ? "완료" : "DONE"
     }
 
-    private func imageURL(for trip: Trip) -> String {
+    private func imageAssetName(for trip: Trip) -> String {
         if let code = trip.destinationCountryCode, let mapped = Self.heroByCountryCode[code] {
             return mapped
         }
         if let destination = trip.destination?.lowercased() {
             if destination.contains("tokyo") { return Self.heroByCountryCode["JP"] ?? Self.fallbackHero }
             if destination.contains("paris") { return Self.heroByCountryCode["FR"] ?? Self.fallbackHero }
-            if destination.contains("rome") || destination.contains("milan") { return Self.heroByCountryCode["IT"] ?? Self.fallbackHero }
+            if destination.contains("amalfi") || destination.contains("rome") || destination.contains("milan") {
+                return Self.heroByCountryCode["IT"] ?? Self.fallbackHero
+            }
         }
         return Self.fallbackHero
     }
@@ -252,21 +241,9 @@ final class TripCell: UICollectionViewCell {
     }
 
     private func loadImage(for trip: Trip) {
-        TFRemoteImageLoader.shared.cancel(imageRequestToken)
-        imageRequestToken = nil
-        imageRequestID = UUID()
-
-        tripImageView.image = UIImage(named: "TFTripPackingCool")
+        tripImageView.image = UIImage(named: imageAssetName(for: trip))
         tripImageView.contentMode = .scaleAspectFill
         tripImageView.tintColor = nil
-
-        let requestID = imageRequestID
-        imageRequestToken = TFRemoteImageLoader.shared.load(from: imageURL(for: trip)) { [weak self] image in
-            guard let self, self.imageRequestID == requestID, let image else { return }
-            self.tripImageView.image = image
-            self.tripImageView.contentMode = .scaleAspectFill
-            self.tripImageView.tintColor = nil
-        }
     }
 }
 

@@ -1,0 +1,8 @@
+{
+  "images" : [
+    { "filename" : "tfdestination-paris-v2@1x.jpg", "idiom" : "universal", "scale" : "1x" },
+    { "filename" : "tfdestination-paris-v2@2x.jpg", "idiom" : "universal", "scale" : "2x" },
+    { "filename" : "tfdestination-paris-v2@3x.jpg", "idiom" : "universal", "scale" : "3x" }
+  ],
+  "info" : { "author" : "xcode", "version" : 1 }
+}

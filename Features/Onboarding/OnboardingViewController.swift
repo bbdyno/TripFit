@@ -428,9 +428,9 @@ private extension WalkthroughPage.Kind {
 
     var editorialHeroName: String {
         switch self {
-        case .wardrobe: "TFWardrobeBoardCool"
-        case .outfits: "TFOutfitBoardCool"
-        case .trips: "TFTripPackingCool"
+        case .wardrobe: "TFWardrobeEditorialV2"
+        case .outfits: "TFOutfitEditorialV2"
+        case .trips: "TFPackingEditorialV2"
         }
     }
 

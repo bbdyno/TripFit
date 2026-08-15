@@ -15,22 +15,28 @@ public enum TFDateFormatter {
         return formatter
     }()
 
-    private static let shortFormatter: DateFormatter = {
+    private static func shortFormatter() -> DateFormatter {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
+        if TFAppLanguage.current() == .korean {
+            formatter.locale = Locale(identifier: "ko_KR")
+            formatter.dateFormat = "M월 d일"
+        } else {
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.dateFormat = "MMM d"
+        }
         return formatter
-    }()
+    }
 
     public static func medium(_ date: Date) -> String {
         mediumFormatter.string(from: date)
     }
 
     public static func short(_ date: Date) -> String {
-        shortFormatter.string(from: date)
+        shortFormatter().string(from: date)
     }
 
     public static func tripRange(start: Date, end: Date) -> String {
-        "\(short(start)) - \(short(end))"
+        "\(short(start)) – \(short(end))"
     }
 }
 

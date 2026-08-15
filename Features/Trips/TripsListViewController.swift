@@ -125,14 +125,13 @@ public final class TripsListViewController: UIViewController {
         titleStack.spacing = 2
 
         addButton.setImage(
-            UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 21, weight: .bold)),
+            UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)),
             for: .normal
         )
-        addButton.tintColor = TFColor.Brand.primary
-        addButton.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.12)
-        addButton.layer.cornerRadius = 20
-        addButton.layer.borderWidth = 1
-        addButton.layer.borderColor = TFColor.Brand.primary.withAlphaComponent(0.24).cgColor
+        addButton.tintColor = .white
+        addButton.backgroundColor = TFColor.Brand.primaryDark
+        addButton.layer.cornerRadius = 13
+        addButton.layer.cornerCurve = .continuous
         addButton.addAction(UIAction { [weak self] _ in self?.addTapped() }, for: .touchUpInside)
 
         let titleRow = UIStackView(arrangedSubviews: [titleStack, UIView(), addButton])
@@ -140,11 +139,11 @@ public final class TripsListViewController: UIViewController {
         titleRow.spacing = TFSpacing.md
         headerContainer.addSubview(titleRow)
         titleRow.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
         }
         addButton.snp.makeConstraints { make in
-            make.size.equalTo(40)
+            make.size.equalTo(36)
         }
         addButton.accessibilityLabel = localized("여행 추가", "Add trip")
 
@@ -152,7 +151,7 @@ public final class TripsListViewController: UIViewController {
         tripModeControl.insertSegment(withTitle: localized("함께 준비", "Together"), at: 1, animated: false)
         tripModeControl.selectedSegmentIndex = 0
         tripModeControl.selectedSegmentTintColor = TFColor.Surface.card
-        tripModeControl.backgroundColor = TFColor.Surface.input
+        tripModeControl.backgroundColor = TFColor.Surface.chip
         tripModeControl.setTitleTextAttributes([.foregroundColor: TFColor.Text.secondary], for: .normal)
         tripModeControl.setTitleTextAttributes([
             .foregroundColor: TFColor.Brand.primaryDark,
@@ -161,10 +160,10 @@ public final class TripsListViewController: UIViewController {
         tripModeControl.addTarget(self, action: #selector(tripModeChanged), for: .valueChanged)
         headerContainer.addSubview(tripModeControl)
         tripModeControl.snp.makeConstraints { make in
-            make.top.equalTo(titleRow.snp.bottom).offset(14)
+            make.top.equalTo(titleRow.snp.bottom).offset(10)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
-            make.height.equalTo(36)
-            make.bottom.equalToSuperview().inset(8)
+            make.height.equalTo(32)
+            make.bottom.equalToSuperview().inset(6)
         }
     }
 
@@ -203,11 +202,11 @@ public final class TripsListViewController: UIViewController {
         }
 
         personalTitleLabel.text = localized("예정된 여행", "Upcoming")
-        personalTitleLabel.font = TFTypography.subtitle.withSize(19)
+        personalTitleLabel.font = TFTypography.subtitle.withSize(17)
         personalTitleLabel.textColor = TFColor.Text.primary
         view.addSubview(personalTitleLabel)
         personalTitleLabel.snp.makeConstraints { make in
-            make.top.equalTo(headerContainer.snp.bottom).offset(14)
+            make.top.equalTo(headerContainer.snp.bottom).offset(12)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
         }
         renderSharedRooms()
@@ -215,8 +214,8 @@ public final class TripsListViewController: UIViewController {
 
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumLineSpacing = TFSpacing.md
-        layout.sectionInset = UIEdgeInsets(top: TFSpacing.md, left: TFSpacing.md, bottom: 112, right: TFSpacing.md)
+        layout.minimumLineSpacing = 12
+        layout.sectionInset = UIEdgeInsets(top: 10, left: TFSpacing.md, bottom: 96, right: TFSpacing.md)
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
@@ -241,7 +240,7 @@ public final class TripsListViewController: UIViewController {
 
     private func setupEmptyView() {
         emptyView = TFEmptyStateView(
-            heroImageName: "TFTripPackingCool",
+            heroImageName: "TFPackingEditorialV2",
             title: localized("아직 만든 여행이 없어요", "No Trips Yet"),
             subtitle: localized("첫 여행을 계획하고 가볍게 짐을 챙겨보세요", "Plan your first trip and start packing lighter"),
             buttonTitle: localized("여행 만들기", "Create Trip")
@@ -341,7 +340,7 @@ extension TripsListViewController {
         guard sharedRooms.isEmpty == false else {
             addSharedPlaceholder(
                 title: localized("아직 함께 준비하는 여행이 없어요", "No shared trips yet"),
-                subtitle: localized("가운데 + 버튼에서 친구와 날짜부터 맞춰보세요.", "Use the center + button to coordinate dates with friends.")
+                subtitle: localized("오른쪽 위 + 버튼에서 친구와 날짜부터 맞춰보세요.", "Use the top-right + button to coordinate dates with friends.")
             )
             return
         }
@@ -389,7 +388,7 @@ extension TripsListViewController {
         textStack.axis = .vertical
         textStack.spacing = 4
 
-        let iconStage = UIImageView(image: UIImage(named: "TFTripPackingCool"))
+        let iconStage = UIImageView(image: UIImage(named: "TFSharedPlanningEditorialV2"))
         iconStage.contentMode = .scaleAspectFill
         iconStage.clipsToBounds = true
         iconStage.layer.cornerRadius = 18
@@ -589,6 +588,6 @@ extension TripsListViewController: UICollectionViewDelegateFlowLayout {
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
         let width = collectionView.bounds.width - (TFSpacing.md * 2)
-        return CGSize(width: width, height: 136)
+        return CGSize(width: width, height: 124)
     }
 }

@@ -83,7 +83,7 @@ public final class WardrobeViewController: UIViewController {
         titleLabel.font = TFTypography.largeTitle
         titleLabel.textColor = TFColor.Text.primary
 
-        subtitleLabel.text = localized("여행에 가져갈 아이템을 보드로 정리하세요", "A visual board for every piece you pack")
+        subtitleLabel.text = localized("내 여행 옷장", "My travel wardrobe")
         subtitleLabel.font = TFTypography.footnote.withSize(13)
         subtitleLabel.textColor = TFColor.Text.secondary
 
@@ -92,14 +92,13 @@ public final class WardrobeViewController: UIViewController {
         titleStack.spacing = 1
 
         addButton.setImage(
-            UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 21, weight: .bold)),
+            UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)),
             for: .normal
         )
-        addButton.tintColor = TFColor.Brand.primary
-        addButton.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.12)
-        addButton.layer.cornerRadius = 20
-        addButton.layer.borderWidth = 1
-        addButton.layer.borderColor = TFColor.Brand.primary.withAlphaComponent(0.24).cgColor
+        addButton.tintColor = .white
+        addButton.backgroundColor = TFColor.Brand.primaryDark
+        addButton.layer.cornerRadius = 13
+        addButton.layer.cornerCurve = .continuous
         addButton.addAction(UIAction { [weak self] _ in self?.addTapped() }, for: .touchUpInside)
 
         let titleRow = UIStackView(arrangedSubviews: [titleStack, UIView(), addButton])
@@ -107,11 +106,11 @@ public final class WardrobeViewController: UIViewController {
         titleRow.spacing = TFSpacing.md
         headerContainer.addSubview(titleRow)
         titleRow.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
         }
         addButton.snp.makeConstraints { make in
-            make.size.equalTo(40)
+            make.size.equalTo(36)
         }
         addButton.accessibilityLabel = localized("옷 추가", "Add clothing")
 
@@ -119,7 +118,7 @@ public final class WardrobeViewController: UIViewController {
         itemModeControl.insertSegment(withTitle: localized("즐겨찾기", "Favorites"), at: 1, animated: false)
         itemModeControl.selectedSegmentIndex = 0
         itemModeControl.selectedSegmentTintColor = TFColor.Surface.card
-        itemModeControl.backgroundColor = TFColor.Surface.input
+        itemModeControl.backgroundColor = TFColor.Surface.chip
         itemModeControl.setTitleTextAttributes([.foregroundColor: TFColor.Text.secondary], for: .normal)
         itemModeControl.setTitleTextAttributes([
             .foregroundColor: TFColor.Brand.primaryDark,
@@ -128,10 +127,10 @@ public final class WardrobeViewController: UIViewController {
         itemModeControl.addTarget(self, action: #selector(itemModeChanged), for: .valueChanged)
         headerContainer.addSubview(itemModeControl)
         itemModeControl.snp.makeConstraints { make in
-            make.top.equalTo(titleRow.snp.bottom).offset(14)
+            make.top.equalTo(titleRow.snp.bottom).offset(10)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
-            make.height.equalTo(36)
-            make.bottom.equalToSuperview().inset(8)
+            make.height.equalTo(32)
+            make.bottom.equalToSuperview().inset(6)
         }
     }
 
@@ -142,7 +141,7 @@ public final class WardrobeViewController: UIViewController {
         categoryScrollView.snp.makeConstraints { make in
             make.top.equalTo(headerContainer.snp.bottom)
             make.leading.trailing.equalToSuperview()
-            make.height.equalTo(82)
+            make.height.equalTo(66)
         }
 
         categoryStack.axis = .horizontal
@@ -151,21 +150,21 @@ public final class WardrobeViewController: UIViewController {
         categoryScrollView.addSubview(categoryStack)
         categoryStack.snp.makeConstraints { make in
             make.edges.equalTo(categoryScrollView.contentLayoutGuide).inset(
-                UIEdgeInsets(top: 4, left: TFSpacing.md, bottom: 4, right: TFSpacing.md)
+                UIEdgeInsets(top: 2, left: TFSpacing.md, bottom: 2, right: TFSpacing.md)
             )
-            make.height.equalTo(categoryScrollView.frameLayoutGuide).offset(-8)
+            make.height.equalTo(categoryScrollView.frameLayoutGuide).offset(-4)
         }
 
-        let categories: [(String, String, ClothingCategory?)] = [
-            (localized("전체", "All"), "square.grid.3x3.fill", nil),
-            (localizedCategoryName(.tops), "tshirt.fill", .tops),
-            (localizedCategoryName(.bottoms), "figure.walk", .bottoms),
-            (localizedCategoryName(.outerwear), "wind", .outerwear),
-            (localizedCategoryName(.shoes), "shoe.2.fill", .shoes),
-            (localizedCategoryName(.accessories), "handbag.fill", .accessories),
+        let categories: [(String, UIImage?, ClothingCategory?)] = [
+            (localized("전체", "All"), UIImage(systemName: "square.grid.3x3.fill"), nil),
+            (localizedCategoryName(.tops), TFPictogram.top.image(pointSize: 17), .tops),
+            (localizedCategoryName(.bottoms), TFPictogram.bottom.image(pointSize: 17), .bottoms),
+            (localizedCategoryName(.outerwear), TFPictogram.outerwear.image(pointSize: 17), .outerwear),
+            (localizedCategoryName(.shoes), TFPictogram.shoes.image(pointSize: 17), .shoes),
+            (localizedCategoryName(.accessories), TFPictogram.accessories.image(pointSize: 17), .accessories),
         ]
-        for (title, symbol, category) in categories {
-            let button = WardrobeCategoryButton(title: title, symbolName: symbol, category: category)
+        for (title, image, category) in categories {
+            let button = WardrobeCategoryButton(title: title, image: image, category: category)
             button.isCategorySelected = category == nil
             button.addTarget(self, action: #selector(categoryTapped(_:)), for: .touchUpInside)
             categoryButtons.append(button)
@@ -177,25 +176,25 @@ public final class WardrobeViewController: UIViewController {
         toolRow.snp.makeConstraints { make in
             make.top.equalTo(categoryScrollView.snp.bottom)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
-            make.height.equalTo(52)
+            make.height.equalTo(46)
         }
 
         searchContainer.backgroundColor = TFColor.Surface.card
-        searchContainer.layer.cornerRadius = TFRadius.lg
+        searchContainer.layer.cornerRadius = 14
         searchContainer.layer.cornerCurve = .continuous
         searchContainer.layer.borderWidth = 1
         searchContainer.layer.borderColor = TFColor.Border.subtle.cgColor
         searchContainer.clipsToBounds = true
         toolRow.addSubview(searchContainer)
         searchContainer.snp.makeConstraints { make in
-            make.leading.top.bottom.equalToSuperview().inset(4)
+            make.leading.top.bottom.equalToSuperview().inset(3)
         }
 
         searchIcon.tintColor = TFColor.Text.tertiary
         searchIcon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 17, weight: .medium)
         searchContainer.addSubview(searchIcon)
         searchIcon.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(14)
+            make.leading.equalToSuperview().inset(12)
             make.centerY.equalToSuperview()
             make.size.equalTo(17)
         }
@@ -210,7 +209,7 @@ public final class WardrobeViewController: UIViewController {
         searchField.addTarget(self, action: #selector(searchTextChanged), for: .editingChanged)
         searchContainer.addSubview(searchField)
         searchField.snp.makeConstraints { make in
-            make.leading.equalTo(searchIcon.snp.trailing).offset(10)
+            make.leading.equalTo(searchIcon.snp.trailing).offset(8)
             make.trailing.equalToSuperview().inset(12)
             make.centerY.equalToSuperview()
         }
@@ -223,14 +222,14 @@ public final class WardrobeViewController: UIViewController {
         sortButton.configuration = sortConfig
         sortButton.layer.borderWidth = 1
         sortButton.layer.borderColor = TFColor.Border.subtle.cgColor
-        sortButton.layer.cornerRadius = TFRadius.lg
+        sortButton.layer.cornerRadius = 14
         sortButton.showsMenuAsPrimaryAction = true
         sortButton.menu = makeSortMenu()
         toolRow.addSubview(sortButton)
         sortButton.snp.makeConstraints { make in
-            make.leading.equalTo(searchContainer.snp.trailing).offset(8)
-            make.trailing.top.bottom.equalToSuperview().inset(4)
-            make.size.equalTo(44)
+            make.leading.equalTo(searchContainer.snp.trailing).offset(6)
+            make.trailing.top.bottom.equalToSuperview().inset(3)
+            make.size.equalTo(40)
         }
     }
 
@@ -242,8 +241,8 @@ public final class WardrobeViewController: UIViewController {
 
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumInteritemSpacing = 10
-        layout.minimumLineSpacing = 12
+        layout.minimumInteritemSpacing = 8
+        layout.minimumLineSpacing = 14
         layout.sectionInset = UIEdgeInsets(top: TFSpacing.sm, left: TFSpacing.md, bottom: 104, right: TFSpacing.md)
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -273,7 +272,7 @@ public final class WardrobeViewController: UIViewController {
 
     private func setupEmptyView() {
         emptyView = TFEmptyStateView(
-            heroImageName: "TFWardrobeBoardCool",
+            heroImageName: "TFWardrobeEditorialV2",
             title: CoreStrings.Wardrobe.emptyTitle,
             subtitle: CoreStrings.Wardrobe.emptySubtitle,
             buttonTitle: CoreStrings.Wardrobe.emptyAction
@@ -325,8 +324,8 @@ public final class WardrobeViewController: UIViewController {
         dataSource.apply(snapshot, animatingDifferences: true)
         emptyView.isHidden = !displayedItems.isEmpty
         subtitleLabel.text = localized(
-            "여행 보드 · 아이템 \(displayedItems.count)개",
-            "Travel board · \(displayedItems.count) pieces"
+            "아이템 \(displayedItems.count)개",
+            "\(displayedItems.count) pieces"
         )
     }
 
@@ -408,9 +407,9 @@ extension WardrobeViewController: UICollectionViewDelegateFlowLayout {
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
         let inset: CGFloat = TFSpacing.md * 2
-        let spacing: CGFloat = 20
+        let spacing: CGFloat = 16
         let width = floor((collectionView.bounds.width - inset - spacing) / 3)
-        return CGSize(width: width, height: width + 42)
+        return CGSize(width: width, height: width + 36)
     }
 }
 
@@ -424,16 +423,16 @@ private final class WardrobeCategoryButton: UIControl {
         didSet { applyState() }
     }
 
-    init(title: String, symbolName: String, category: ClothingCategory?) {
+    init(title: String, image: UIImage?, category: ClothingCategory?) {
         self.category = category
         super.init(frame: .zero)
 
-        iconStage.layer.cornerRadius = 22
+        iconStage.layer.cornerRadius = 18
         iconStage.layer.cornerCurve = .continuous
         iconStage.layer.borderWidth = 1
-        iconView.image = UIImage(systemName: symbolName) ?? UIImage(systemName: "circle.grid.2x2.fill")
+        iconView.image = (image ?? UIImage(systemName: "circle.grid.2x2.fill"))?.withRenderingMode(.alwaysTemplate)
         iconView.contentMode = .scaleAspectFit
-        iconView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
+        iconView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 15, weight: .medium)
         label.text = title
         label.font = TFTypography.footnote.withSize(10)
         label.textAlignment = .center
@@ -442,15 +441,15 @@ private final class WardrobeCategoryButton: UIControl {
         let stack = UIStackView(arrangedSubviews: [iconStage, label])
         stack.axis = .vertical
         stack.alignment = .center
-        stack.spacing = 5
+        stack.spacing = 3
         addSubview(stack)
         iconStage.addSubview(iconView)
         stack.snp.makeConstraints { $0.edges.equalToSuperview() }
-        iconStage.snp.makeConstraints { $0.size.equalTo(44) }
+        iconStage.snp.makeConstraints { $0.size.equalTo(36) }
         iconView.snp.makeConstraints { $0.center.equalToSuperview() }
         snp.makeConstraints { make in
-            make.width.equalTo(62)
-            make.height.equalTo(70)
+            make.width.equalTo(54)
+            make.height.equalTo(58)
         }
         applyState()
     }

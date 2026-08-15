@@ -64,16 +64,17 @@ public final class OutfitsListViewController: UIViewController {
 
     private func setupPlannerStrip() {
         view.addSubview(plannerCard)
-        plannerCard.layer.cornerRadius = 18
+        plannerCard.layer.cornerRadius = 16
+        plannerCard.layer.borderWidth = 0
         plannerCard.snp.makeConstraints { make in
-            make.top.equalTo(headerContainer.snp.bottom).offset(4)
+            make.top.equalTo(headerContainer.snp.bottom).offset(2)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
-            make.height.equalTo(108)
+            make.height.equalTo(88)
         }
 
         let plannerTitle = UILabel()
         plannerTitle.text = localized("이번 주의 룩 보드", "This week's look board")
-        plannerTitle.font = TFTypography.caption.withSize(14)
+        plannerTitle.font = TFTypography.caption.withSize(13)
         plannerTitle.textColor = TFColor.Text.primary
 
         plannerCountLabel.font = TFTypography.footnote.withSize(10)
@@ -83,20 +84,20 @@ public final class OutfitsListViewController: UIViewController {
         plannerCard.addSubview(plannerTitle)
         plannerCard.addSubview(plannerCountLabel)
         plannerTitle.snp.makeConstraints { make in
-            make.top.leading.equalToSuperview().inset(14)
+            make.top.leading.equalToSuperview().inset(12)
         }
         plannerCountLabel.snp.makeConstraints { make in
             make.centerY.equalTo(plannerTitle)
-            make.trailing.equalToSuperview().inset(14)
+            make.trailing.equalToSuperview().inset(12)
         }
 
         weekStack.axis = .horizontal
         weekStack.distribution = .fillEqually
-        weekStack.spacing = 5
+        weekStack.spacing = 4
         plannerCard.addSubview(weekStack)
         weekStack.snp.makeConstraints { make in
-            make.top.equalTo(plannerTitle.snp.bottom).offset(10)
-            make.leading.trailing.bottom.equalToSuperview().inset(12)
+            make.top.equalTo(plannerTitle.snp.bottom).offset(7)
+            make.leading.trailing.bottom.equalToSuperview().inset(10)
         }
 
         let calendar = Calendar.current
@@ -116,8 +117,8 @@ public final class OutfitsListViewController: UIViewController {
             day.textAlignment = .center
             day.font = TFTypography.footnote.withSize(10)
             day.textColor = isToday ? .white : TFColor.Text.secondary
-            day.backgroundColor = isToday ? TFColor.Brand.accentPurple : TFColor.Surface.input
-            day.layer.cornerRadius = 16
+            day.backgroundColor = isToday ? TFColor.Brand.accentPurple : .clear
+            day.layer.cornerRadius = 14
             day.layer.cornerCurve = .continuous
             day.clipsToBounds = true
             weekStack.addArrangedSubview(day)
@@ -156,14 +157,13 @@ public final class OutfitsListViewController: UIViewController {
         titleStack.spacing = 1
 
         addButton.setImage(
-            UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)),
+            UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)),
             for: .normal
         )
-        addButton.tintColor = TFColor.Brand.primary
-        addButton.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.12)
-        addButton.layer.cornerRadius = 20
-        addButton.layer.borderWidth = 1
-        addButton.layer.borderColor = TFColor.Brand.primary.withAlphaComponent(0.24).cgColor
+        addButton.tintColor = .white
+        addButton.backgroundColor = TFColor.Brand.primaryDark
+        addButton.layer.cornerRadius = 13
+        addButton.layer.cornerCurve = .continuous
         addButton.addAction(UIAction { [weak self] _ in self?.addTapped() }, for: .touchUpInside)
 
         let titleRow = UIStackView(arrangedSubviews: [titleStack, UIView(), addButton])
@@ -171,12 +171,12 @@ public final class OutfitsListViewController: UIViewController {
         titleRow.spacing = TFSpacing.md
         headerContainer.addSubview(titleRow)
         titleRow.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
-            make.bottom.equalToSuperview().inset(10)
+            make.bottom.equalToSuperview().inset(8)
         }
         addButton.snp.makeConstraints { make in
-            make.size.equalTo(40)
+            make.size.equalTo(36)
         }
         addButton.accessibilityLabel = localized("코디 추가", "Add outfit")
     }
@@ -186,17 +186,17 @@ public final class OutfitsListViewController: UIViewController {
         filterScrollView.contentInsetAdjustmentBehavior = .never
         view.addSubview(filterScrollView)
         filterScrollView.snp.makeConstraints { make in
-            make.top.equalTo(plannerCard.snp.bottom).offset(4)
+            make.top.equalTo(plannerCard.snp.bottom).offset(2)
             make.leading.trailing.equalToSuperview()
-            make.height.equalTo(54)
+            make.height.equalTo(44)
         }
 
         filterStack.axis = .horizontal
-        filterStack.spacing = 10
+        filterStack.spacing = 8
         filterScrollView.addSubview(filterStack)
         filterStack.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16))
-            make.height.equalToSuperview().offset(-16)
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 6, left: 16, bottom: 6, right: 16))
+            make.height.equalToSuperview().offset(-12)
         }
 
         FilterType.allCases.forEach { filter in
@@ -240,9 +240,9 @@ public final class OutfitsListViewController: UIViewController {
 
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumLineSpacing = TFSpacing.md
-        layout.minimumInteritemSpacing = TFSpacing.md
-        layout.sectionInset = UIEdgeInsets(top: TFSpacing.md, left: TFSpacing.md, bottom: 96, right: TFSpacing.md)
+        layout.minimumLineSpacing = 12
+        layout.minimumInteritemSpacing = 12
+        layout.sectionInset = UIEdgeInsets(top: 10, left: TFSpacing.md, bottom: 96, right: TFSpacing.md)
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
@@ -267,7 +267,7 @@ public final class OutfitsListViewController: UIViewController {
 
     private func setupEmptyView() {
         emptyView = TFEmptyStateView(
-            heroImageName: "TFOutfitBoardCool",
+            heroImageName: "TFOutfitEditorialV2",
             title: localized("아직 저장된 코디가 없어요", "No Outfits Yet"),
             subtitle: localized("내 옷으로 첫 번째 코디를 만들어보세요", "Create your first look from pieces you own"),
             buttonTitle: localized("코디 만들기", "Create Outfit")
@@ -345,8 +345,8 @@ extension OutfitsListViewController: UICollectionViewDelegateFlowLayout {
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
         let inset: CGFloat = TFSpacing.md * 2
-        let spacing: CGFloat = TFSpacing.md
+        let spacing: CGFloat = 12
         let width = floor((collectionView.bounds.width - inset - spacing) / 2)
-        return CGSize(width: width, height: (width * 1.08) + 58)
+        return CGSize(width: width, height: (width * 1.06) + 52)
     }
 }

@@ -136,8 +136,10 @@ public final class SharedTripRoomViewController: UIViewController {
             cornerRadius: 28,
             tintColor: UIColor.white.withAlphaComponent(0.08)
         )
-        let icon = UIImageView(image: TFPictogram.together.image)
-        icon.contentMode = .scaleAspectFit
+        let icon = UIImageView(image: UIImage(named: "TFSharedPlanningEditorialV2"))
+        icon.contentMode = .scaleAspectFill
+        icon.clipsToBounds = true
+        icon.layer.cornerRadius = 20
         iconPanel.contentView.addSubview(icon)
         icon.snp.makeConstraints { $0.edges.equalToSuperview().inset(7) }
 

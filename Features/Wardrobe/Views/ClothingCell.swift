@@ -33,18 +33,16 @@ final class ClothingCell: UICollectionViewCell {
     private func setupUI() {
         contentView.addSubview(card)
         card.snp.makeConstraints { $0.edges.equalToSuperview() }
-        card.layer.cornerRadius = 14
-        card.layer.borderColor = TFColor.Border.subtle.cgColor
+        card.layer.cornerRadius = 12
+        card.layer.borderWidth = 0
 
         imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 10
+        imageView.layer.cornerRadius = 12
         imageView.backgroundColor = TFColor.Surface.input
 
-        favoriteButton.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.88)
-        favoriteButton.layer.cornerRadius = 12
-        favoriteButton.layer.borderWidth = 1
-        favoriteButton.layer.borderColor = TFColor.Border.subtle.cgColor
+        favoriteButton.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.82)
+        favoriteButton.layer.cornerRadius = 10
         favoriteButton.tintColor = TFColor.Text.tertiary
         favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)
 
@@ -62,30 +60,30 @@ final class ClothingCell: UICollectionViewCell {
         card.addSubview(metaLabel)
 
         imageView.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview().inset(6)
+            make.top.leading.trailing.equalToSuperview()
             make.height.equalTo(imageView.snp.width)
         }
 
         favoriteButton.snp.makeConstraints { make in
-            make.top.trailing.equalToSuperview().inset(8)
-            make.size.equalTo(24)
+            make.top.trailing.equalToSuperview().inset(6)
+            make.size.equalTo(20)
         }
 
         nameLabel.snp.makeConstraints { make in
             make.top.equalTo(imageView.snp.bottom).offset(6)
-            make.leading.trailing.equalToSuperview().inset(8)
+            make.leading.trailing.equalToSuperview().inset(2)
         }
 
         metaLabel.snp.makeConstraints { make in
             make.top.equalTo(nameLabel.snp.bottom).offset(2)
-            make.leading.trailing.equalToSuperview().inset(8)
-            make.bottom.equalToSuperview().inset(7)
+            make.leading.trailing.equalToSuperview().inset(2)
+            make.bottom.equalToSuperview().inset(3)
         }
     }
 
     func configure(with item: ClothingItem, isFavorite: Bool) {
         nameLabel.text = item.name
-        metaLabel.text = [item.category.displayName, item.color].compactMap { $0 }.joined(separator: " · ")
+        metaLabel.text = localizedCategoryName(item.category)
         updateFavoriteUI(isFavorite)
 
         TFRemoteImageLoader.shared.cancel(imageRequestToken)
@@ -148,6 +146,16 @@ final class ClothingCell: UICollectionViewCell {
         case .outerwear: "wind"
         case .shoes: "shoe.2.fill"
         case .accessories: "handbag.fill"
+        }
+    }
+
+    private func localizedCategoryName(_ category: ClothingCategory) -> String {
+        switch category {
+        case .tops: CoreStrings.Category.tops
+        case .bottoms: CoreStrings.Category.bottoms
+        case .outerwear: CoreStrings.Category.outerwear
+        case .shoes: CoreStrings.Category.shoes
+        case .accessories: CoreStrings.Category.accessories
         }
     }
 }
