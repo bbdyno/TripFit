@@ -33,7 +33,8 @@ public final class TFEmptyStateView: UIView {
     private let pictogram: TFPictogram?
 
     private func setup(title: String, subtitle: String, buttonTitle: String?) {
-        iconImageView.image = pictogram?.image ?? systemIcon.flatMap { UIImage(systemName: $0) }
+        iconImageView.image = (pictogram?.image ?? systemIcon.flatMap { UIImage(systemName: $0) })?
+            .withRenderingMode(.alwaysTemplate)
         iconImageView.tintColor = TFColor.Brand.primary
         iconImageView.contentMode = .scaleAspectFit
         if pictogram == nil {
@@ -41,30 +42,26 @@ public final class TFEmptyStateView: UIView {
         }
 
         iconContainer.backgroundColor = TFColor.Surface.highlight
-        iconContainer.layer.cornerRadius = 30
+        iconContainer.layer.cornerRadius = 22
         iconContainer.layer.cornerCurve = .continuous
         iconContainer.layer.borderWidth = 1
-        iconContainer.layer.borderColor = TFColor.Brand.primary.withAlphaComponent(0.12).cgColor
-        iconContainer.layer.shadowColor = TFColor.Brand.primary.cgColor
-        iconContainer.layer.shadowOpacity = 0.08
-        iconContainer.layer.shadowRadius = 18
-        iconContainer.layer.shadowOffset = CGSize(width: 0, height: 8)
+        iconContainer.layer.borderColor = TFColor.Brand.primary.withAlphaComponent(0.18).cgColor
 
         iconContainer.addSubview(iconImageView)
         iconContainer.snp.makeConstraints { make in
-            make.size.equalTo(108)
+            make.size.equalTo(76)
         }
         iconImageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(pictogram == nil ? 30 : 18)
+            make.edges.equalToSuperview().inset(pictogram == nil ? 21 : 14)
         }
 
         titleLabel.text = title
-        titleLabel.font = TFTypography.title
+        titleLabel.font = TFTypography.subtitle
         titleLabel.textColor = TFColor.Text.primary
         titleLabel.textAlignment = .center
 
         subtitleLabel.text = subtitle
-        subtitleLabel.font = TFTypography.bodyRegular
+        subtitleLabel.font = TFTypography.bodyRegular.withSize(15)
         subtitleLabel.textColor = TFColor.Text.secondary
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
@@ -73,13 +70,13 @@ public final class TFEmptyStateView: UIView {
         stack.axis = .vertical
         stack.spacing = 8
         stack.alignment = .center
-        stack.setCustomSpacing(24, after: iconContainer)
+        stack.setCustomSpacing(18, after: iconContainer)
 
         if let buttonTitle {
             actionButton.setTitle(buttonTitle, for: .normal)
             stack.addArrangedSubview(actionButton)
-            stack.setCustomSpacing(24, after: subtitleLabel)
-            actionButton.snp.makeConstraints { $0.width.equalTo(200) }
+            stack.setCustomSpacing(20, after: subtitleLabel)
+            actionButton.snp.makeConstraints { $0.width.equalTo(184) }
         } else {
             actionButton.isHidden = true
         }
@@ -87,8 +84,8 @@ public final class TFEmptyStateView: UIView {
         addSubview(stack)
         stack.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.centerY.equalToSuperview().offset(-34)
-            make.leading.trailing.equalToSuperview().inset(44)
+            make.centerY.equalToSuperview().offset(-40)
+            make.leading.trailing.equalToSuperview().inset(36)
         }
     }
 

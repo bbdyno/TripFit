@@ -20,8 +20,6 @@ public final class WardrobeViewController: UIViewController {
     private let subtitleLabel = UILabel()
     private let addButton = UIButton(type: .system)
     private let searchContainer = UIView()
-    private let searchMaterialView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
-    private let searchTintView = UIView()
     private let searchIcon = UIImageView(image: UIImage(systemName: "magnifyingglass"))
     private let searchField = UITextField()
     private var collectionView: UICollectionView!
@@ -107,35 +105,27 @@ public final class WardrobeViewController: UIViewController {
         }
         addButton.isHidden = true
 
-        searchContainer.backgroundColor = .clear
+        searchContainer.backgroundColor = TFColor.Surface.card
         searchContainer.layer.cornerRadius = TFRadius.lg
         searchContainer.layer.cornerCurve = .continuous
         searchContainer.layer.borderWidth = 1
-        searchContainer.layer.borderColor = UIColor.white.withAlphaComponent(0.28).cgColor
+        searchContainer.layer.borderColor = TFColor.Border.subtle.cgColor
         searchContainer.clipsToBounds = true
         headerContainer.addSubview(searchContainer)
         searchContainer.snp.makeConstraints { make in
             make.top.equalTo(titleRow.snp.bottom).offset(14)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
-            make.height.equalTo(50)
+            make.height.equalTo(48)
             make.bottom.equalToSuperview().inset(10)
         }
 
-        searchMaterialView.isUserInteractionEnabled = false
-        searchTintView.backgroundColor = TFColor.Surface.input.withAlphaComponent(0.58)
-        searchTintView.isUserInteractionEnabled = false
-        searchContainer.addSubview(searchMaterialView)
-        searchMaterialView.contentView.addSubview(searchTintView)
-        searchMaterialView.snp.makeConstraints { $0.edges.equalToSuperview() }
-        searchTintView.snp.makeConstraints { $0.edges.equalToSuperview() }
-
         searchIcon.tintColor = TFColor.Text.tertiary
-        searchIcon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
+        searchIcon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 17, weight: .medium)
         searchContainer.addSubview(searchIcon)
         searchIcon.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(14)
             make.centerY.equalToSuperview()
-            make.size.equalTo(18)
+            make.size.equalTo(17)
         }
 
         searchField.placeholder = CoreStrings.Wardrobe.searchPlaceholder

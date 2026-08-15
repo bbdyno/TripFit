@@ -9,83 +9,83 @@ import UIKit
 
 public enum TFColor {
     public enum Brand {
-        public static let primary = UIColor(hex: 0xF24F91)
-        public static let primaryLight = UIColor(hex: 0xFF8AB8)
-        public static let primaryDark = UIColor(hex: 0xC93472)
+        public static let primary = UIColor(hex: 0xE46F51)
+        public static let primaryLight = UIColor(hex: 0xF1A184)
+        public static let primaryDark = UIColor(hex: 0xB84C37)
         public static let ink = UIColor.dynamic(
-            light: UIColor(hex: 0x20262B),
-            dark: UIColor(hex: 0xF4F0F2)
+            light: UIColor(hex: 0x23312D),
+            dark: UIColor(hex: 0xF5F0E8)
         )
-        public static let accentSky = UIColor(hex: 0x4AA8D8)
-        public static let accentPurple = UIColor(hex: 0x8E78D6)
-        public static let accentMint = UIColor(hex: 0x2EAE83)
-        public static let accentOrange = UIColor(hex: 0xE9853F)
+        public static let accentSky = UIColor(hex: 0x6D9FB6)
+        public static let accentPurple = UIColor(hex: 0x8C83A8)
+        public static let accentMint = UIColor(hex: 0x789A83)
+        public static let accentOrange = UIColor(hex: 0xD69C4B)
     }
 
     public enum Surface {
         public static let canvas = UIColor.dynamic(
-            light: UIColor(hex: 0xF7F5F2),
-            dark: UIColor(hex: 0x0F171D)
+            light: UIColor(hex: 0xF7F3EC),
+            dark: UIColor(hex: 0x111917)
         )
         public static let card = UIColor.dynamic(
-            light: UIColor(hex: 0xFFFEFC),
-            dark: UIColor(hex: 0x172129)
+            light: UIColor(hex: 0xFFFCF7),
+            dark: UIColor(hex: 0x19231F)
         )
         public static let elevated = UIColor.dynamic(
-            light: .white,
-            dark: UIColor(hex: 0x1C2730)
+            light: UIColor(hex: 0xFFFEFB),
+            dark: UIColor(hex: 0x1E2A25)
         )
         public static let input = UIColor.dynamic(
-            light: UIColor(hex: 0xEEEAE6),
-            dark: UIColor(hex: 0x222E37)
+            light: UIColor(hex: 0xEFE8DE),
+            dark: UIColor(hex: 0x26322D)
         )
         public static let chip = UIColor.dynamic(
-            light: UIColor(hex: 0xF0ECE8),
-            dark: UIColor(hex: 0x222E37)
+            light: UIColor(hex: 0xF1EBE2),
+            dark: UIColor(hex: 0x26322D)
         )
         public static let hero = UIColor.dynamic(
-            light: UIColor(hex: 0x242B31),
-            dark: UIColor(hex: 0x202C35)
+            light: UIColor(hex: 0x293732),
+            dark: UIColor(hex: 0x26342F)
         )
         public static let highlight = UIColor.dynamic(
-            light: UIColor(hex: 0xFFE1EC),
-            dark: UIColor(hex: 0x38202C)
+            light: UIColor(hex: 0xFBE2D8),
+            dark: UIColor(hex: 0x3C2922)
         )
     }
 
     public enum Text {
         public static let primary = UIColor.dynamic(
-            light: UIColor(hex: 0x20262B),
-            dark: UIColor(hex: 0xF6F2F4)
+            light: UIColor(hex: 0x23312D),
+            dark: UIColor(hex: 0xF7F1E8)
         )
         public static let secondary = UIColor.dynamic(
-            light: UIColor(hex: 0x62686D),
-            dark: UIColor(hex: 0xB4BEC5)
+            light: UIColor(hex: 0x66716C),
+            dark: UIColor(hex: 0xB7C1BB)
         )
         public static let tertiary = UIColor.dynamic(
-            light: UIColor(hex: 0x8E9498),
-            dark: UIColor(hex: 0x81909A)
+            light: UIColor(hex: 0x909792),
+            dark: UIColor(hex: 0x87958E)
         )
         public static let inverse = UIColor.white
     }
 
     public enum Border {
         public static let subtle = UIColor.dynamic(
-            light: UIColor(hex: 0xE8E3DE),
-            dark: UIColor(hex: 0x2B3943)
+            light: UIColor(hex: 0xE6DED3),
+            dark: UIColor(hex: 0x314039)
         )
         public static let strong = UIColor.dynamic(
-            light: UIColor(hex: 0xD7D0CA),
-            dark: UIColor(hex: 0x3A4A56)
+            light: UIColor(hex: 0xD5CABC),
+            dark: UIColor(hex: 0x42534B)
         )
     }
 
     public enum Category {
-        public static let tops = UIColor(hex: 0xF06292)
-        public static let bottoms = UIColor(hex: 0x38BDF8)
-        public static let outerwear = UIColor(hex: 0x8B5CF6)
-        public static let shoes = UIColor(hex: 0xF59E0B)
-        public static let accessories = UIColor(hex: 0x14B8A6)
+        public static let tops = UIColor(hex: 0xD97962)
+        public static let bottoms = UIColor(hex: 0x6D9FB6)
+        public static let outerwear = UIColor(hex: 0x7B8496)
+        public static let shoes = UIColor(hex: 0xC99345)
+        public static let accessories = UIColor(hex: 0x789A83)
     }
 
     // Legacy aliases

@@ -77,7 +77,11 @@ public final class OnboardingViewController: UIViewController {
             for: .normal
         )
         nextButton.tintColor = .white
-        nextButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: -10)
+        if var configuration = nextButton.configuration {
+            configuration.imagePlacement = .trailing
+            configuration.imagePadding = 8
+            nextButton.configuration = configuration
+        }
 
         view.addSubview(collectionView)
         view.addSubview(progressView)
@@ -128,7 +132,6 @@ public final class OnboardingViewController: UIViewController {
 
         let changes = {
             self.skipButton.alpha = isLast ? 0 : 1
-            self.nextButton.backgroundColor = TFColor.Brand.primary
         }
         if animated && !UIAccessibility.isReduceMotionEnabled {
             UIView.animate(withDuration: 0.22, animations: changes)
@@ -149,29 +152,29 @@ public final class OnboardingViewController: UIViewController {
             WalkthroughPage(
                 kind: .wardrobe,
                 step: korean ? "옷장  ·  01" : "WARDROBE  ·  01",
-                title: korean ? "내 옷장을\n한눈에." : "Your closet,\nin one view.",
+                title: korean ? "가져갈 옷을\n한눈에." : "See what you own.\nPack what you love.",
                 subtitle: korean
-                    ? "사진 한 장으로 옷을 정리하고, 계절과 색상으로 필요한 순간 바로 찾아보세요."
-                    : "Save each piece once, then find what fits the season, color, and moment.",
+                    ? "사진으로 옷장을 정리하고, 여행에 어울리는 아이템을 빠르게 골라보세요."
+                    : "Build a visual closet, then find the right pieces for every destination.",
                 accentColor: TFColor.Brand.primary
             ),
             WalkthroughPage(
                 kind: .outfits,
                 step: korean ? "코디  ·  02" : "OUTFITS  ·  02",
-                title: korean ? "고민 대신\n저장해 둔 코디." : "Looks ready\nwhen you are.",
+                title: korean ? "입을 조합을\n미리 준비해요." : "Build the looks\nbefore you go.",
                 subtitle: korean
-                    ? "내 옷으로 만든 조합을 룩처럼 저장하고, 오늘 입을 옷을 더 빠르게 결정하세요."
-                    : "Turn pieces you own into looks you can revisit whenever plans come up.",
-                accentColor: TFColor.Brand.accentSky
+                    ? "내 옷으로 코디를 만들고 저장해 두면, 여행지에서의 선택이 가벼워집니다."
+                    : "Combine your own pieces into travel-ready looks and save them for later.",
+                accentColor: TFColor.Brand.accentMint
             ),
             WalkthroughPage(
                 kind: .trips,
                 step: korean ? "함께 여행  ·  03" : "TRIPS TOGETHER  ·  03",
-                title: korean ? "여행 준비는\n함께, 더 가볍게." : "Plan together.\nPack lighter.",
+                title: korean ? "날짜부터 짐까지,\n함께 맞춰요." : "Dates, looks, packing.\nAll in sync.",
                 subtitle: korean
-                    ? "가능한 날짜를 맞추고 준비물과 여행 룩까지, 초대받은 사람끼리 함께 준비하세요."
-                    : "Match dates, share packing, and plan trip looks with the people you invite.",
-                accentColor: TFColor.Brand.accentMint
+                    ? "가능한 일정을 비교하고, 준비물과 여행 룩을 하나의 여행방에서 정리하세요."
+                    : "Compare availability and organize shared packing and travel looks in one room.",
+                accentColor: TFColor.Brand.accentSky
             ),
         ]
     }
@@ -260,7 +263,7 @@ private final class WalkthroughPageCell: UICollectionViewCell {
         scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
 
         stack.axis = .vertical
-        stack.spacing = 16
+        stack.spacing = 12
         scrollView.addSubview(stack)
         stack.snp.makeConstraints { make in
             make.top.bottom.equalTo(scrollView.contentLayoutGuide).inset(8)
@@ -268,29 +271,29 @@ private final class WalkthroughPageCell: UICollectionViewCell {
             make.width.equalTo(scrollView.frameLayoutGuide).inset(TFSpacing.xl)
         }
 
-        artwork.layer.cornerRadius = TFRadius.hero
+        artwork.layer.cornerRadius = TFRadius.xl
         artwork.layer.cornerCurve = .continuous
         artwork.clipsToBounds = true
         stack.addArrangedSubview(artwork)
         artwork.snp.makeConstraints { make in
-            make.height.equalTo(318).priority(.high)
-            make.height.greaterThanOrEqualTo(260)
+            make.height.equalTo(258).priority(.high)
+            make.height.greaterThanOrEqualTo(220)
         }
-        stack.setCustomSpacing(24, after: artwork)
+        stack.setCustomSpacing(18, after: artwork)
 
         stepLabel.font = TFTypography.caption.withSize(12)
         stepLabel.textColor = TFColor.Brand.primary
         stepLabel.adjustsFontForContentSizeCategory = true
         stack.addArrangedSubview(stepLabel)
 
-        titleLabel.font = TFTypography.display
+        titleLabel.font = TFTypography.largeTitle
         titleLabel.textColor = TFColor.Text.primary
         titleLabel.numberOfLines = 0
         titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
         stack.addArrangedSubview(titleLabel)
 
-        subtitleLabel.font = TFTypography.bodyRegular.withSize(17)
+        subtitleLabel.font = TFTypography.bodyRegular.withSize(16)
         subtitleLabel.textColor = TFColor.Text.secondary
         subtitleLabel.numberOfLines = 0
         subtitleLabel.adjustsFontForContentSizeCategory = true
@@ -349,92 +352,68 @@ private final class WalkthroughArtworkView: UIView {
 
     func configure(kind: WalkthroughPage.Kind, accentColor: UIColor) {
         content.subviews.forEach { $0.removeFromSuperview() }
-        let backdrop = TFAuroraBackdropView()
-        content.addSubview(backdrop)
-        backdrop.snp.makeConstraints { $0.edges.equalToSuperview() }
+        content.backgroundColor = TFColor.Surface.card
+        content.layer.cornerRadius = TFRadius.xl
+        content.layer.cornerCurve = .continuous
+        content.layer.borderWidth = 1 / UIScreen.main.scale
+        content.layer.borderColor = TFColor.Border.subtle.cgColor
+        content.clipsToBounds = true
 
-        let number = UILabel()
-        number.text = kind.serial
-        number.font = TFTypography.display.withSize(104)
-        number.textColor = UIColor.white.withAlphaComponent(0.08)
-        content.addSubview(number)
-        number.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(-24)
-            make.trailing.equalToSuperview().offset(10)
-        }
-
-        let glass = TFGlassPanelView(
-            style: .systemUltraThinMaterialDark,
-            cornerRadius: 30,
-            tintColor: UIColor.white.withAlphaComponent(0.08)
-        )
-        content.addSubview(glass)
-        glass.snp.makeConstraints { make in
-            make.top.bottom.equalToSuperview().inset(20)
-            make.leading.equalToSuperview().inset(24)
-            make.width.equalTo(glass.snp.height)
-        }
-
-        let heroImage = UIImageView(image: kind.hero.image)
+        let heroImage = UIImageView(image: UIImage(named: kind.editorialHeroName))
         heroImage.contentMode = .scaleAspectFill
         heroImage.clipsToBounds = true
-        heroImage.layer.cornerRadius = 24
-        heroImage.layer.cornerCurve = .continuous
-        glass.contentView.addSubview(heroImage)
-        heroImage.snp.makeConstraints { $0.edges.equalToSuperview().inset(12) }
+        content.addSubview(heroImage)
+        heroImage.snp.makeConstraints { $0.edges.equalToSuperview() }
 
-        let primaryMini = makeFloatingPictogram(kind.miniatures.0)
-        let secondaryMini = makeFloatingPictogram(kind.miniatures.1)
-        content.addSubview(primaryMini)
-        content.addSubview(secondaryMini)
-        primaryMini.transform = CGAffineTransform(rotationAngle: 0.06)
-        secondaryMini.transform = CGAffineTransform(rotationAngle: -0.05)
-        primaryMini.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(34)
-            make.trailing.equalToSuperview().inset(24)
-            make.size.equalTo(76)
+        let caption = UIView()
+        caption.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.94)
+        caption.layer.cornerRadius = 14
+        caption.layer.cornerCurve = .continuous
+
+        let accent = UIView()
+        accent.backgroundColor = accentColor
+        accent.layer.cornerRadius = 2
+
+        let pictogram = UIImageView(image: kind.miniatures.0.image?.withRenderingMode(.alwaysTemplate))
+        pictogram.contentMode = .scaleAspectFit
+        pictogram.tintColor = accentColor
+
+        let tag = UILabel()
+        tag.text = kind.tag
+        tag.font = TFTypography.caption.withSize(11)
+        tag.textColor = TFColor.Text.primary
+
+        let captionStack = UIStackView(arrangedSubviews: [accent, pictogram, tag])
+        captionStack.axis = .horizontal
+        captionStack.alignment = .center
+        captionStack.spacing = 9
+        caption.addSubview(captionStack)
+        captionStack.snp.makeConstraints {
+            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 9, left: 10, bottom: 9, right: 14))
         }
-        secondaryMini.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(40)
-            make.bottom.equalToSuperview().inset(30)
-            make.size.equalTo(68)
+        accent.snp.makeConstraints { make in
+            make.width.equalTo(4)
+            make.height.equalTo(28)
+        }
+        pictogram.snp.makeConstraints { $0.size.equalTo(28) }
+
+        content.addSubview(caption)
+        caption.snp.makeConstraints { make in
+            make.leading.bottom.equalToSuperview().inset(14)
         }
 
-        let tag = makeTag(title: kind.tag, color: accentColor)
-        content.addSubview(tag)
-        tag.snp.makeConstraints { make in
-            make.leading.equalTo(glass.snp.trailing).offset(-18)
-            make.centerY.equalToSuperview().offset(34)
+        let number = InsetLabel(insets: UIEdgeInsets(top: 7, left: 10, bottom: 7, right: 10))
+        number.text = kind.serial
+        number.font = TFTypography.caption.withSize(11)
+        number.textColor = TFColor.Text.primary
+        number.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.92)
+        number.layer.cornerRadius = 13
+        number.layer.cornerCurve = .continuous
+        number.clipsToBounds = true
+        content.addSubview(number)
+        number.snp.makeConstraints { make in
+            make.top.trailing.equalToSuperview().inset(14)
         }
-    }
-
-    private func makeFloatingPictogram(_ pictogram: TFPictogram) -> TFGlassPanelView {
-        let panel = TFGlassPanelView(
-            style: .systemUltraThinMaterialDark,
-            cornerRadius: 24,
-            tintColor: UIColor.white.withAlphaComponent(0.09)
-        )
-        let image = UIImageView(image: pictogram.image)
-        image.contentMode = .scaleAspectFit
-        panel.contentView.addSubview(image)
-        image.snp.makeConstraints { $0.edges.equalToSuperview().inset(8) }
-        return panel
-    }
-
-    private func makeTag(title: String, color: UIColor) -> UILabel {
-        let label = InsetLabel(insets: UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12))
-        label.text = title
-        label.font = TFTypography.caption.withSize(10)
-        label.textColor = .white
-        label.backgroundColor = color
-        label.layer.cornerRadius = 14
-        label.layer.cornerCurve = .continuous
-        label.clipsToBounds = true
-        return label
-    }
-
-    private func localized(_ korean: String, _ english: String) -> String {
-        TFAppLanguage.current() == .korean ? korean : english
     }
 }
 
@@ -447,11 +426,11 @@ private extension WalkthroughPage.Kind {
         }
     }
 
-    var hero: TFHeroPictogram {
+    var editorialHeroName: String {
         switch self {
-        case .wardrobe: .wardrobe
-        case .outfits: .outfit
-        case .trips: .trip
+        case .wardrobe: "TFHeroWardrobeEditorial"
+        case .outfits: "TFHeroOutfitEditorial"
+        case .trips: "TFHeroTripEditorial"
         }
     }
 

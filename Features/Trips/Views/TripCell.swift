@@ -32,7 +32,8 @@ final class TripCell: UICollectionViewCell {
     private let durationBadge = InsetLabel(insets: UIEdgeInsets(top: 2, left: 7, bottom: 2, right: 7))
     private let dateLabel = UILabel()
     private let localTimeLabel = UILabel()
-    private let progressRing = TFProgressRingView()
+    private let packingLabel = UILabel()
+    private let packingProgressView = UIProgressView(progressViewStyle: .default)
     private let imageGradientLayer = CAGradientLayer()
 
     private var imageRequestToken: UUID?
@@ -63,7 +64,7 @@ final class TripCell: UICollectionViewCell {
     private func setupUI() {
         contentView.addSubview(card)
         card.snp.makeConstraints { $0.edges.equalToSuperview() }
-        card.layer.cornerRadius = 24
+        card.layer.cornerRadius = 20
         card.layer.borderColor = TFColor.Border.subtle.cgColor
 
         photoContainer.layer.cornerRadius = 16
@@ -86,7 +87,7 @@ final class TripCell: UICollectionViewCell {
         locationLabel.font = TFTypography.footnote.withSize(12)
         locationLabel.textColor = .white
 
-        titleLabel.font = TFTypography.headline.withSize(20)
+        titleLabel.font = TFTypography.headline.withSize(18)
         titleLabel.textColor = TFColor.Text.primary
         titleLabel.numberOfLines = 1
 
@@ -103,10 +104,12 @@ final class TripCell: UICollectionViewCell {
         localTimeLabel.textColor = TFColor.Brand.accentSky
         localTimeLabel.numberOfLines = 1
 
-        progressRing.backgroundColor = TFColor.Surface.card
-        progressRing.layer.cornerRadius = 28
-        progressRing.layer.borderWidth = 1
-        progressRing.layer.borderColor = TFColor.Border.subtle.cgColor
+        packingLabel.font = TFTypography.footnote.withSize(11)
+        packingLabel.textColor = TFColor.Text.secondary
+        packingProgressView.progressTintColor = TFColor.Brand.primary
+        packingProgressView.trackTintColor = TFColor.Surface.input
+        packingProgressView.layer.cornerRadius = 2
+        packingProgressView.clipsToBounds = true
 
         card.addSubview(photoContainer)
         photoContainer.addSubview(tripImageView)
@@ -117,11 +120,12 @@ final class TripCell: UICollectionViewCell {
         card.addSubview(durationBadge)
         card.addSubview(dateLabel)
         card.addSubview(localTimeLabel)
-        card.addSubview(progressRing)
+        card.addSubview(packingLabel)
+        card.addSubview(packingProgressView)
 
         photoContainer.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview().inset(12)
-            make.height.equalTo(192)
+            make.top.leading.bottom.equalToSuperview().inset(12)
+            make.width.equalTo(104)
         }
         tripImageView.snp.makeConstraints { $0.edges.equalToSuperview() }
 
@@ -137,43 +141,56 @@ final class TripCell: UICollectionViewCell {
         }
 
         titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(photoContainer.snp.bottom).offset(12)
-            make.leading.equalToSuperview().inset(14)
-            make.trailing.lessThanOrEqualTo(progressRing.snp.leading).offset(-12)
+            make.top.equalToSuperview().inset(14)
+            make.leading.equalTo(photoContainer.snp.trailing).offset(14)
+            make.trailing.equalToSuperview().inset(14)
         }
 
         durationBadge.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(14)
-            make.top.equalTo(titleLabel.snp.bottom).offset(4)
+            make.leading.equalTo(titleLabel)
+            make.top.equalTo(titleLabel.snp.bottom).offset(5)
         }
 
         dateLabel.snp.makeConstraints { make in
             make.leading.equalTo(durationBadge.snp.trailing).offset(8)
-            make.top.equalTo(durationBadge.snp.top)
-            make.trailing.lessThanOrEqualTo(progressRing.snp.leading).offset(-12)
+            make.centerY.equalTo(durationBadge)
+            make.trailing.lessThanOrEqualToSuperview().inset(14)
         }
 
         localTimeLabel.snp.makeConstraints { make in
-            make.leading.equalTo(durationBadge.snp.trailing).offset(8)
-            make.top.equalTo(dateLabel.snp.bottom).offset(2)
-            make.trailing.lessThanOrEqualTo(progressRing.snp.leading).offset(-12)
-            make.bottom.lessThanOrEqualToSuperview().inset(14)
+            make.leading.equalTo(titleLabel)
+            make.top.equalTo(durationBadge.snp.bottom).offset(7)
+            make.trailing.equalToSuperview().inset(14)
         }
 
-        progressRing.snp.makeConstraints { make in
+        packingLabel.snp.makeConstraints { make in
+            make.leading.equalTo(titleLabel)
             make.trailing.equalToSuperview().inset(14)
-            make.centerY.equalTo(titleLabel.snp.bottom)
-            make.size.equalTo(56)
+            make.top.equalTo(localTimeLabel.snp.bottom).offset(7)
+        }
+
+        packingProgressView.snp.makeConstraints { make in
+            make.leading.equalTo(titleLabel)
+            make.trailing.equalToSuperview().inset(14)
+            make.top.equalTo(packingLabel.snp.bottom).offset(4)
+            make.height.equalTo(4)
+            make.bottom.lessThanOrEqualToSuperview().inset(13)
         }
     }
 
     func configure(with trip: Trip) {
         titleLabel.text = trip.name
         dateLabel.text = TFDateFormatter.tripRange(start: trip.startDate, end: trip.endDate)
-        durationBadge.text = "\(tripDurationDays(for: trip)) days"
+        let durationDays = tripDurationDays(for: trip)
+        durationBadge.text = TFAppLanguage.current() == .korean ? "\(durationDays)일" : "\(durationDays) days"
         locationLabel.text = locationText(for: trip)
         refreshLiveTime(for: trip)
-        progressRing.setProgress(current: trip.packedCount, total: max(trip.totalCount, 1))
+        let totalCount = trip.totalCount
+        let progress = totalCount > 0 ? Float(trip.packedCount) / Float(totalCount) : 0
+        packingProgressView.setProgress(progress, animated: false)
+        packingLabel.text = TFAppLanguage.current() == .korean
+            ? "패킹 \(trip.packedCount)/\(totalCount)"
+            : "Packing \(trip.packedCount)/\(totalCount)"
         loadImage(for: trip)
     }
 

@@ -29,10 +29,10 @@ final class MainTabBarController: UITabBarController {
         delegate = self
 
         let tabAppearance = UITabBarAppearance()
-        tabAppearance.configureWithTransparentBackground()
-        tabAppearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
-        tabAppearance.backgroundColor = TFColor.Surface.card.withAlphaComponent(0.64)
-        tabAppearance.shadowColor = UIColor.clear
+        tabAppearance.configureWithOpaqueBackground()
+        tabAppearance.backgroundEffect = nil
+        tabAppearance.backgroundColor = TFColor.Surface.card
+        tabAppearance.shadowColor = TFColor.Border.subtle
         tabAppearance.stackedLayoutAppearance.selected.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 1)
         tabAppearance.stackedLayoutAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 1)
         tabAppearance.stackedLayoutAppearance.selected.iconColor = TFColor.Brand.primary
@@ -159,24 +159,16 @@ final class MainTabBarController: UITabBarController {
         let addImage = TFMaterialIcon.image(named: "add", pointSize: 30, weight: .medium)
             ?? UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .bold))
 
-        if #available(iOS 26.0, *) {
-            var config = UIButton.Configuration.prominentGlass()
-            config.image = addImage
-            config.baseBackgroundColor = TFColor.Brand.primary
-            config.baseForegroundColor = .white
-            config.cornerStyle = .capsule
-            centerAddButton.configuration = config
-        } else {
-            centerAddButton.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.82)
-            centerAddButton.tintColor = .white
-            centerAddButton.layer.borderWidth = 1
-            centerAddButton.layer.borderColor = UIColor.white.withAlphaComponent(0.42).cgColor
-            centerAddButton.layer.shadowColor = TFColor.Brand.primary.cgColor
-            centerAddButton.layer.shadowOpacity = 0.22
-            centerAddButton.layer.shadowRadius = 12
-            centerAddButton.layer.shadowOffset = CGSize(width: 0, height: 6)
-            centerAddButton.setImage(addImage, for: .normal)
-        }
+        var config = UIButton.Configuration.filled()
+        config.image = addImage
+        config.baseBackgroundColor = TFColor.Brand.primary
+        config.baseForegroundColor = .white
+        config.cornerStyle = .capsule
+        centerAddButton.configuration = config
+        centerAddButton.layer.shadowColor = UIColor.black.cgColor
+        centerAddButton.layer.shadowOpacity = 0.12
+        centerAddButton.layer.shadowRadius = 8
+        centerAddButton.layer.shadowOffset = CGSize(width: 0, height: 4)
         centerAddButton.addAction(UIAction { [weak self] _ in
             self?.didTapCenterAddButton()
         }, for: .touchUpInside)
@@ -184,10 +176,10 @@ final class MainTabBarController: UITabBarController {
     }
 
     private func layoutCenterAddButton() {
-        let size: CGFloat = 60
+        let size: CGFloat = 56
         centerAddButton.frame = CGRect(
             x: tabBar.frame.midX - (size / 2),
-            y: tabBar.frame.minY - (size / 2) - 6,
+            y: tabBar.frame.minY - (size / 2) - 4,
             width: size,
             height: size
         )
@@ -297,26 +289,7 @@ final class MainTabBarController: UITabBarController {
     }
 
     private func updateSelectionIndicator() {
-        guard let items = tabBar.items, !items.isEmpty else { return }
-        let itemWidth = tabBar.bounds.width / CGFloat(items.count)
-        let size = CGSize(width: itemWidth, height: tabBar.bounds.height)
-        UIGraphicsBeginImageContextWithOptions(size, false, 0)
-        defer { UIGraphicsEndImageContext() }
-
-        let context = UIGraphicsGetCurrentContext()
-        context?.setFillColor(UIColor.clear.cgColor)
-        context?.fill(CGRect(origin: .zero, size: size))
-
-        let indicatorRect = CGRect(
-            x: (itemWidth - 32) / 2,
-            y: 2,
-            width: 32,
-            height: 4
-        )
-        TFColor.Brand.primary.setFill()
-        UIBezierPath(roundedRect: indicatorRect, cornerRadius: 2).fill()
-
-        tabBar.selectionIndicatorImage = UIGraphicsGetImageFromCurrentImageContext()
+        tabBar.selectionIndicatorImage = nil
     }
 
     private func makeMaterialTabIcon(

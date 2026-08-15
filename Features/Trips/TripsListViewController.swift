@@ -197,7 +197,7 @@ public final class TripsListViewController: UIViewController {
 
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumLineSpacing = TFSpacing.lg
+        layout.minimumLineSpacing = TFSpacing.md
         layout.sectionInset = UIEdgeInsets(top: TFSpacing.md, left: TFSpacing.md, bottom: 112, right: TFSpacing.md)
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -382,11 +382,8 @@ extension TripsListViewController {
         contentStack.axis = .horizontal
         contentStack.alignment = .center
         contentStack.spacing = 12
-        let card = TFGlassPanelView(
-            cornerRadius: 22,
-            tintColor: TFColor.Surface.card.withAlphaComponent(0.52)
-        )
-        card.contentView.addSubview(contentStack)
+        let card = TFCardView(style: .flat)
+        card.addSubview(contentStack)
         contentStack.snp.makeConstraints { $0.edges.equalToSuperview().inset(TFSpacing.md) }
         sharedStack.addArrangedSubview(card)
         card.snp.makeConstraints { make in
@@ -557,6 +554,6 @@ extension TripsListViewController: UICollectionViewDelegateFlowLayout {
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
         let width = collectionView.bounds.width - (TFSpacing.md * 2)
-        return CGSize(width: width, height: 292)
+        return CGSize(width: width, height: 136)
     }
 }
