@@ -18,6 +18,7 @@ public final class TFEmptyStateView: UIView {
     public init(icon: String, title: String, subtitle: String, buttonTitle: String?) {
         self.systemIcon = icon
         self.pictogram = nil
+        self.heroImageName = nil
         super.init(frame: .zero)
         setup(title: title, subtitle: subtitle, buttonTitle: buttonTitle)
     }
@@ -25,23 +26,39 @@ public final class TFEmptyStateView: UIView {
     public init(pictogram: TFPictogram, title: String, subtitle: String, buttonTitle: String?) {
         self.systemIcon = nil
         self.pictogram = pictogram
+        self.heroImageName = nil
+        super.init(frame: .zero)
+        setup(title: title, subtitle: subtitle, buttonTitle: buttonTitle)
+    }
+
+    public init(heroImageName: String, title: String, subtitle: String, buttonTitle: String?) {
+        self.systemIcon = nil
+        self.pictogram = nil
+        self.heroImageName = heroImageName
         super.init(frame: .zero)
         setup(title: title, subtitle: subtitle, buttonTitle: buttonTitle)
     }
 
     private let systemIcon: String?
     private let pictogram: TFPictogram?
+    private let heroImageName: String?
 
     private func setup(title: String, subtitle: String, buttonTitle: String?) {
-        iconImageView.image = (pictogram?.image ?? systemIcon.flatMap { UIImage(systemName: $0) })?
-            .withRenderingMode(.alwaysTemplate)
-        iconImageView.tintColor = TFColor.Brand.primary
-        iconImageView.contentMode = .scaleAspectFit
-        if pictogram == nil {
+        let usesHeroImage = heroImageName != nil
+        if let heroImageName {
+            iconImageView.image = UIImage(named: heroImageName)
+            iconImageView.contentMode = .scaleAspectFill
+        } else {
+            iconImageView.image = (pictogram?.image ?? systemIcon.flatMap { UIImage(systemName: $0) })?
+                .withRenderingMode(.alwaysTemplate)
+            iconImageView.tintColor = TFColor.Brand.primary
+            iconImageView.contentMode = .scaleAspectFit
+        }
+        if pictogram == nil, !usesHeroImage {
             iconImageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)
         }
 
-        iconContainer.backgroundColor = TFColor.Surface.highlight
+        iconContainer.backgroundColor = usesHeroImage ? TFColor.Surface.card : TFColor.Surface.highlight
         iconContainer.layer.cornerRadius = 22
         iconContainer.layer.cornerCurve = .continuous
         iconContainer.layer.borderWidth = 1
@@ -49,10 +66,15 @@ public final class TFEmptyStateView: UIView {
 
         iconContainer.addSubview(iconImageView)
         iconContainer.snp.makeConstraints { make in
-            make.size.equalTo(76)
+            if usesHeroImage {
+                make.width.equalTo(184)
+                make.height.equalTo(112)
+            } else {
+                make.size.equalTo(76)
+            }
         }
         iconImageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(pictogram == nil ? 21 : 14)
+            make.edges.equalToSuperview().inset(usesHeroImage ? 0 : (pictogram == nil ? 21 : 14))
         }
 
         titleLabel.text = title

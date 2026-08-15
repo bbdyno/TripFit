@@ -33,6 +33,9 @@ public final class OutfitsListViewController: UIViewController {
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
     private let addButton = UIButton(type: .system)
+    private let plannerCard = TFCardView(style: .flat)
+    private let plannerCountLabel = UILabel()
+    private let weekStack = UIStackView()
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, UUID>!
     private var emptyView: TFEmptyStateView!
@@ -53,9 +56,72 @@ public final class OutfitsListViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = TFColor.Surface.canvas
         setupHeader()
+        setupPlannerStrip()
         setupFilterBar()
         setupCollectionView()
         setupEmptyView()
+    }
+
+    private func setupPlannerStrip() {
+        view.addSubview(plannerCard)
+        plannerCard.layer.cornerRadius = 18
+        plannerCard.snp.makeConstraints { make in
+            make.top.equalTo(headerContainer.snp.bottom).offset(4)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
+            make.height.equalTo(108)
+        }
+
+        let plannerTitle = UILabel()
+        plannerTitle.text = localized("이번 주의 룩 보드", "This week's look board")
+        plannerTitle.font = TFTypography.caption.withSize(14)
+        plannerTitle.textColor = TFColor.Text.primary
+
+        plannerCountLabel.font = TFTypography.footnote.withSize(10)
+        plannerCountLabel.textColor = TFColor.Brand.accentPurple
+        plannerCountLabel.textAlignment = .right
+
+        plannerCard.addSubview(plannerTitle)
+        plannerCard.addSubview(plannerCountLabel)
+        plannerTitle.snp.makeConstraints { make in
+            make.top.leading.equalToSuperview().inset(14)
+        }
+        plannerCountLabel.snp.makeConstraints { make in
+            make.centerY.equalTo(plannerTitle)
+            make.trailing.equalToSuperview().inset(14)
+        }
+
+        weekStack.axis = .horizontal
+        weekStack.distribution = .fillEqually
+        weekStack.spacing = 5
+        plannerCard.addSubview(weekStack)
+        weekStack.snp.makeConstraints { make in
+            make.top.equalTo(plannerTitle.snp.bottom).offset(10)
+            make.leading.trailing.bottom.equalToSuperview().inset(12)
+        }
+
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let weekday = calendar.component(.weekday, from: today)
+        let start = calendar.date(byAdding: .day, value: -(weekday - calendar.firstWeekday + 7) % 7, to: today) ?? today
+        let weekdayFormatter = DateFormatter()
+        weekdayFormatter.locale = TFAppLanguage.current() == .korean ? Locale(identifier: "ko_KR") : Locale(identifier: "en_US")
+        weekdayFormatter.dateFormat = "EEEEE"
+
+        for offset in 0..<7 {
+            let date = calendar.date(byAdding: .day, value: offset, to: start) ?? today
+            let isToday = calendar.isDate(date, inSameDayAs: today)
+            let day = UILabel()
+            day.text = "\(weekdayFormatter.string(from: date))\n\(calendar.component(.day, from: date))"
+            day.numberOfLines = 2
+            day.textAlignment = .center
+            day.font = TFTypography.footnote.withSize(10)
+            day.textColor = isToday ? .white : TFColor.Text.secondary
+            day.backgroundColor = isToday ? TFColor.Brand.accentPurple : TFColor.Surface.input
+            day.layer.cornerRadius = 16
+            day.layer.cornerCurve = .continuous
+            day.clipsToBounds = true
+            weekStack.addArrangedSubview(day)
+        }
     }
 
     public override func viewWillAppear(_ animated: Bool) {
@@ -93,13 +159,11 @@ public final class OutfitsListViewController: UIViewController {
             UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)),
             for: .normal
         )
-        addButton.tintColor = .white
-        addButton.backgroundColor = TFColor.Brand.primary
+        addButton.tintColor = TFColor.Brand.primary
+        addButton.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.12)
         addButton.layer.cornerRadius = 20
-        addButton.layer.shadowColor = TFColor.Brand.primary.cgColor
-        addButton.layer.shadowOpacity = 0.3
-        addButton.layer.shadowRadius = 8
-        addButton.layer.shadowOffset = CGSize(width: 0, height: 4)
+        addButton.layer.borderWidth = 1
+        addButton.layer.borderColor = TFColor.Brand.primary.withAlphaComponent(0.24).cgColor
         addButton.addAction(UIAction { [weak self] _ in self?.addTapped() }, for: .touchUpInside)
 
         let titleRow = UIStackView(arrangedSubviews: [titleStack, UIView(), addButton])
@@ -114,7 +178,7 @@ public final class OutfitsListViewController: UIViewController {
         addButton.snp.makeConstraints { make in
             make.size.equalTo(40)
         }
-        addButton.isHidden = true
+        addButton.accessibilityLabel = localized("코디 추가", "Add outfit")
     }
 
     private func setupFilterBar() {
@@ -122,7 +186,7 @@ public final class OutfitsListViewController: UIViewController {
         filterScrollView.contentInsetAdjustmentBehavior = .never
         view.addSubview(filterScrollView)
         filterScrollView.snp.makeConstraints { make in
-            make.top.equalTo(headerContainer.snp.bottom)
+            make.top.equalTo(plannerCard.snp.bottom).offset(4)
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(54)
         }
@@ -203,7 +267,7 @@ public final class OutfitsListViewController: UIViewController {
 
     private func setupEmptyView() {
         emptyView = TFEmptyStateView(
-            pictogram: .outfit,
+            heroImageName: "TFOutfitBoardCool",
             title: localized("아직 저장된 코디가 없어요", "No Outfits Yet"),
             subtitle: localized("내 옷으로 첫 번째 코디를 만들어보세요", "Create your first look from pieces you own"),
             buttonTitle: localized("코디 만들기", "Create Outfit")
@@ -227,6 +291,7 @@ public final class OutfitsListViewController: UIViewController {
     private func fetchOutfits() {
         let descriptor = FetchDescriptor<Outfit>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
         outfits = (try? context.fetch(descriptor)) ?? []
+        plannerCountLabel.text = localized("저장 \(outfits.count)", "\(outfits.count) SAVED")
         applySnapshot()
     }
 
@@ -282,6 +347,6 @@ extension OutfitsListViewController: UICollectionViewDelegateFlowLayout {
         let inset: CGFloat = TFSpacing.md * 2
         let spacing: CGFloat = TFSpacing.md
         let width = floor((collectionView.bounds.width - inset - spacing) / 2)
-        return CGSize(width: width, height: (width * 1.25) + 72)
+        return CGSize(width: width, height: (width * 1.08) + 58)
     }
 }

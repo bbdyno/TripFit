@@ -12,6 +12,11 @@ import SwiftData
 import UIKit
 
 public final class WardrobeViewController: UIViewController {
+    private enum SortMode {
+        case recentlyUpdated
+        case name
+    }
+
     private let viewModel: WardrobeViewModel
     private let context: ModelContext
 
@@ -19,14 +24,19 @@ public final class WardrobeViewController: UIViewController {
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
     private let addButton = UIButton(type: .system)
+    private let itemModeControl = UISegmentedControl()
+    private let categoryScrollView = UIScrollView()
+    private let categoryStack = UIStackView()
+    private var categoryButtons: [WardrobeCategoryButton] = []
+    private let toolRow = UIView()
     private let searchContainer = UIView()
     private let searchIcon = UIImageView(image: UIImage(systemName: "magnifyingglass"))
     private let searchField = UITextField()
+    private let sortButton = UIButton(type: .system)
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, UUID>!
-    private let chipScrollView = UIScrollView()
-    private let chipStack = UIStackView()
     private var emptyView: TFEmptyStateView!
+    private var sortMode: SortMode = .recentlyUpdated
 
     public init(context: ModelContext) {
         self.context = context
@@ -73,7 +83,7 @@ public final class WardrobeViewController: UIViewController {
         titleLabel.font = TFTypography.largeTitle
         titleLabel.textColor = TFColor.Text.primary
 
-        subtitleLabel.text = localized("내 옷을 정리하고 바로 찾아보세요", "Your closet, ready when you need it")
+        subtitleLabel.text = localized("여행에 가져갈 아이템을 보드로 정리하세요", "A visual board for every piece you pack")
         subtitleLabel.font = TFTypography.footnote.withSize(13)
         subtitleLabel.textColor = TFColor.Text.secondary
 
@@ -103,7 +113,72 @@ public final class WardrobeViewController: UIViewController {
         addButton.snp.makeConstraints { make in
             make.size.equalTo(40)
         }
-        addButton.isHidden = true
+        addButton.accessibilityLabel = localized("옷 추가", "Add clothing")
+
+        itemModeControl.insertSegment(withTitle: localized("아이템", "Items"), at: 0, animated: false)
+        itemModeControl.insertSegment(withTitle: localized("즐겨찾기", "Favorites"), at: 1, animated: false)
+        itemModeControl.selectedSegmentIndex = 0
+        itemModeControl.selectedSegmentTintColor = TFColor.Surface.card
+        itemModeControl.backgroundColor = TFColor.Surface.input
+        itemModeControl.setTitleTextAttributes([.foregroundColor: TFColor.Text.secondary], for: .normal)
+        itemModeControl.setTitleTextAttributes([
+            .foregroundColor: TFColor.Brand.primaryDark,
+            .font: TFTypography.caption.withSize(13),
+        ], for: .selected)
+        itemModeControl.addTarget(self, action: #selector(itemModeChanged), for: .valueChanged)
+        headerContainer.addSubview(itemModeControl)
+        itemModeControl.snp.makeConstraints { make in
+            make.top.equalTo(titleRow.snp.bottom).offset(14)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
+            make.height.equalTo(36)
+            make.bottom.equalToSuperview().inset(8)
+        }
+    }
+
+    private func setupChips() {
+        categoryScrollView.showsHorizontalScrollIndicator = false
+        categoryScrollView.contentInsetAdjustmentBehavior = .never
+        view.addSubview(categoryScrollView)
+        categoryScrollView.snp.makeConstraints { make in
+            make.top.equalTo(headerContainer.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(82)
+        }
+
+        categoryStack.axis = .horizontal
+        categoryStack.alignment = .top
+        categoryStack.spacing = 8
+        categoryScrollView.addSubview(categoryStack)
+        categoryStack.snp.makeConstraints { make in
+            make.edges.equalTo(categoryScrollView.contentLayoutGuide).inset(
+                UIEdgeInsets(top: 4, left: TFSpacing.md, bottom: 4, right: TFSpacing.md)
+            )
+            make.height.equalTo(categoryScrollView.frameLayoutGuide).offset(-8)
+        }
+
+        let categories: [(String, String, ClothingCategory?)] = [
+            (localized("전체", "All"), "square.grid.3x3.fill", nil),
+            (localizedCategoryName(.tops), "tshirt.fill", .tops),
+            (localizedCategoryName(.bottoms), "figure.walk", .bottoms),
+            (localizedCategoryName(.outerwear), "wind", .outerwear),
+            (localizedCategoryName(.shoes), "shoe.2.fill", .shoes),
+            (localizedCategoryName(.accessories), "handbag.fill", .accessories),
+        ]
+        for (title, symbol, category) in categories {
+            let button = WardrobeCategoryButton(title: title, symbolName: symbol, category: category)
+            button.isCategorySelected = category == nil
+            button.addTarget(self, action: #selector(categoryTapped(_:)), for: .touchUpInside)
+            categoryButtons.append(button)
+            categoryStack.addArrangedSubview(button)
+        }
+
+        toolRow.backgroundColor = .clear
+        view.addSubview(toolRow)
+        toolRow.snp.makeConstraints { make in
+            make.top.equalTo(categoryScrollView.snp.bottom)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
+            make.height.equalTo(52)
+        }
 
         searchContainer.backgroundColor = TFColor.Surface.card
         searchContainer.layer.cornerRadius = TFRadius.lg
@@ -111,12 +186,9 @@ public final class WardrobeViewController: UIViewController {
         searchContainer.layer.borderWidth = 1
         searchContainer.layer.borderColor = TFColor.Border.subtle.cgColor
         searchContainer.clipsToBounds = true
-        headerContainer.addSubview(searchContainer)
+        toolRow.addSubview(searchContainer)
         searchContainer.snp.makeConstraints { make in
-            make.top.equalTo(titleRow.snp.bottom).offset(14)
-            make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
-            make.height.equalTo(48)
-            make.bottom.equalToSuperview().inset(10)
+            make.leading.top.bottom.equalToSuperview().inset(4)
         }
 
         searchIcon.tintColor = TFColor.Text.tertiary
@@ -142,61 +214,36 @@ public final class WardrobeViewController: UIViewController {
             make.trailing.equalToSuperview().inset(12)
             make.centerY.equalToSuperview()
         }
-    }
 
-    private func setupChips() {
-        chipScrollView.showsHorizontalScrollIndicator = false
-        chipScrollView.contentInsetAdjustmentBehavior = .never
-        view.addSubview(chipScrollView)
-        chipScrollView.snp.makeConstraints { make in
-            make.top.equalTo(headerContainer.snp.bottom)
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(54)
-        }
-
-        chipStack.axis = .horizontal
-        chipStack.spacing = 10
-        chipScrollView.addSubview(chipStack)
-        chipStack.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 6, left: 16, bottom: 6, right: 16))
-            make.height.equalToSuperview().offset(-16)
-        }
-
-        let allChip = TFChip(title: CoreStrings.Wardrobe.filterAll)
-        allChip.setStyle(.neutralFilter)
-        allChip.isChipSelected = true
-        allChip.addTarget(self, action: #selector(chipTapped(_:)), for: .touchUpInside)
-        chipStack.addArrangedSubview(allChip)
-
-        for category in ClothingCategory.allCases {
-            let chip = TFChip(title: localizedCategoryName(category))
-            chip.setStyle(.neutralFilter)
-            chip.addTarget(self, action: #selector(chipTapped(_:)), for: .touchUpInside)
-            chipStack.addArrangedSubview(chip)
+        var sortConfig = UIButton.Configuration.filled()
+        sortConfig.image = UIImage(systemName: "arrow.up.arrow.down")
+        sortConfig.baseForegroundColor = TFColor.Text.secondary
+        sortConfig.baseBackgroundColor = TFColor.Surface.card
+        sortConfig.cornerStyle = .medium
+        sortButton.configuration = sortConfig
+        sortButton.layer.borderWidth = 1
+        sortButton.layer.borderColor = TFColor.Border.subtle.cgColor
+        sortButton.layer.cornerRadius = TFRadius.lg
+        sortButton.showsMenuAsPrimaryAction = true
+        sortButton.menu = makeSortMenu()
+        toolRow.addSubview(sortButton)
+        sortButton.snp.makeConstraints { make in
+            make.leading.equalTo(searchContainer.snp.trailing).offset(8)
+            make.trailing.top.bottom.equalToSuperview().inset(4)
+            make.size.equalTo(44)
         }
     }
 
-    @objc private func chipTapped(_ sender: TFChip) {
-        for case let chip as TFChip in chipStack.arrangedSubviews {
-            chip.isChipSelected = (chip == sender)
-        }
-
-        let title = sender.titleLabel?.text
-        let allTitle = CoreStrings.Wardrobe.filterAll
-        if title == allTitle {
-            viewModel.selectedCategory = nil
-        } else {
-            viewModel.selectedCategory = ClothingCategory.allCases.first {
-                localizedCategoryName($0) == title
-            }
-        }
+    @objc private func categoryTapped(_ sender: WardrobeCategoryButton) {
+        categoryButtons.forEach { $0.isCategorySelected = ($0 === sender) }
+        viewModel.selectedCategory = sender.category
         viewModel.fetchItems()
     }
 
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumInteritemSpacing = TFSpacing.md
-        layout.minimumLineSpacing = TFSpacing.md
+        layout.minimumInteritemSpacing = 10
+        layout.minimumLineSpacing = 12
         layout.sectionInset = UIEdgeInsets(top: TFSpacing.sm, left: TFSpacing.md, bottom: 104, right: TFSpacing.md)
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -205,7 +252,7 @@ public final class WardrobeViewController: UIViewController {
         collectionView.register(ClothingCell.self, forCellWithReuseIdentifier: ClothingCell.reuseId)
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(chipScrollView.snp.bottom)
+            make.top.equalTo(toolRow.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
 
@@ -213,7 +260,7 @@ public final class WardrobeViewController: UIViewController {
             let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: ClothingCell.reuseId, for: indexPath
             ) as! ClothingCell
-            if let item = self?.viewModel.items.first(where: { $0.id == itemId }) {
+            if let item = self?.displayedItems.first(where: { $0.id == itemId }) {
                 let isFavorite = TFFavoritesStore.shared.isFavorite(item.id)
                 cell.configure(with: item, isFavorite: isFavorite)
                 cell.onToggleFavorite = { [weak self] in
@@ -226,7 +273,7 @@ public final class WardrobeViewController: UIViewController {
 
     private func setupEmptyView() {
         emptyView = TFEmptyStateView(
-            pictogram: .wardrobe,
+            heroImageName: "TFWardrobeBoardCool",
             title: CoreStrings.Wardrobe.emptyTitle,
             subtitle: CoreStrings.Wardrobe.emptySubtitle,
             buttonTitle: CoreStrings.Wardrobe.emptyAction
@@ -234,7 +281,7 @@ public final class WardrobeViewController: UIViewController {
         emptyView.isHidden = true
         view.addSubview(emptyView)
         emptyView.snp.makeConstraints { make in
-            make.top.equalTo(chipScrollView.snp.bottom)
+            make.top.equalTo(toolRow.snp.bottom)
             make.leading.trailing.bottom.equalToSuperview()
         }
         emptyView.actionButton.addTarget(self, action: #selector(addTapped), for: .touchUpInside)
@@ -274,16 +321,48 @@ public final class WardrobeViewController: UIViewController {
     private func applySnapshot() {
         var snapshot = NSDiffableDataSourceSnapshot<Int, UUID>()
         snapshot.appendSections([0])
-        snapshot.appendItems(viewModel.items.map(\.id))
+        snapshot.appendItems(displayedItems.map(\.id))
         dataSource.apply(snapshot, animatingDifferences: true)
-        emptyView.isHidden = !viewModel.items.isEmpty
+        emptyView.isHidden = !displayedItems.isEmpty
+        subtitleLabel.text = localized(
+            "여행 보드 · 아이템 \(displayedItems.count)개",
+            "Travel board · \(displayedItems.count) pieces"
+        )
     }
 
     private func toggleFavorite(itemID: UUID) {
         TFFavoritesStore.shared.toggleFavorite(itemID)
-        var snapshot = dataSource.snapshot()
-        snapshot.reconfigureItems([itemID])
-        dataSource.apply(snapshot, animatingDifferences: false)
+        applySnapshot()
+    }
+
+    @objc private func itemModeChanged() {
+        applySnapshot()
+    }
+
+    private var displayedItems: [ClothingItem] {
+        var items = viewModel.items
+        if itemModeControl.selectedSegmentIndex == 1 {
+            items = items.filter { TFFavoritesStore.shared.isFavorite($0.id) }
+        }
+        switch sortMode {
+        case .recentlyUpdated:
+            return items.sorted { $0.updatedAt > $1.updatedAt }
+        case .name:
+            return items.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        }
+    }
+
+    private func makeSortMenu() -> UIMenu {
+        UIMenu(children: [
+            UIAction(title: localized("최근 수정순", "Recently updated"), image: UIImage(systemName: "clock")) { [weak self] _ in
+                self?.sortMode = .recentlyUpdated
+                self?.applySnapshot()
+            },
+            UIAction(title: localized("이름순", "Name"), image: UIImage(systemName: "textformat.abc")) { [weak self] _ in
+                self?.sortMode = .name
+                self?.applySnapshot()
+            },
+        ])
     }
 }
 
@@ -329,9 +408,61 @@ extension WardrobeViewController: UICollectionViewDelegateFlowLayout {
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
         let inset: CGFloat = TFSpacing.md * 2
-        let spacing: CGFloat = TFSpacing.md
-        let width = floor((collectionView.bounds.width - inset - spacing) / 2)
-        return CGSize(width: width, height: (width * 1.25) + 72)
+        let spacing: CGFloat = 20
+        let width = floor((collectionView.bounds.width - inset - spacing) / 3)
+        return CGSize(width: width, height: width + 42)
+    }
+}
+
+private final class WardrobeCategoryButton: UIControl {
+    let category: ClothingCategory?
+    private let iconStage = UIView()
+    private let iconView = UIImageView()
+    private let label = UILabel()
+
+    var isCategorySelected = false {
+        didSet { applyState() }
+    }
+
+    init(title: String, symbolName: String, category: ClothingCategory?) {
+        self.category = category
+        super.init(frame: .zero)
+
+        iconStage.layer.cornerRadius = 22
+        iconStage.layer.cornerCurve = .continuous
+        iconStage.layer.borderWidth = 1
+        iconView.image = UIImage(systemName: symbolName) ?? UIImage(systemName: "circle.grid.2x2.fill")
+        iconView.contentMode = .scaleAspectFit
+        iconView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
+        label.text = title
+        label.font = TFTypography.footnote.withSize(10)
+        label.textAlignment = .center
+        label.numberOfLines = 1
+
+        let stack = UIStackView(arrangedSubviews: [iconStage, label])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 5
+        addSubview(stack)
+        iconStage.addSubview(iconView)
+        stack.snp.makeConstraints { $0.edges.equalToSuperview() }
+        iconStage.snp.makeConstraints { $0.size.equalTo(44) }
+        iconView.snp.makeConstraints { $0.center.equalToSuperview() }
+        snp.makeConstraints { make in
+            make.width.equalTo(62)
+            make.height.equalTo(70)
+        }
+        applyState()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    private func applyState() {
+        iconStage.backgroundColor = isCategorySelected ? TFColor.Brand.primary : TFColor.Surface.card
+        iconStage.layer.borderColor = (isCategorySelected ? TFColor.Brand.primary : TFColor.Border.subtle).cgColor
+        iconView.tintColor = isCategorySelected ? .white : TFColor.Text.secondary
+        label.textColor = isCategorySelected ? TFColor.Brand.primaryDark : TFColor.Text.secondary
     }
 }
 

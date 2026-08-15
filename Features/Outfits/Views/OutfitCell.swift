@@ -13,10 +13,10 @@ import UIKit
 final class OutfitCell: UICollectionViewCell {
     static let reuseId = "OutfitCell"
 
-    private let card = TFCardView(style: .elevated)
+    private let card = TFCardView(style: .flat)
     private let collageContainer = UIView()
     private let singleImageView = UIImageView()
-    private let gridContainer = UIStackView()
+    private let gridContainer = UIView()
     private let gridImageViews: [UIImageView] = (0..<4).map { _ in UIImageView() }
     private let overflowBadge = InsetLabel(insets: UIEdgeInsets(top: 2, left: 6, bottom: 2, right: 6))
     private let favoriteBadge = UIView()
@@ -41,35 +41,25 @@ final class OutfitCell: UICollectionViewCell {
         card.layer.cornerRadius = 16
         card.layer.borderColor = TFColor.Border.subtle.cgColor
 
-        collageContainer.layer.cornerRadius = 12
+        collageContainer.layer.cornerRadius = 14
         collageContainer.clipsToBounds = true
-        collageContainer.backgroundColor = TFColor.Surface.input
+        collageContainer.backgroundColor = TFColor.Surface.highlight
 
-        singleImageView.contentMode = .scaleAspectFill
+        singleImageView.contentMode = .scaleAspectFit
         singleImageView.clipsToBounds = true
         singleImageView.backgroundColor = TFColor.Surface.input
 
-        gridContainer.axis = .vertical
-        gridContainer.spacing = 1
-        gridContainer.distribution = .fillEqually
-
-        let topRow = UIStackView(arrangedSubviews: [gridImageViews[0], gridImageViews[1]])
-        topRow.axis = .horizontal
-        topRow.spacing = 1
-        topRow.distribution = .fillEqually
-
-        let bottomRow = UIStackView(arrangedSubviews: [gridImageViews[2], gridImageViews[3]])
-        bottomRow.axis = .horizontal
-        bottomRow.spacing = 1
-        bottomRow.distribution = .fillEqually
-
-        gridContainer.addArrangedSubview(topRow)
-        gridContainer.addArrangedSubview(bottomRow)
-
-        for imageView in gridImageViews {
-            imageView.contentMode = .scaleAspectFill
+        for (index, imageView) in gridImageViews.enumerated() {
+            imageView.contentMode = .scaleAspectFit
             imageView.clipsToBounds = true
-            imageView.backgroundColor = TFColor.Surface.input
+            imageView.backgroundColor = index.isMultiple(of: 2)
+                ? TFColor.Surface.card
+                : TFColor.Brand.accentSky.withAlphaComponent(0.12)
+            imageView.layer.cornerRadius = 10
+            imageView.layer.cornerCurve = .continuous
+            imageView.layer.borderWidth = 1 / UIScreen.main.scale
+            imageView.layer.borderColor = TFColor.Border.subtle.cgColor
+            gridContainer.addSubview(imageView)
         }
 
         overflowBadge.font = TFTypography.footnote.withSize(11)
@@ -106,11 +96,34 @@ final class OutfitCell: UICollectionViewCell {
 
         collageContainer.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview().inset(12)
-            make.height.equalTo(collageContainer.snp.width).multipliedBy(1.25)
+            make.height.equalTo(collageContainer.snp.width).multipliedBy(1.08)
         }
 
         singleImageView.snp.makeConstraints { $0.edges.equalToSuperview() }
         gridContainer.snp.makeConstraints { $0.edges.equalToSuperview() }
+        gridImageViews[0].snp.makeConstraints { make in
+            make.top.leading.equalToSuperview().inset(8)
+            make.width.equalToSuperview().multipliedBy(0.48)
+            make.height.equalToSuperview().multipliedBy(0.56)
+        }
+        gridImageViews[1].snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(16)
+            make.trailing.equalToSuperview().inset(8)
+            make.width.equalToSuperview().multipliedBy(0.43)
+            make.height.equalToSuperview().multipliedBy(0.48)
+        }
+        gridImageViews[2].snp.makeConstraints { make in
+            make.leading.equalToSuperview().inset(14)
+            make.bottom.equalToSuperview().inset(8)
+            make.width.equalToSuperview().multipliedBy(0.40)
+            make.height.equalToSuperview().multipliedBy(0.42)
+        }
+        gridImageViews[3].snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(10)
+            make.bottom.equalToSuperview().inset(12)
+            make.width.equalToSuperview().multipliedBy(0.47)
+            make.height.equalToSuperview().multipliedBy(0.44)
+        }
         overflowBadge.snp.makeConstraints { make in
             make.center.equalToSuperview()
         }
@@ -149,10 +162,10 @@ final class OutfitCell: UICollectionViewCell {
         guard !items.isEmpty else {
             singleImageView.isHidden = false
             gridContainer.isHidden = true
-            singleImageView.image = TFPictogram.outfit.image
+            singleImageView.image = UIImage(named: "TFOutfitBoardCool")
             singleImageView.tintColor = nil
-            singleImageView.contentMode = .scaleAspectFit
-            singleImageView.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.12)
+            singleImageView.contentMode = .scaleAspectFill
+            singleImageView.backgroundColor = TFColor.Surface.input
             return
         }
 
@@ -208,22 +221,32 @@ final class OutfitCell: UICollectionViewCell {
     private func load(item: ClothingItem, into imageView: UIImageView, at index: Int) {
         if let data = item.imageData, let image = UIImage(data: data) {
             imageView.image = image
-            imageView.contentMode = .scaleAspectFill
+            imageView.contentMode = .scaleAspectFit
             imageView.tintColor = nil
             return
         }
 
-        imageView.image = item.category.pictogram.image
+        imageView.image = UIImage(systemName: placeholderSymbol(for: item.category))
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = nil
+        imageView.tintColor = item.category.tintColor
         imageView.backgroundColor = item.category.tintColor.withAlphaComponent(0.12)
 
         let requestID = imageRequestID
         imageRequestTokens[index] = TFRemoteImageLoader.shared.load(from: item.imageURL) { [weak self, weak imageView] image in
             guard let self, self.imageRequestID == requestID, let image, let imageView else { return }
             imageView.image = image
-            imageView.contentMode = .scaleAspectFill
+            imageView.contentMode = .scaleAspectFit
             imageView.tintColor = nil
+        }
+    }
+
+    private func placeholderSymbol(for category: ClothingCategory) -> String {
+        switch category {
+        case .tops: "tshirt.fill"
+        case .bottoms: "figure.walk"
+        case .outerwear: "wind"
+        case .shoes: "shoe.2.fill"
+        case .accessories: "handbag.fill"
         }
     }
 }

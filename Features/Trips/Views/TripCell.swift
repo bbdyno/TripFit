@@ -26,15 +26,14 @@ final class TripCell: UICollectionViewCell {
     private let card = TFCardView(style: .elevated)
     private let photoContainer = UIView()
     private let tripImageView = UIImageView()
-    private let locationIcon = UIImageView(image: UIImage(systemName: "location.fill"))
     private let locationLabel = UILabel()
     private let titleLabel = UILabel()
+    private let statusBadge = InsetLabel(insets: UIEdgeInsets(top: 3, left: 8, bottom: 3, right: 8))
     private let durationBadge = InsetLabel(insets: UIEdgeInsets(top: 2, left: 7, bottom: 2, right: 7))
     private let dateLabel = UILabel()
     private let localTimeLabel = UILabel()
     private let packingLabel = UILabel()
     private let packingProgressView = UIProgressView(progressViewStyle: .default)
-    private let imageGradientLayer = CAGradientLayer()
 
     private var imageRequestToken: UUID?
     private var imageRequestID = UUID()
@@ -46,11 +45,6 @@ final class TripCell: UICollectionViewCell {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        imageGradientLayer.frame = tripImageView.bounds
-    }
 
     override func prepareForReuse() {
         super.prepareForReuse()
@@ -67,7 +61,7 @@ final class TripCell: UICollectionViewCell {
         card.layer.cornerRadius = 20
         card.layer.borderColor = TFColor.Border.subtle.cgColor
 
-        photoContainer.layer.cornerRadius = 16
+        photoContainer.layer.cornerRadius = 36
         photoContainer.clipsToBounds = true
         photoContainer.backgroundColor = TFColor.Surface.input
 
@@ -75,21 +69,19 @@ final class TripCell: UICollectionViewCell {
         tripImageView.clipsToBounds = true
         tripImageView.backgroundColor = TFColor.Surface.input
 
-        imageGradientLayer.colors = [
-            UIColor.clear.cgColor,
-            UIColor.black.withAlphaComponent(0.55).cgColor,
-        ]
-        imageGradientLayer.locations = [0.45, 1]
-
-        locationIcon.tintColor = .white
-        locationIcon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
-
         locationLabel.font = TFTypography.footnote.withSize(12)
-        locationLabel.textColor = .white
+        locationLabel.textColor = TFColor.Text.secondary
+        locationLabel.numberOfLines = 1
 
         titleLabel.font = TFTypography.headline.withSize(18)
         titleLabel.textColor = TFColor.Text.primary
         titleLabel.numberOfLines = 1
+
+        statusBadge.font = TFTypography.footnote.withSize(10)
+        statusBadge.textColor = TFColor.Brand.accentMint
+        statusBadge.backgroundColor = TFColor.Brand.accentMint.withAlphaComponent(0.12)
+        statusBadge.layer.cornerRadius = 8
+        statusBadge.clipsToBounds = true
 
         durationBadge.font = TFTypography.footnote.withSize(11)
         durationBadge.textColor = TFColor.Brand.primary
@@ -113,10 +105,9 @@ final class TripCell: UICollectionViewCell {
 
         card.addSubview(photoContainer)
         photoContainer.addSubview(tripImageView)
-        tripImageView.layer.addSublayer(imageGradientLayer)
-        photoContainer.addSubview(locationIcon)
-        photoContainer.addSubview(locationLabel)
         card.addSubview(titleLabel)
+        card.addSubview(statusBadge)
+        card.addSubview(locationLabel)
         card.addSubview(durationBadge)
         card.addSubview(dateLabel)
         card.addSubview(localTimeLabel)
@@ -124,31 +115,30 @@ final class TripCell: UICollectionViewCell {
         card.addSubview(packingProgressView)
 
         photoContainer.snp.makeConstraints { make in
-            make.top.leading.bottom.equalToSuperview().inset(12)
-            make.width.equalTo(104)
+            make.top.leading.equalToSuperview().inset(14)
+            make.size.equalTo(72)
         }
         tripImageView.snp.makeConstraints { $0.edges.equalToSuperview() }
 
-        locationIcon.snp.makeConstraints { make in
-            make.leading.equalToSuperview().inset(12)
-            make.bottom.equalToSuperview().inset(12)
-            make.size.equalTo(14)
-        }
-        locationLabel.snp.makeConstraints { make in
-            make.centerY.equalTo(locationIcon)
-            make.leading.equalTo(locationIcon.snp.trailing).offset(5)
-            make.trailing.lessThanOrEqualToSuperview().inset(12)
-        }
-
         titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().inset(14)
-            make.leading.equalTo(photoContainer.snp.trailing).offset(14)
+            make.leading.equalTo(photoContainer.snp.trailing).offset(12)
+            make.trailing.lessThanOrEqualTo(statusBadge.snp.leading).offset(-8)
+        }
+
+        statusBadge.snp.makeConstraints { make in
+            make.top.trailing.equalToSuperview().inset(14)
+        }
+
+        locationLabel.snp.makeConstraints { make in
+            make.leading.equalTo(titleLabel)
+            make.top.equalTo(titleLabel.snp.bottom).offset(2)
             make.trailing.equalToSuperview().inset(14)
         }
 
         durationBadge.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
-            make.top.equalTo(titleLabel.snp.bottom).offset(5)
+            make.top.equalTo(locationLabel.snp.bottom).offset(5)
         }
 
         dateLabel.snp.makeConstraints { make in
@@ -159,18 +149,18 @@ final class TripCell: UICollectionViewCell {
 
         localTimeLabel.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel)
-            make.top.equalTo(durationBadge.snp.bottom).offset(7)
+            make.top.equalTo(durationBadge.snp.bottom).offset(3)
             make.trailing.equalToSuperview().inset(14)
         }
 
         packingLabel.snp.makeConstraints { make in
-            make.leading.equalTo(titleLabel)
+            make.leading.equalToSuperview().inset(14)
             make.trailing.equalToSuperview().inset(14)
-            make.top.equalTo(localTimeLabel.snp.bottom).offset(7)
+            make.top.equalTo(photoContainer.snp.bottom).offset(8)
         }
 
         packingProgressView.snp.makeConstraints { make in
-            make.leading.equalTo(titleLabel)
+            make.leading.equalToSuperview().inset(14)
             make.trailing.equalToSuperview().inset(14)
             make.top.equalTo(packingLabel.snp.bottom).offset(4)
             make.height.equalTo(4)
@@ -184,6 +174,7 @@ final class TripCell: UICollectionViewCell {
         let durationDays = tripDurationDays(for: trip)
         durationBadge.text = TFAppLanguage.current() == .korean ? "\(durationDays)일" : "\(durationDays) days"
         locationLabel.text = locationText(for: trip)
+        statusBadge.text = statusText(for: trip)
         refreshLiveTime(for: trip)
         let totalCount = trip.totalCount
         let progress = totalCount > 0 ? Float(trip.packedCount) / Float(totalCount) : 0
@@ -226,6 +217,21 @@ final class TripCell: UICollectionViewCell {
         return "No destination"
     }
 
+    private func statusText(for trip: Trip) -> String {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let start = calendar.startOfDay(for: trip.startDate)
+        let end = calendar.startOfDay(for: trip.endDate)
+        if today < start {
+            let days = calendar.dateComponents([.day], from: today, to: start).day ?? 0
+            return "D-\(days)"
+        }
+        if today <= end {
+            return TFAppLanguage.current() == .korean ? "여행 중" : "NOW"
+        }
+        return TFAppLanguage.current() == .korean ? "완료" : "DONE"
+    }
+
     private func imageURL(for trip: Trip) -> String {
         if let code = trip.destinationCountryCode, let mapped = Self.heroByCountryCode[code] {
             return mapped
@@ -250,8 +256,8 @@ final class TripCell: UICollectionViewCell {
         imageRequestToken = nil
         imageRequestID = UUID()
 
-        tripImageView.image = TFPictogram.suitcase.image
-        tripImageView.contentMode = .scaleAspectFit
+        tripImageView.image = UIImage(named: "TFTripPackingCool")
+        tripImageView.contentMode = .scaleAspectFill
         tripImageView.tintColor = nil
 
         let requestID = imageRequestID

@@ -28,6 +28,7 @@ public final class TripsListViewController: UIViewController {
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
     private let addButton = UIButton(type: .system)
+    private let tripModeControl = UISegmentedControl()
     private let sharedSection = UIView()
     private let sharedTitleLabel = UILabel()
     private let sharedScrollView = UIScrollView()
@@ -68,6 +69,7 @@ public final class TripsListViewController: UIViewController {
         setupSharedSection()
         setupCollectionView()
         setupEmptyView()
+        updateModeVisibility()
         pendingInviteObserver = NotificationCenter.default.addObserver(
             forName: Notification.Name("tripfit.pendingInvite.didChange"),
             object: nil,
@@ -126,13 +128,11 @@ public final class TripsListViewController: UIViewController {
             UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 21, weight: .bold)),
             for: .normal
         )
-        addButton.tintColor = .white
-        addButton.backgroundColor = TFColor.Brand.primary
-        addButton.layer.cornerRadius = 22
-        addButton.layer.shadowColor = TFColor.Brand.primary.cgColor
-        addButton.layer.shadowOpacity = 0.3
-        addButton.layer.shadowRadius = 10
-        addButton.layer.shadowOffset = CGSize(width: 0, height: 4)
+        addButton.tintColor = TFColor.Brand.primary
+        addButton.backgroundColor = TFColor.Brand.primary.withAlphaComponent(0.12)
+        addButton.layer.cornerRadius = 20
+        addButton.layer.borderWidth = 1
+        addButton.layer.borderColor = TFColor.Brand.primary.withAlphaComponent(0.24).cgColor
         addButton.addAction(UIAction { [weak self] _ in self?.addTapped() }, for: .touchUpInside)
 
         let titleRow = UIStackView(arrangedSubviews: [titleStack, UIView(), addButton])
@@ -142,12 +142,30 @@ public final class TripsListViewController: UIViewController {
         titleRow.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
-            make.bottom.equalToSuperview().inset(10)
         }
         addButton.snp.makeConstraints { make in
-            make.size.equalTo(44)
+            make.size.equalTo(40)
         }
-        addButton.isHidden = true
+        addButton.accessibilityLabel = localized("여행 추가", "Add trip")
+
+        tripModeControl.insertSegment(withTitle: localized("내 여행", "My Trips"), at: 0, animated: false)
+        tripModeControl.insertSegment(withTitle: localized("함께 준비", "Together"), at: 1, animated: false)
+        tripModeControl.selectedSegmentIndex = 0
+        tripModeControl.selectedSegmentTintColor = TFColor.Surface.card
+        tripModeControl.backgroundColor = TFColor.Surface.input
+        tripModeControl.setTitleTextAttributes([.foregroundColor: TFColor.Text.secondary], for: .normal)
+        tripModeControl.setTitleTextAttributes([
+            .foregroundColor: TFColor.Brand.primaryDark,
+            .font: TFTypography.caption.withSize(13),
+        ], for: .selected)
+        tripModeControl.addTarget(self, action: #selector(tripModeChanged), for: .valueChanged)
+        headerContainer.addSubview(tripModeControl)
+        tripModeControl.snp.makeConstraints { make in
+            make.top.equalTo(titleRow.snp.bottom).offset(14)
+            make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
+            make.height.equalTo(36)
+            make.bottom.equalToSuperview().inset(8)
+        }
     }
 
     private func setupSharedSection() {
@@ -184,12 +202,12 @@ public final class TripsListViewController: UIViewController {
             make.height.equalTo(sharedScrollView.frameLayoutGuide).inset(4)
         }
 
-        personalTitleLabel.text = localized("내 여행", "My Trips")
+        personalTitleLabel.text = localized("예정된 여행", "Upcoming")
         personalTitleLabel.font = TFTypography.subtitle.withSize(19)
         personalTitleLabel.textColor = TFColor.Text.primary
         view.addSubview(personalTitleLabel)
         personalTitleLabel.snp.makeConstraints { make in
-            make.top.equalTo(sharedSection.snp.bottom).offset(4)
+            make.top.equalTo(headerContainer.snp.bottom).offset(14)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.lg)
         }
         renderSharedRooms()
@@ -223,7 +241,7 @@ public final class TripsListViewController: UIViewController {
 
     private func setupEmptyView() {
         emptyView = TFEmptyStateView(
-            pictogram: .suitcase,
+            heroImageName: "TFTripPackingCool",
             title: localized("아직 만든 여행이 없어요", "No Trips Yet"),
             subtitle: localized("첫 여행을 계획하고 가볍게 짐을 챙겨보세요", "Plan your first trip and start packing lighter"),
             buttonTitle: localized("여행 만들기", "Create Trip")
@@ -340,7 +358,10 @@ extension TripsListViewController {
             config.baseBackgroundColor = TFColor.Surface.card
             config.baseForegroundColor = TFColor.Text.primary
             config.cornerStyle = .large
-            config.image = TFPictogram.together.image(pointSize: 38)
+            config.image = UIImage(
+                systemName: "person.3.fill",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)
+            )
             config.imagePlacement = .leading
             config.imagePadding = 10
             button.configuration = config
@@ -368,15 +389,15 @@ extension TripsListViewController {
         textStack.axis = .vertical
         textStack.spacing = 4
 
-        let iconStage = UIView()
-        iconStage.backgroundColor = TFColor.Surface.highlight.withAlphaComponent(0.72)
-        iconStage.layer.cornerRadius = 20
+        let iconStage = UIImageView(image: UIImage(named: "TFTripPackingCool"))
+        iconStage.contentMode = .scaleAspectFill
+        iconStage.clipsToBounds = true
+        iconStage.layer.cornerRadius = 18
         iconStage.layer.cornerCurve = .continuous
-        let icon = UIImageView(image: TFPictogram.together.image)
-        icon.contentMode = .scaleAspectFit
-        iconStage.addSubview(icon)
-        icon.snp.makeConstraints { $0.edges.equalToSuperview().inset(5) }
-        iconStage.snp.makeConstraints { $0.size.equalTo(64) }
+        iconStage.snp.makeConstraints { make in
+            make.width.equalTo(84)
+            make.height.equalTo(72)
+        }
 
         let contentStack = UIStackView(arrangedSubviews: [iconStage, textStack])
         contentStack.axis = .horizontal
@@ -485,8 +506,22 @@ extension TripsListViewController {
         snapshot.appendSections([0])
         snapshot.appendItems(trips.map(\.id))
         dataSource.apply(snapshot, animatingDifferences: true)
-        emptyView.isHidden = !trips.isEmpty
+        personalTitleLabel.text = localized("예정된 여행  \(trips.count)", "Upcoming  \(trips.count)")
+        updateModeVisibility()
         refreshVisibleLocalTimes()
+    }
+
+    @objc private func tripModeChanged() {
+        updateModeVisibility()
+    }
+
+    private func updateModeVisibility() {
+        guard collectionView != nil, emptyView != nil else { return }
+        let showsShared = tripModeControl.selectedSegmentIndex == 1
+        sharedSection.isHidden = !showsShared
+        personalTitleLabel.isHidden = showsShared
+        collectionView.isHidden = showsShared
+        emptyView.isHidden = showsShared || !trips.isEmpty
     }
 
     private func startClockTimer() {

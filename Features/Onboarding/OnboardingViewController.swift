@@ -165,7 +165,7 @@ public final class OnboardingViewController: UIViewController {
                 subtitle: korean
                     ? "내 옷으로 코디를 만들고 저장해 두면, 여행지에서의 선택이 가벼워집니다."
                     : "Combine your own pieces into travel-ready looks and save them for later.",
-                accentColor: TFColor.Brand.accentMint
+                accentColor: TFColor.Brand.accentPurple
             ),
             WalkthroughPage(
                 kind: .trips,
@@ -174,7 +174,7 @@ public final class OnboardingViewController: UIViewController {
                 subtitle: korean
                     ? "가능한 일정을 비교하고, 준비물과 여행 룩을 하나의 여행방에서 정리하세요."
                     : "Compare availability and organize shared packing and travel looks in one room.",
-                accentColor: TFColor.Brand.accentSky
+                accentColor: TFColor.Brand.accentMint
             ),
         ]
     }
@@ -374,7 +374,7 @@ private final class WalkthroughArtworkView: UIView {
         accent.backgroundColor = accentColor
         accent.layer.cornerRadius = 2
 
-        let pictogram = UIImageView(image: kind.miniatures.0.image?.withRenderingMode(.alwaysTemplate))
+        let pictogram = UIImageView(image: UIImage(systemName: kind.symbolName))
         pictogram.contentMode = .scaleAspectFit
         pictogram.tintColor = accentColor
 
@@ -428,17 +428,17 @@ private extension WalkthroughPage.Kind {
 
     var editorialHeroName: String {
         switch self {
-        case .wardrobe: "TFHeroWardrobeEditorial"
-        case .outfits: "TFHeroOutfitEditorial"
-        case .trips: "TFHeroTripEditorial"
+        case .wardrobe: "TFWardrobeBoardCool"
+        case .outfits: "TFOutfitBoardCool"
+        case .trips: "TFTripPackingCool"
         }
     }
 
-    var miniatures: (TFPictogram, TFPictogram) {
+    var symbolName: String {
         switch self {
-        case .wardrobe: (.top, .accessories)
-        case .outfits: (.outfit, .shoes)
-        case .trips: (.calendar, .together)
+        case .wardrobe: "square.grid.3x3.fill"
+        case .outfits: "sparkles.rectangle.stack.fill"
+        case .trips: "suitcase.rolling.fill"
         }
     }
 
