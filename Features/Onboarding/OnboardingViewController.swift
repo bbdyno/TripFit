@@ -150,31 +150,31 @@ public final class OnboardingViewController: UIViewController {
         let korean = TFAppLanguage.current() == .korean
         return [
             WalkthroughPage(
+                kind: .journey,
+                step: korean ? "여행  ·  01" : "JOURNEY  ·  01",
+                title: korean ? "다음 여행부터\n먼저 보여드려요." : "Your next trip,\nfront and center.",
+                subtitle: korean
+                    ? "날짜, 코디, 패킹 준비율과 해야 할 일을 홈에서 바로 이어가세요."
+                    : "Continue dates, looks, packing progress and next steps right from Home.",
+                accentColor: TFColor.Brand.primary
+            ),
+            WalkthroughPage(
                 kind: .wardrobe,
-                step: korean ? "옷장  ·  01" : "WARDROBE  ·  01",
+                step: korean ? "옷장  ·  02" : "WARDROBE  ·  02",
                 title: korean ? "가져갈 옷을\n한눈에." : "See what you own.\nPack what you love.",
                 subtitle: korean
                     ? "사진으로 옷장을 정리하고, 여행에 어울리는 아이템을 빠르게 골라보세요."
                     : "Build a visual closet, then find the right pieces for every destination.",
-                accentColor: TFColor.Brand.primary
+                accentColor: TFColor.Brand.accentMint
             ),
             WalkthroughPage(
                 kind: .outfits,
-                step: korean ? "코디  ·  02" : "OUTFITS  ·  02",
+                step: korean ? "코디  ·  03" : "OUTFITS  ·  03",
                 title: korean ? "입을 조합을\n미리 준비해요." : "Build the looks\nbefore you go.",
                 subtitle: korean
-                    ? "내 옷으로 코디를 만들고 저장해 두면, 여행지에서의 선택이 가벼워집니다."
-                    : "Combine your own pieces into travel-ready looks and save them for later.",
+                    ? "내 옷으로 코디를 만들고 패킹 진행률까지 한 흐름으로 관리하세요."
+                    : "Build looks from your clothes and keep packing progress in the same flow.",
                 accentColor: TFColor.Brand.accentPurple
-            ),
-            WalkthroughPage(
-                kind: .trips,
-                step: korean ? "함께 여행  ·  03" : "TRIPS TOGETHER  ·  03",
-                title: korean ? "날짜부터 짐까지,\n함께 맞춰요." : "Dates, looks, packing.\nAll in sync.",
-                subtitle: korean
-                    ? "가능한 일정을 비교하고, 준비물과 여행 룩을 하나의 여행방에서 정리하세요."
-                    : "Compare availability and organize shared packing and travel looks in one room.",
-                accentColor: TFColor.Brand.accentMint
             ),
         ]
     }
@@ -223,6 +223,7 @@ extension OnboardingViewController: UICollectionViewDelegateFlowLayout {
 
 private struct WalkthroughPage {
     enum Kind {
+        case journey
         case wardrobe
         case outfits
         case trips
@@ -420,14 +421,16 @@ private final class WalkthroughArtworkView: UIView {
 private extension WalkthroughPage.Kind {
     var serial: String {
         switch self {
-        case .wardrobe: "01"
-        case .outfits: "02"
-        case .trips: "03"
+        case .journey: "01"
+        case .wardrobe: "02"
+        case .outfits: "03"
+        case .trips: "04"
         }
     }
 
     var editorialHeroName: String {
         switch self {
+        case .journey: "TFDestinationTokyoV2"
         case .wardrobe: "TFWardrobeEditorialV2"
         case .outfits: "TFOutfitEditorialV2"
         case .trips: "TFPackingEditorialV2"
@@ -436,6 +439,7 @@ private extension WalkthroughPage.Kind {
 
     var symbolName: String {
         switch self {
+        case .journey: "airplane.departure"
         case .wardrobe: "square.grid.3x3.fill"
         case .outfits: "sparkles.rectangle.stack.fill"
         case .trips: "suitcase.rolling.fill"
@@ -445,6 +449,7 @@ private extension WalkthroughPage.Kind {
     var tag: String {
         let korean = TFAppLanguage.current() == .korean
         return switch self {
+        case .journey: korean ? "다음 여행" : "NEXT JOURNEY"
         case .wardrobe: korean ? "나만의 옷장" : "YOUR CLOSET"
         case .outfits: korean ? "저장된 코디" : "SAVED LOOKS"
         case .trips: korean ? "함께 준비" : "PLAN TOGETHER"

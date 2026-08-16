@@ -255,6 +255,10 @@ public final class TripsListViewController: UIViewController {
     }
 
     @objc private func addTapped() {
+        if tripModeControl.selectedSegmentIndex == 1 {
+            presentSharedTripCreate()
+            return
+        }
         let editVC = TripEditViewController(context: context)
         let nav = UINavigationController(rootViewController: editVC)
         nav.modalPresentationStyle = .fullScreen

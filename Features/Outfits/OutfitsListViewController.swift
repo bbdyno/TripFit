@@ -14,14 +14,16 @@ import UIKit
 public final class OutfitsListViewController: UIViewController {
     private enum FilterType: CaseIterable {
         case all
-        case favorites
+        case simple
+        case layered
         case summer
 
         var title: String {
             let korean = TFAppLanguage.current() == .korean
             switch self {
             case .all: return korean ? "전체" : "All"
-            case .favorites: return korean ? "즐겨찾기" : "Favorites"
+            case .simple: return korean ? "심플" : "Simple"
+            case .layered: return korean ? "레이어드" : "Layered"
             case .summer: return korean ? "여름" : "Summer"
             }
         }
@@ -36,6 +38,7 @@ public final class OutfitsListViewController: UIViewController {
     private let plannerCard = TFCardView(style: .flat)
     private let plannerCountLabel = UILabel()
     private let weekStack = UIStackView()
+    private var plannerMetricLabels: [UILabel] = []
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, UUID>!
     private var emptyView: TFEmptyStateView!
@@ -69,11 +72,11 @@ public final class OutfitsListViewController: UIViewController {
         plannerCard.snp.makeConstraints { make in
             make.top.equalTo(headerContainer.snp.bottom).offset(2)
             make.leading.trailing.equalToSuperview().inset(TFSpacing.md)
-            make.height.equalTo(88)
+        make.height.equalTo(96)
         }
 
         let plannerTitle = UILabel()
-        plannerTitle.text = localized("이번 주의 룩 보드", "This week's look board")
+        plannerTitle.text = localized("코디 라이브러리", "Look library")
         plannerTitle.font = TFTypography.caption.withSize(13)
         plannerTitle.textColor = TFColor.Text.primary
 
@@ -100,28 +103,33 @@ public final class OutfitsListViewController: UIViewController {
             make.leading.trailing.bottom.equalToSuperview().inset(10)
         }
 
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let weekday = calendar.component(.weekday, from: today)
-        let start = calendar.date(byAdding: .day, value: -(weekday - calendar.firstWeekday + 7) % 7, to: today) ?? today
-        let weekdayFormatter = DateFormatter()
-        weekdayFormatter.locale = TFAppLanguage.current() == .korean ? Locale(identifier: "ko_KR") : Locale(identifier: "en_US")
-        weekdayFormatter.dateFormat = "EEEEE"
+        let metricTitles = TFAppLanguage.current() == .korean
+            ? ["전체", "심플", "레이어드"]
+            : ["All", "Simple", "Layered"]
+        for (index, title) in metricTitles.enumerated() {
+            let value = UILabel()
+            value.text = "0"
+            value.font = TFTypography.headline.withSize(15)
+            value.textColor = [TFColor.Brand.primary, TFColor.Brand.accentMint, TFColor.Brand.accentPurple][index]
+            value.textAlignment = .center
+            plannerMetricLabels.append(value)
 
-        for offset in 0..<7 {
-            let date = calendar.date(byAdding: .day, value: offset, to: start) ?? today
-            let isToday = calendar.isDate(date, inSameDayAs: today)
-            let day = UILabel()
-            day.text = "\(weekdayFormatter.string(from: date))\n\(calendar.component(.day, from: date))"
-            day.numberOfLines = 2
-            day.textAlignment = .center
-            day.font = TFTypography.footnote.withSize(10)
-            day.textColor = isToday ? .white : TFColor.Text.secondary
-            day.backgroundColor = isToday ? TFColor.Brand.accentPurple : .clear
-            day.layer.cornerRadius = 14
-            day.layer.cornerCurve = .continuous
-            day.clipsToBounds = true
-            weekStack.addArrangedSubview(day)
+            let caption = UILabel()
+            caption.text = title
+            caption.font = TFTypography.footnote.withSize(9)
+            caption.textColor = TFColor.Text.secondary
+            caption.textAlignment = .center
+
+            let metric = UIStackView(arrangedSubviews: [value, caption])
+            metric.axis = .vertical
+            metric.spacing = 1
+            metric.alignment = .fill
+            metric.backgroundColor = TFColor.Surface.input
+            metric.layer.cornerRadius = 12
+            metric.layer.cornerCurve = .continuous
+            metric.isLayoutMarginsRelativeArrangement = true
+            metric.layoutMargins = UIEdgeInsets(top: 5, left: 6, bottom: 5, right: 6)
+            weekStack.addArrangedSubview(metric)
         }
     }
 
@@ -229,8 +237,10 @@ public final class OutfitsListViewController: UIViewController {
         switch selectedFilter {
         case .all:
             outfits
-        case .favorites:
-            outfits.filter { ($0.note?.isEmpty == false) || $0.items.count >= 4 }
+        case .simple:
+            outfits.filter { $0.items.count <= 2 }
+        case .layered:
+            outfits.filter { $0.items.count >= 3 }
         case .summer:
             outfits.filter { outfit in
                 outfit.items.contains(where: { $0.season == .summer || $0.season == .all })
@@ -291,7 +301,12 @@ public final class OutfitsListViewController: UIViewController {
     private func fetchOutfits() {
         let descriptor = FetchDescriptor<Outfit>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
         outfits = (try? context.fetch(descriptor)) ?? []
-        plannerCountLabel.text = localized("저장 \(outfits.count)", "\(outfits.count) SAVED")
+        plannerCountLabel.text = localized("저장 \(outfits.count)", "\(outfits.count) saved")
+        if plannerMetricLabels.count == 3 {
+            plannerMetricLabels[0].text = "\(outfits.count)"
+            plannerMetricLabels[1].text = "\(outfits.filter { $0.items.count <= 2 }.count)"
+            plannerMetricLabels[2].text = "\(outfits.filter { $0.items.count >= 3 }.count)"
+        }
         applySnapshot()
     }
 
