@@ -186,7 +186,7 @@ public final class SharedTripCreateViewController: UIViewController {
 
     private func updateDurationLabel() {
         let days = Int(durationStepper.value)
-        durationLabel.text = localized("\(days)일", "\(days) days")
+        durationLabel.text = CoreStrings.Format.daysCount(days)
     }
 
     @objc private func createTapped() {
@@ -248,6 +248,6 @@ public final class SharedTripCreateViewController: UIViewController {
     }
 
     private func localized(_ ko: String, _ en: String) -> String {
-        TFAppLanguage.current() == .korean ? ko : en
+        TFAppLanguage.current() == .korean ? ko : (TFLocalizationRuntime.localized(en) ?? en)
     }
 }

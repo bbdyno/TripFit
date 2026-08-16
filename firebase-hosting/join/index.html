@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>TripFit 여행 초대 · Trip Invitation</title>
+  <title>TripFit · Trip Invitation</title>
   <style>
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #101116; color: #f7f7fb; font: 16px system-ui, sans-serif; }
     main { width: min(34rem, calc(100% - 3rem)); padding: 2rem; text-align: center; border: 1px solid #30313a; border-radius: 1.25rem; background: #191a21; }
@@ -15,9 +15,25 @@
 </head>
 <body>
   <main>
-    <h1>TripFit 여행 초대</h1>
-    <p>TripFit 앱을 설치하면 친구의 비공개 여행방에 참여할 수 있습니다.<br>Install TripFit to join your friend's private trip room.</p>
-    <a href="https://apps.apple.com/app/id6759218918">App Store에서 TripFit 받기 · Get TripFit</a>
+    <h1 id="title">TripFit Invitation</h1>
+    <p id="message">Install TripFit to join your friend's private trip room.</p>
+    <a id="download" href="https://apps.apple.com/app/id6759218918">Get TripFit on the App Store</a>
   </main>
+  <script>
+    const language = (navigator.language || "en").toLowerCase();
+    const copy = language.startsWith("ko")
+      ? ["TripFit 여행 초대", "TripFit 앱을 설치하면 친구의 비공개 여행방에 참여할 수 있습니다.", "App Store에서 TripFit 받기"]
+      : language.startsWith("ja")
+        ? ["TripFit 旅行への招待", "TripFitをインストールして、友だちの非公開旅行ルームに参加しましょう。", "App StoreでTripFitを入手"]
+        : language.startsWith("zh-hant") || language.startsWith("zh-tw") || language.startsWith("zh-hk")
+          ? ["TripFit 旅行邀請", "安裝 TripFit，加入朋友的私人旅行房間。", "在 App Store 取得 TripFit"]
+          : language.startsWith("zh")
+            ? ["TripFit 旅行邀请", "安装 TripFit，加入朋友的私人旅行房间。", "在 App Store 获取 TripFit"]
+            : ["TripFit Invitation", "Install TripFit to join your friend's private trip room.", "Get TripFit on the App Store"];
+    document.documentElement.lang = language;
+    document.getElementById("title").textContent = copy[0];
+    document.getElementById("message").textContent = copy[1];
+    document.getElementById("download").textContent = copy[2];
+  </script>
 </body>
 </html>

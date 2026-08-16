@@ -202,6 +202,15 @@ public final class MoreSettingsHomeViewController: UIViewController {
         let supportSection = MoreSectionCardView(title: CoreStrings.More.support)
         supportSection.setRows([
             makeRow(
+                title: CoreStrings.More.supportDeveloper,
+                icon: "volunteer_activism",
+                iconTint: MorePalette.pink,
+                iconBackground: MorePalette.pink.withAlphaComponent(0.16),
+                action: { [weak self] in
+                    self?.pushSupportDeveloper()
+                }
+            ),
+            makeRow(
                 title: CoreStrings.More.userGuide,
                 icon: "menu_book",
                 iconTint: MorePalette.teal,
@@ -455,6 +464,10 @@ public final class MoreSettingsHomeViewController: UIViewController {
         navigationController?.pushViewController(screen, animated: true)
     }
 
+    private func pushSupportDeveloper() {
+        navigationController?.pushViewController(SupportDeveloperViewController(), animated: true)
+    }
+
     private func pushContactSupport() {
         let screen = MoreInfoViewController(
             title: CoreStrings.More.contactSupport,
@@ -699,6 +712,6 @@ public final class MoreSettingsHomeViewController: UIViewController {
     }
 
     private func localized(_ ko: String, _ en: String) -> String {
-        TFAppLanguage.current() == .korean ? ko : en
+        TFAppLanguage.current() == .korean ? ko : (TFLocalizationRuntime.localized(en) ?? en)
     }
 }

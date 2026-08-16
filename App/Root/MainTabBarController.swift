@@ -66,13 +66,12 @@ final class MainTabBarController: UITabBarController {
             self?.selectTab(index)
         }
 
-        let korean = TFAppLanguage.current() == .korean
         dockItems = [
-            DockItem(title: korean ? "홈" : "Home", symbol: "house", selectedSymbol: "house.fill"),
-            DockItem(title: korean ? "옷장" : "Wardrobe", symbol: "tshirt", selectedSymbol: "tshirt.fill"),
-            DockItem(title: korean ? "코디" : "Outfits", symbol: "sparkles", selectedSymbol: "sparkles"),
+            DockItem(title: CoreStrings.Tab.home, symbol: "house", selectedSymbol: "house.fill"),
+            DockItem(title: CoreStrings.Tab.wardrobe, symbol: "tshirt", selectedSymbol: "tshirt.fill"),
+            DockItem(title: CoreStrings.Tab.outfits, symbol: "sparkles", selectedSymbol: "sparkles"),
             DockItem(
-                title: korean ? "여행" : "Trips",
+                title: CoreStrings.Tab.trips,
                 symbol: "suitcase.rolling",
                 selectedSymbol: "suitcase.rolling.fill"
             ),
@@ -440,8 +439,8 @@ private final class HomeDashboardViewController: UIViewController {
         let outfitCount = (try? environment.context.fetchCount(FetchDescriptor<Outfit>())) ?? 0
 
         let formatter = DateFormatter()
-        formatter.locale = TFAppLanguage.current() == .korean ? Locale(identifier: "ko_KR") : Locale(identifier: "en_US")
-        formatter.dateFormat = TFAppLanguage.current() == .korean ? "M월 d일 EEEE" : "EEEE, MMM d"
+        formatter.locale = TFAppLanguage.current().locale
+        formatter.setLocalizedDateFormatFromTemplate("EEEE MMMd")
         dateLabel.text = formatter.string(from: Date())
 
         heroView.configure(trip: upcomingTrip)
@@ -535,7 +534,9 @@ private final class HomeDashboardViewController: UIViewController {
     }
 
     private func localized(_ korean: String, _ english: String) -> String {
-        TFAppLanguage.current() == .korean ? korean : english
+        TFAppLanguage.current() == .korean
+            ? korean
+            : (TFLocalizationRuntime.localized(english) ?? english)
     }
 }
 
@@ -625,12 +626,11 @@ private final class HomeTripHeroView: UIControl {
     }
 
     func configure(trip: Trip?) {
-        let korean = TFAppLanguage.current() == .korean
         guard let trip else {
             imageView.image = UIImage(named: "TFPackingEditorialV2")
-            badgeLabel.text = korean ? "시작하기" : "START"
-            titleLabel.text = korean ? "첫 여행을 계획해보세요" : "Plan your first journey"
-            detailLabel.text = korean ? "날짜부터 코디와 짐까지 한곳에서" : "Dates, looks and packing in one place"
+            badgeLabel.text = CoreStrings.Home.start
+            titleLabel.text = CoreStrings.Home.planFirstJourney
+            detailLabel.text = CoreStrings.Home.planFirstJourneySubtitle
             return
         }
 
@@ -640,9 +640,9 @@ private final class HomeTripHeroView: UIControl {
             from: Calendar.current.startOfDay(for: Date()),
             to: Calendar.current.startOfDay(for: trip.startDate)
         ).day ?? 0, 0)
-        badgeLabel.text = days == 0 ? (korean ? "오늘" : "TODAY") : "D-\(days)"
+        badgeLabel.text = days == 0 ? CoreStrings.Home.today : "D-\(days)"
         titleLabel.text = trip.name
-        detailLabel.text = "\(trip.destination ?? (korean ? "목적지 미정" : "Destination TBD"))  ·  \(TFDateFormatter.tripRange(start: trip.startDate, end: trip.endDate))"
+        detailLabel.text = "\(trip.destination ?? CoreStrings.Home.destinationTBD)  ·  \(TFDateFormatter.tripRange(start: trip.startDate, end: trip.endDate))"
     }
 
     private func assetName(for trip: Trip) -> String {
@@ -670,7 +670,7 @@ private final class HomeReadinessView: UIView {
 
         let title = UILabel()
         title.translatesAutoresizingMaskIntoConstraints = false
-        title.text = TFAppLanguage.current() == .korean ? "전체 준비율" : "Overall readiness"
+        title.text = CoreStrings.Home.overallReadiness
         title.font = TFTypography.caption.withSize(12)
         title.textColor = TFColor.Text.secondary
         addSubview(title)
@@ -691,9 +691,11 @@ private final class HomeReadinessView: UIView {
         metrics.translatesAutoresizingMaskIntoConstraints = false
         metrics.axis = .horizontal
         metrics.distribution = .fillEqually
-        let titles = TFAppLanguage.current() == .korean
-            ? ["옷장", "코디", "패킹"]
-            : ["Wardrobe", "Looks", "Packing"]
+        let titles = [
+            CoreStrings.Home.metricWardrobe,
+            CoreStrings.Home.metricLooks,
+            CoreStrings.Home.metricPacking,
+        ]
         let symbols = ["tshirt.fill", "sparkles", "checkmark.circle.fill"]
         for index in titles.indices {
             let icon = UIImageView(image: UIImage(systemName: symbols[index]))
@@ -831,9 +833,7 @@ private final class HomeLookCard: UIControl {
 
         let count = UILabel()
         count.translatesAutoresizingMaskIntoConstraints = false
-        count.text = TFAppLanguage.current() == .korean
-            ? "아이템 \(outfit.items.count)개"
-            : "\(outfit.items.count) items"
+        count.text = CoreStrings.Format.itemsCount(outfit.items.count)
         count.font = TFTypography.footnote.withSize(9)
         count.textColor = TFColor.Text.secondary
 
@@ -878,7 +878,7 @@ private final class HomeEmptyLookCard: UIControl {
 
         let title = UILabel()
         title.translatesAutoresizingMaskIntoConstraints = false
-        title.text = TFAppLanguage.current() == .korean ? "첫 코디를 만들어보세요" : "Build your first look"
+        title.text = CoreStrings.Home.buildFirstLook
         title.font = TFTypography.headline.withSize(15)
         title.textColor = TFColor.Text.primary
         gradientView.addSubview(title)

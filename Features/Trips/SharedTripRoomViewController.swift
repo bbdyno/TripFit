@@ -242,9 +242,13 @@ public final class SharedTripRoomViewController: UIViewController {
                 let packingItems = try await packing
                 guard !Task.isCancelled else { return }
                 let packedCount = packingItems.filter(\.isPacked).count
-                summaryLabel.text = localized(
-                    "\(room.destination)\n\(stageText)\n제출 \(submissions.count)/\(room.memberCount) · 준비물 \(packedCount)/\(packingItems.count)",
-                    "\(room.destination)\n\(stageText)\nSubmissions \(submissions.count)/\(room.memberCount) · Packing \(packedCount)/\(packingItems.count)"
+                summaryLabel.text = CoreStrings.Format.sharedRoomSummary(
+                    room.destination,
+                    stageText,
+                    submissions.count,
+                    room.memberCount,
+                    packedCount,
+                    packingItems.count
                 )
                 let candidates = try ScheduleRecommendationEngine().recommend(
                     room: room,
@@ -253,9 +257,12 @@ public final class SharedTripRoomViewController: UIViewController {
                 )
                 bestCandidate = candidates.first
                 if let candidate = candidates.first {
-                    recommendationLabel.text = localized(
-                        "  추천 일정\n  \(candidate.startDay) – \(candidate.endDay)\n  점수 \(Int(candidate.score.total)) · 가능 \(candidate.availableMemberUIDs.count) · 미정 \(candidate.undecidedMemberUIDs.count)  ",
-                        "  Recommended\n  \(candidate.startDay) – \(candidate.endDay)\n  Score \(Int(candidate.score.total)) · Available \(candidate.availableMemberUIDs.count) · Undecided \(candidate.undecidedMemberUIDs.count)  "
+                    recommendationLabel.text = CoreStrings.Format.sharedRecommendation(
+                        candidate.startDay,
+                        candidate.endDay,
+                        Int(candidate.score.total),
+                        candidate.availableMemberUIDs.count,
+                        candidate.undecidedMemberUIDs.count
                     )
                 } else {
                     recommendationLabel.text = localized("  제출된 가능 날짜를 기다리는 중입니다.  ", "  Waiting for availability submissions.  ")
@@ -275,7 +282,7 @@ public final class SharedTripRoomViewController: UIViewController {
     private var stageText: String {
         switch room.stage {
         case .coordinating: localized("일정 조율 중", "Coordinating dates")
-        case .confirmed: localized("날짜 확정 · \(room.confirmedStartDay ?? "") – \(room.confirmedEndDay ?? "")", "Confirmed · \(room.confirmedStartDay ?? "") – \(room.confirmedEndDay ?? "")")
+        case .confirmed: CoreStrings.Format.confirmedStage(room.confirmedStartDay ?? "", room.confirmedEndDay ?? "")
         case .completed: localized("완료", "Completed")
         case .archived: localized("보관됨", "Archived")
         }
@@ -363,6 +370,6 @@ public final class SharedTripRoomViewController: UIViewController {
     }
 
     private func localized(_ ko: String, _ en: String) -> String {
-        TFAppLanguage.current() == .korean ? ko : en
+        TFAppLanguage.current() == .korean ? ko : (TFLocalizationRuntime.localized(en) ?? en)
     }
 }

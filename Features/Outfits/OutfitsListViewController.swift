@@ -19,12 +19,11 @@ public final class OutfitsListViewController: UIViewController {
         case summer
 
         var title: String {
-            let korean = TFAppLanguage.current() == .korean
             switch self {
-            case .all: return korean ? "전체" : "All"
-            case .simple: return korean ? "심플" : "Simple"
-            case .layered: return korean ? "레이어드" : "Layered"
-            case .summer: return korean ? "여름" : "Summer"
+            case .all: return CoreStrings.Outfits.allItems
+            case .simple: return CoreStrings.Outfits.filterSimple
+            case .layered: return CoreStrings.Outfits.filterLayered
+            case .summer: return CoreStrings.Outfits.filterSummer
             }
         }
     }
@@ -103,9 +102,11 @@ public final class OutfitsListViewController: UIViewController {
             make.leading.trailing.bottom.equalToSuperview().inset(10)
         }
 
-        let metricTitles = TFAppLanguage.current() == .korean
-            ? ["전체", "심플", "레이어드"]
-            : ["All", "Simple", "Layered"]
+        let metricTitles = [
+            CoreStrings.Outfits.allItems,
+            CoreStrings.Outfits.filterSimple,
+            CoreStrings.Outfits.filterLayered,
+        ]
         for (index, title) in metricTitles.enumerated() {
             let value = UILabel()
             value.text = "0"
@@ -301,7 +302,7 @@ public final class OutfitsListViewController: UIViewController {
     private func fetchOutfits() {
         let descriptor = FetchDescriptor<Outfit>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
         outfits = (try? context.fetch(descriptor)) ?? []
-        plannerCountLabel.text = localized("저장 \(outfits.count)", "\(outfits.count) saved")
+        plannerCountLabel.text = CoreStrings.Format.savedCount(outfits.count)
         if plannerMetricLabels.count == 3 {
             plannerMetricLabels[0].text = "\(outfits.count)"
             plannerMetricLabels[1].text = "\(outfits.filter { $0.items.count <= 2 }.count)"
@@ -319,7 +320,9 @@ public final class OutfitsListViewController: UIViewController {
     }
 
     private func localized(_ korean: String, _ english: String) -> String {
-        TFAppLanguage.current() == .korean ? korean : english
+        TFAppLanguage.current() == .korean
+            ? korean
+            : (TFLocalizationRuntime.localized(english) ?? english)
     }
 }
 

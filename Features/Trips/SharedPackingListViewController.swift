@@ -178,6 +178,6 @@ final class SharedPackingListViewController: UITableViewController {
     }
 
     private func localized(_ ko: String, _ en: String) -> String {
-        TFAppLanguage.current() == .korean ? ko : en
+        TFAppLanguage.current() == .korean ? ko : (TFLocalizationRuntime.localized(en) ?? en)
     }
 }

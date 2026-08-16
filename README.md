@@ -63,6 +63,8 @@ TripFit/
 - **Trips**: Plan trips with date ranges and destinations. Packing checklist with progress tracking.
 - **Destination Essentials**: View voltage/frequency/plug info for 30+ countries. One-tap add recommended items.
 - **Onboarding**: 3-page walkthrough on first launch.
+- **Localization**: Korean, English, Japanese, Simplified Chinese, and Traditional Chinese.
+- **Developer Support**: Optional coffee- and chicken-level consumable tips through StoreKit 2.
 - **Seed Data**: Sample clothing, outfit, and trip on first run.
 
 ## Design System
@@ -76,6 +78,8 @@ bbdyno
 ---
 
 ## 💜 Support Me
+
+TripFit users can also open **More → Support the Developer** in the iOS app. The optional App Store tips do not unlock features and can be purchased again.
 
 <div align="left">
   <a href="https://buymeacoffee.com/bbdyno" target="_blank">

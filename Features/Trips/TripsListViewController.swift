@@ -353,9 +353,13 @@ extension TripsListViewController {
             let button = UIButton(type: .system)
             var config = UIButton.Configuration.filled()
             config.title = room.title
-            config.subtitle = localized(
-                "\(room.destination) · \(room.stage == .confirmed ? "날짜 확정" : "일정 조율 중")\n제출 \(stats.submitted)/\(room.memberCount) · 준비물 \(stats.packed)/\(stats.totalPacking)",
-                "\(room.destination) · \(room.stage == .confirmed ? "Confirmed" : "Coordinating")\nSubmissions \(stats.submitted)/\(room.memberCount) · Packing \(stats.packed)/\(stats.totalPacking)"
+            config.subtitle = CoreStrings.Format.sharedTripCard(
+                room.destination,
+                room.stage == .confirmed ? CoreStrings.Shared.confirmedShort : CoreStrings.Shared.coordinatingShort,
+                stats.submitted,
+                room.memberCount,
+                stats.packed,
+                stats.totalPacking
             )
             config.titleAlignment = .leading
             config.baseBackgroundColor = TFColor.Surface.card
@@ -493,7 +497,7 @@ extension TripsListViewController {
     }
 
     private func localized(_ ko: String, _ en: String) -> String {
-        TFAppLanguage.current() == .korean ? ko : en
+        TFAppLanguage.current() == .korean ? ko : (TFLocalizationRuntime.localized(en) ?? en)
     }
 }
 
@@ -509,7 +513,7 @@ extension TripsListViewController {
         snapshot.appendSections([0])
         snapshot.appendItems(trips.map(\.id))
         dataSource.apply(snapshot, animatingDifferences: true)
-        personalTitleLabel.text = localized("예정된 여행  \(trips.count)", "Upcoming  \(trips.count)")
+        personalTitleLabel.text = CoreStrings.Format.upcomingCount(trips.count)
         updateModeVisibility()
         refreshVisibleLocalTimes()
     }

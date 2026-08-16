@@ -23,7 +23,10 @@ public enum TFTypography {
     private static let baseFontPostScriptName = "PlusJakartaSans-Regular"
 
     private static func scaledFont(size: CGFloat, weight: UIFont.Weight, textStyle: UIFont.TextStyle) -> UIFont {
-        let base = tripFitFont(size: size, weight: weight) ?? UIFont.systemFont(ofSize: size, weight: weight)
+        let supportsCustomFont = TFAppLanguage.current() == .english
+        let base = supportsCustomFont
+            ? (tripFitFont(size: size, weight: weight) ?? UIFont.systemFont(ofSize: size, weight: weight))
+            : UIFont.systemFont(ofSize: size, weight: weight)
         let metrics = UIFontMetrics(forTextStyle: textStyle)
         return metrics.scaledFont(for: base)
     }

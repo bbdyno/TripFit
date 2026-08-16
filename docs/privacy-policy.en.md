@@ -5,7 +5,7 @@ permalink: /docs/privacy-policy.en/
 
 # TripFit Privacy Policy
 
-Effective date: August 10, 2026
+Effective date: August 16, 2026
 
 TripFit (the “App”) processes personal data only as needed to provide its features. The App does not include advertising or cross-app tracking SDKs, and we do not sell personal data.
 
@@ -49,6 +49,8 @@ We do not use this data for advertising, third-party marketing, or tracking acro
 - Google Firebase: Authentication, Cloud Firestore, App Check, and Hosting
 
 These providers may process data required to operate their services under their own privacy policies.
+
+For optional in-app tips, Apple processes the transaction and provides the App with product and transaction status needed to complete the purchase. TripFit does not receive or store your payment-card details.
 
 ## 5. Sharing and Visibility
 

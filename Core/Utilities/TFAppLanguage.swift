@@ -10,6 +10,9 @@ import Foundation
 public enum TFAppLanguage: String, CaseIterable {
     case korean = "ko"
     case english = "en"
+    case japanese = "ja"
+    case simplifiedChinese = "zh-Hans"
+    case traditionalChinese = "zh-Hant"
 
     public var localeIdentifier: String {
         switch self {
@@ -17,7 +20,17 @@ public enum TFAppLanguage: String, CaseIterable {
             "ko-KR"
         case .english:
             "en-US"
+        case .japanese:
+            "ja-JP"
+        case .simplifiedChinese:
+            "zh-Hans"
+        case .traditionalChinese:
+            "zh-Hant"
         }
+    }
+
+    public var locale: Locale {
+        Locale(identifier: localeIdentifier)
     }
 
     public var bilingualLabel: String {
@@ -26,6 +39,12 @@ public enum TFAppLanguage: String, CaseIterable {
             "한국어 / Korean"
         case .english:
             "영어 / English"
+        case .japanese:
+            "일본어 / 日本語"
+        case .simplifiedChinese:
+            "중국어(간체) / 简体中文"
+        case .traditionalChinese:
+            "중국어(번체) / 繁體中文"
         }
     }
 
@@ -35,20 +54,17 @@ public enum TFAppLanguage: String, CaseIterable {
             "한국어"
         case .english:
             "English"
+        case .japanese:
+            "日本語"
+        case .simplifiedChinese:
+            "简体中文"
+        case .traditionalChinese:
+            "繁體中文"
         }
     }
 
-    public func displayName(in language: TFAppLanguage) -> String {
-        switch (language, self) {
-        case (.korean, .korean):
-            "한국어"
-        case (.korean, .english):
-            "영어"
-        case (.english, .korean):
-            "Korean"
-        case (.english, .english):
-            "English"
-        }
+    public func displayName(in _: TFAppLanguage) -> String {
+        nativeLabel
     }
 
     public static func current() -> TFAppLanguage {
@@ -65,7 +81,19 @@ public enum TFAppLanguage: String, CaseIterable {
     }
 
     public static func resolve(identifier: String) -> TFAppLanguage {
-        identifier.lowercased().hasPrefix("ko") ? .korean : .english
+        let normalized = identifier.replacingOccurrences(of: "_", with: "-").lowercased()
+        if normalized.hasPrefix("ko") { return .korean }
+        if normalized.hasPrefix("ja") { return .japanese }
+        if normalized.hasPrefix("zh") {
+            if normalized.contains("hant")
+                || normalized.contains("-tw")
+                || normalized.contains("-hk")
+                || normalized.contains("-mo") {
+                return .traditionalChinese
+            }
+            return .simplifiedChinese
+        }
+        return .english
     }
 }
 

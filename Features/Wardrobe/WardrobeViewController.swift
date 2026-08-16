@@ -302,7 +302,9 @@ public final class WardrobeViewController: UIViewController {
     }
 
     private func localized(_ korean: String, _ english: String) -> String {
-        TFAppLanguage.current() == .korean ? korean : english
+        TFAppLanguage.current() == .korean
+            ? korean
+            : (TFLocalizationRuntime.localized(english) ?? english)
     }
 
     @objc private func addTapped() {
@@ -323,10 +325,7 @@ public final class WardrobeViewController: UIViewController {
         snapshot.appendItems(displayedItems.map(\.id))
         dataSource.apply(snapshot, animatingDifferences: true)
         emptyView.isHidden = !displayedItems.isEmpty
-        subtitleLabel.text = localized(
-            "아이템 \(displayedItems.count)개",
-            "\(displayedItems.count) pieces"
-        )
+        subtitleLabel.text = CoreStrings.Format.piecesCount(displayedItems.count)
     }
 
     private func toggleFavorite(itemID: UUID) {

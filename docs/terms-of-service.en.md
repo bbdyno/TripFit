@@ -5,7 +5,7 @@ permalink: /docs/terms-of-service.en/
 
 # TripFit Terms of Service
 
-Effective date: August 10, 2026
+Effective date: August 16, 2026
 
 These Terms govern your use of TripFit (the “App”). By using the App, you agree to these Terms and the [Privacy Policy](../privacy-policy.en/).
 
@@ -28,18 +28,17 @@ You are responsible for photos, notes, trip information, and shared data you ent
 
 The App may rely on Apple iCloud/CloudKit, Sign in with Apple, the App Store, and Google Firebase. Network conditions, account status, storage limits, outages, or third-party policy changes may limit some features.
 
-## 5. Subscriptions and Payments
+## 5. App Store Payments and Optional Tips
 
-Some features may be offered through an App Store auto-renewable subscription.
+The App may offer optional consumable tips through Apple’s in-app purchase system.
 
 - Payment is charged to your Apple Account when you confirm the purchase.
-- A subscription may renew automatically unless canceled before the current period ends.
-- You can manage or cancel subscriptions in your device’s Apple Account subscription settings.
-- Use the in-app restore feature to restore eligible purchases.
-- If a free trial is offered, the subscription may begin at the displayed price unless canceled before the trial ends.
-- Billing, refunds, and localized prices are governed by Apple’s policies and applicable local law.
+- Tips are optional, do not unlock App features, and are not subscriptions.
+- Consumable tips may be purchased again and cannot be restored after purchase.
+- The App displays the localized price provided by Apple before confirmation.
+- Billing and refund requests are handled under Apple’s policies and applicable local law.
 
-Free features identified in the App remain available without a subscription. The purchase screen will clearly identify subscription benefits and prices.
+The App’s regular features remain available regardless of whether you send a tip.
 
 ## 6. Prohibited Conduct
 
@@ -47,7 +46,7 @@ You must not use the App unlawfully; reverse engineer or improperly access the A
 
 ## 7. Changes and Availability
 
-Features, prices, and availability may change for reasonable operational reasons. Material changes affecting paid subscribers will be communicated as required by applicable law and App Store policies.
+Features, prices, and availability may change for reasonable operational reasons. Material changes affecting paid products will be communicated as required by applicable law and App Store policies.
 
 ## 8. Disclaimer and Limitation of Liability
 
@@ -55,7 +54,7 @@ To the maximum extent permitted by law, the App is provided “as is.” We are 
 
 ## 9. Termination and Account Deletion
 
-You may stop using the App and delete your collaboration account at any time. Save any data you need before deletion. Canceling a subscription and deleting an account are separate actions; deleting an account does not automatically cancel an Apple subscription.
+You may stop using the App and delete your collaboration account at any time. Save any data you need before deletion. Deleting an account or the App does not restore or refund a completed consumable tip; refund requests are handled by Apple.
 
 ## 10. Changes and Contact
 

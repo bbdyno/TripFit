@@ -157,16 +157,14 @@ final class TripCell: UICollectionViewCell {
         titleLabel.text = trip.name
         dateLabel.text = TFDateFormatter.tripRange(start: trip.startDate, end: trip.endDate)
         let durationDays = tripDurationDays(for: trip)
-        durationBadge.text = TFAppLanguage.current() == .korean ? "\(durationDays)일" : "\(durationDays) days"
+        durationBadge.text = CoreStrings.Format.daysCount(durationDays)
         locationLabel.text = locationText(for: trip)
         statusBadge.text = statusText(for: trip)
         refreshLiveTime(for: trip)
         let totalCount = trip.totalCount
         let progress = totalCount > 0 ? Float(trip.packedCount) / Float(totalCount) : 0
         packingProgressView.setProgress(progress, animated: false)
-        packingLabel.text = TFAppLanguage.current() == .korean
-            ? "패킹 \(trip.packedCount)/\(totalCount)"
-            : "Packing \(trip.packedCount)/\(totalCount)"
+        packingLabel.text = CoreStrings.Format.packingProgress(trip.packedCount, totalCount)
         loadImage(for: trip)
     }
 
@@ -183,9 +181,7 @@ final class TripCell: UICollectionViewCell {
             includeSeconds: false
         ) ?? "--:--"
         let delta = TFDestinationCatalog.localDeltaString(for: info.timeZoneIdentifier, at: now) ?? "Local"
-        let localizedDelta = TFAppLanguage.current() == .korean
-            ? delta.replacingOccurrences(of: "Local", with: "현지").replacingOccurrences(of: "h", with: "시간")
-            : delta
+        let localizedDelta = delta.replacingOccurrences(of: "Local", with: CoreStrings.Common.local)
         localTimeLabel.text = "\(localTime) · \(localizedDelta)"
     }
 
@@ -201,7 +197,7 @@ final class TripCell: UICollectionViewCell {
         if let code = trip.destinationCountryCode, !code.isEmpty {
             return code
         }
-        return "No destination"
+        return CoreStrings.Trips.noDestination
     }
 
     private func statusText(for trip: Trip) -> String {
@@ -214,9 +210,9 @@ final class TripCell: UICollectionViewCell {
             return "D-\(days)"
         }
         if today <= end {
-            return TFAppLanguage.current() == .korean ? "여행 중" : "NOW"
+            return CoreStrings.Trips.statusNow
         }
-        return TFAppLanguage.current() == .korean ? "완료" : "DONE"
+        return CoreStrings.Trips.statusDone
     }
 
     private func imageAssetName(for trip: Trip) -> String {

@@ -22,9 +22,12 @@ public enum TripFitTarget {
             infoPlist: .extendingDefault(with: [
                 "CFBundleShortVersionString": "$(MARKETING_VERSION)",
                 "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
+                "CFBundleDevelopmentRegion": "en",
+                "CFBundleLocalizations": ["en", "ko", "ja", "zh-Hans", "zh-Hant"],
                 "UILaunchScreen": [:],
                 "UIApplicationSupportsIndirectInputEvents": true,
-                "NSCalendarsFullAccessUsageDescription": "TripFit은 사용자가 선택한 여행 후보 날짜의 바쁜 시간만 기기에서 확인하며, 일정 제목이나 내용은 업로드하지 않습니다. TripFit checks only busy times for selected travel dates on this device and never uploads calendar details.",
+                "ITSAppUsesNonExemptEncryption": false,
+                "NSCalendarsFullAccessUsageDescription": "TripFit checks only busy times for selected travel dates on this device and never uploads calendar details.",
                 "UIAppFonts": [
                     "PlusJakartaSans-Variable.ttf",
                     "Fonts/PlusJakartaSans-Variable.ttf",

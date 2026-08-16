@@ -430,9 +430,10 @@ final class DeveloperOptionsViewController: UIViewController {
             heroTitle = localized("전체 기능 점검 통과", "All Checks Passed")
         }
 
-        let summarySubtitle = localized(
-            "성공 \(report.passedCount) · 경고 \(report.warningCount) · 실패 \(report.failedCount)",
-            "Pass \(report.passedCount) · Warn \(report.warningCount) · Fail \(report.failedCount)"
+        let summarySubtitle = CoreStrings.Format.testSummary(
+            report.passedCount,
+            report.warningCount,
+            report.failedCount
         )
 
         let summaryRows: [MoreInfoViewController.Row] = [
@@ -490,7 +491,7 @@ final class DeveloperOptionsViewController: UIViewController {
             sections: [
                 .init(
                     title: localized("요약", "Summary"),
-                    footer: localized("마지막 실행: \(endedAt)", "Last run: \(endedAt)"),
+                    footer: CoreStrings.Format.lastRun(endedAt),
                     rows: summaryRows
                 ),
                 .init(
@@ -519,7 +520,7 @@ final class DeveloperOptionsViewController: UIViewController {
     }
 
     private func localized(_ ko: String, _ en: String) -> String {
-        TFAppLanguage.current() == .korean ? ko : en
+        TFAppLanguage.current() == .korean ? ko : (TFLocalizationRuntime.localized(en) ?? en)
     }
 
     private func pushDeveloperAction(title: String, tint: UIColor) {

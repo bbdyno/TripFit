@@ -25,8 +25,7 @@ public struct TFDestinationInfo: Hashable {
     }
 
     public var localizedCountryName: String {
-        let localeIdentifier = TFAppLanguage.current() == .korean ? "ko_KR" : "en_US"
-        let locale = Locale(identifier: localeIdentifier)
+        let locale = TFAppLanguage.current().locale
         return locale.localizedString(forRegionCode: countryCode) ?? countryName
     }
 }

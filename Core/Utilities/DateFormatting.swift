@@ -8,27 +8,23 @@
 import Foundation
 
 public enum TFDateFormatter {
-    private static let mediumFormatter: DateFormatter = {
+    private static func mediumFormatter() -> DateFormatter {
         let formatter = DateFormatter()
+        formatter.locale = TFAppLanguage.current().locale
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter
-    }()
+    }
 
     private static func shortFormatter() -> DateFormatter {
         let formatter = DateFormatter()
-        if TFAppLanguage.current() == .korean {
-            formatter.locale = Locale(identifier: "ko_KR")
-            formatter.dateFormat = "M월 d일"
-        } else {
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.dateFormat = "MMM d"
-        }
+        formatter.locale = TFAppLanguage.current().locale
+        formatter.setLocalizedDateFormatFromTemplate("MMMd")
         return formatter
     }
 
     public static func medium(_ date: Date) -> String {
-        mediumFormatter.string(from: date)
+        mediumFormatter().string(from: date)
     }
 
     public static func short(_ date: Date) -> String {

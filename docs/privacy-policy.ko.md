@@ -5,7 +5,7 @@ permalink: /docs/privacy-policy.ko/
 
 # TripFit 개인정보 처리방침
 
-시행일: 2026-08-10
+시행일: 2026-08-16
 
 TripFit(이하 "앱")은 개인정보를 기능 제공에 필요한 범위에서만 처리합니다. 앱은 광고 SDK나 사용자 추적 SDK를 사용하지 않으며 개인정보를 판매하지 않습니다.
 
@@ -49,6 +49,8 @@ iCloud 동기화를 사용자가 켜면 선택한 데이터가 Apple CloudKit/iC
 - Google Firebase: Authentication, Cloud Firestore, App Check, Hosting
 
 각 서비스 제공자는 해당 서비스 운영에 필요한 데이터를 자체 개인정보 처리방침에 따라 처리할 수 있습니다.
+
+선택적 인앱 후원은 Apple이 결제를 처리하고, 앱에는 구매 완료에 필요한 상품 및 거래 상태가 전달됩니다. TripFit은 사용자의 결제 카드 정보를 받거나 저장하지 않습니다.
 
 ## 5. 공유와 공개 범위
 

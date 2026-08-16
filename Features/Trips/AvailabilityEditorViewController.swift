@@ -146,11 +146,13 @@ final class AvailabilityEditorViewController: UITableViewController {
     }
 
     @objc private func optionsTapped() {
+        let leaveText = String(format: "%g", locale: TFAppLanguage.current().locale, leaveUnits)
         let alert = UIAlertController(
             title: localized("참여 옵션", "Participation Options"),
-            message: localized(
-                "필요 연차 \(leaveUnits)일 · 늦은 합류 \(lateJoin ? "예" : "아니오") · 조기 귀가 \(earlyLeave ? "예" : "아니오")",
-                "Leave \(leaveUnits) days · Late join \(lateJoin ? "Yes" : "No") · Early leave \(earlyLeave ? "Yes" : "No")"
+            message: CoreStrings.Format.participationOptions(
+                leaveText,
+                lateJoin ? CoreStrings.Common.yes : CoreStrings.Common.no,
+                earlyLeave ? CoreStrings.Common.yes : CoreStrings.Common.no
             ),
             preferredStyle: .actionSheet
         )
@@ -265,6 +267,6 @@ final class AvailabilityEditorViewController: UITableViewController {
     }
 
     private func localized(_ ko: String, _ en: String) -> String {
-        TFAppLanguage.current() == .korean ? ko : en
+        TFAppLanguage.current() == .korean ? ko : (TFLocalizationRuntime.localized(en) ?? en)
     }
 }

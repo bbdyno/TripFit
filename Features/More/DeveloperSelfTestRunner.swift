@@ -409,7 +409,7 @@ final class DeveloperSelfTestRunner {
 }
 
 private func devLocalized(_ ko: String, _ en: String) -> String {
-    TFAppLanguage.current() == .korean ? ko : en
+    TFAppLanguage.current() == .korean ? ko : (TFLocalizationRuntime.localized(en) ?? en)
 }
 
 private struct DeveloperSelfTestError: LocalizedError {

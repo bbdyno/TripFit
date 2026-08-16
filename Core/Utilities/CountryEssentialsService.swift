@@ -36,10 +36,10 @@ public final class CountryEssentialsService {
     }
 
     public static let recommendedPackingItems = [
-        "Travel plug adapter",
-        "USB charger",
-        "Power strip",
+        CoreStrings.Packing.Recommended.adapter,
+        CoreStrings.Packing.Recommended.usbCharger,
+        CoreStrings.Packing.Recommended.powerStrip,
     ]
 
-    public static let recommendedNote = "Check device input voltage"
+    public static let recommendedNote = CoreStrings.Packing.Recommended.voltageNote
 }

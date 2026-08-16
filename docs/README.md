@@ -11,6 +11,10 @@ GitHub Pages root: https://bbdyno.github.io/TripFit
 - English: `/docs/support.en/`
 - Korean: `/docs/support.ko/`
 
+The app UI supports Korean, English, Japanese, Simplified Chinese, and Traditional Chinese. Support and legal pages remain in Korean and English to keep policy content maintainable; English is the fallback for other locales.
+
+Optional developer support uses two App Store consumable in-app purchases. These tips do not unlock features and are not restorable.
+
 ## Account Deletion
 - English: `/docs/account-deletion.en/`
 - Korean: `/docs/account-deletion.ko/`

@@ -131,7 +131,9 @@ final class TripCreationMenuViewController: UIViewController {
     }
 
     private func localized(_ korean: String, _ english: String) -> String {
-        TFAppLanguage.current() == .korean ? korean : english
+        TFAppLanguage.current() == .korean
+            ? korean
+            : (TFLocalizationRuntime.localized(english) ?? english)
     }
 }
 

@@ -10,10 +10,10 @@ import Foundation
 
 public enum TripFitBuild {
     public static let marketingVersion = "1.1.0"
-    public static let buildNumber = "2026.08.10.1"
+    public static let buildNumber = "2026.08.16.1"
     public static let bundleId = "com.bbdyno.app.tripFit"
     public static let developmentTeam = "M79H9K226Y"
-    public static let provisioningProfileSpecifier = "TripFit App Provisioning"
+    public static let provisioningProfileSpecifier = "TripFit App Store Provisioning"
     public static let deployment: DeploymentTargets = .iOS("17.0")
 }
 
@@ -37,11 +37,11 @@ public extension Settings {
             "ENABLE_PREVIEWS": "NO",
             "OTHER_LDFLAGS": [
                 "$(inherited)",
-                "-force_load",
-                "$(BUILT_PRODUCTS_DIR)/FirebaseAuth.framework/FirebaseAuth",
+                "-ObjC",
             ],
             "DEVELOPMENT_TEAM": .string(env["DEVELOPMENT_TEAM"] ?? TripFitBuild.developmentTeam),
             "CODE_SIGN_STYLE": .string(env["CODE_SIGN_STYLE"] ?? "Manual"),
+            "CODE_SIGN_IDENTITY[sdk=iphoneos*]": .string(env["CODE_SIGN_IDENTITY"] ?? "Apple Distribution"),
             "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": .string(
                 env["PROVISIONING_PROFILE_SPECIFIER"] ?? TripFitBuild.provisioningProfileSpecifier
             ),

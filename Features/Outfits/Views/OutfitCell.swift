@@ -125,9 +125,7 @@ final class OutfitCell: UICollectionViewCell {
 
     func configure(with outfit: Outfit) {
         nameLabel.text = outfit.name
-        countLabel.text = TFAppLanguage.current() == .korean
-            ? "아이템 \(outfit.items.count)개"
-            : "\(outfit.items.count) items"
+        countLabel.text = CoreStrings.Format.itemsCount(outfit.items.count)
 
         imageRequestTokens.forEach { TFRemoteImageLoader.shared.cancel($0) }
         imageRequestTokens = Array(repeating: nil, count: 4)
