@@ -190,6 +190,18 @@ final class SupportDeveloperViewController: UIViewController {
     }
 
     private func loadOfferings() {
+#if DEBUG
+        if ProcessInfo.processInfo.environment["TRIPFIT_SCREENSHOT_MODE"] == "1" {
+            let prices = screenshotPrices()
+            purchaseButtons[.coffee]?.configuration?.title = prices.coffee
+            purchaseButtons[.chicken]?.configuration?.title = prices.chicken
+            purchaseButtons.values.forEach { $0.isEnabled = true }
+            statusLabel.text = nil
+            retryButton.isHidden = true
+            loadingIndicator.stopAnimating()
+            return
+        }
+#endif
         setLoading(true)
         Task { [weak self] in
             guard let self else { return }
@@ -212,6 +224,15 @@ final class SupportDeveloperViewController: UIViewController {
             }
         }
     }
+
+#if DEBUG
+    private func screenshotPrices() -> (coffee: String, chicken: String) {
+        if TFAppLanguage.current() == .korean {
+            return ("₩4,400", "₩29,000")
+        }
+        return ("$2.99", "$17.99")
+    }
+#endif
 
     private func setLoading(_ loading: Bool) {
         purchaseButtons.values.forEach { $0.isEnabled = false }

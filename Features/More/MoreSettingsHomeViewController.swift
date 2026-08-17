@@ -200,16 +200,18 @@ public final class MoreSettingsHomeViewController: UIViewController {
         contentStack.addArrangedSubview(preferencesSection)
 
         let supportSection = MoreSectionCardView(title: CoreStrings.More.support)
+        let supportDeveloperRow = makeRow(
+            title: CoreStrings.More.supportDeveloper,
+            icon: "volunteer_activism",
+            iconTint: MorePalette.pink,
+            iconBackground: MorePalette.pink.withAlphaComponent(0.16),
+            action: { [weak self] in
+                self?.pushSupportDeveloper()
+            }
+        )
+        supportDeveloperRow.accessibilityIdentifier = "tripfit.more.supportDeveloper"
         supportSection.setRows([
-            makeRow(
-                title: CoreStrings.More.supportDeveloper,
-                icon: "volunteer_activism",
-                iconTint: MorePalette.pink,
-                iconBackground: MorePalette.pink.withAlphaComponent(0.16),
-                action: { [weak self] in
-                    self?.pushSupportDeveloper()
-                }
-            ),
+            supportDeveloperRow,
             makeRow(
                 title: CoreStrings.More.userGuide,
                 icon: "menu_book",

@@ -6,6 +6,7 @@
 //
 
 import CollaborationData
+import Core
 import Domain
 import Foundation
 import SwiftData
@@ -39,6 +40,12 @@ final class AppEnvironment: @unchecked Sendable {
 
     @MainActor
     static func makeDefault() -> AppEnvironment {
+#if DEBUG
+        if ProcessInfo.processInfo.environment["TRIPFIT_SCREENSHOT_MODE"] == "1" {
+            return makeScreenshotEnvironment()
+        }
+#endif
+
         let schema = Schema([
             ClothingItem.self,
             Outfit.self,
@@ -79,6 +86,186 @@ final class AppEnvironment: @unchecked Sendable {
         Task { _ = await authService.restoreSession() }
         return environment
     }
+
+#if DEBUG
+    @MainActor
+    private static func makeScreenshotEnvironment() -> AppEnvironment {
+        let schema = Schema([
+            ClothingItem.self,
+            Outfit.self,
+            Trip.self,
+            PackingItem.self,
+            TripCollaborationLink.self,
+        ])
+        let configuration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: true,
+            cloudKitDatabase: .none
+        )
+        let container: ModelContainer
+        do {
+            container = try ModelContainer(for: schema, configurations: [configuration])
+        } catch {
+            fatalError("[TripFit] Failed to create screenshot container: \(error)")
+        }
+
+        let reason = "Screenshot mode uses local demo data."
+        let authService = DisabledAuthService(reason: reason)
+        let collaborationRepository = UnavailableCollaborationRepository(reason: reason)
+        let environment = AppEnvironment(
+            container: container,
+            onboardingStore: OnboardingStore(),
+            authService: authService,
+            collaborationRepository: collaborationRepository,
+            pendingInviteStore: PendingInviteStore(),
+            accountDeletionService: DisabledAccountDeletionService(reason: reason)
+        )
+        environment.onboardingStore.markCompleted()
+        seedScreenshotData(in: container.mainContext)
+        return environment
+    }
+
+    @MainActor
+    private static func seedScreenshotData(in context: ModelContext) {
+        let copy = ScreenshotCopy.current
+        let clothing = zip(copy.clothingNames, ClothingCategory.allCases).map { name, category in
+            ClothingItem(
+                name: name,
+                category: category,
+                color: copy.color,
+                season: .summer,
+                note: copy.clothingNote
+            )
+        }
+        clothing.forEach(context.insert)
+
+        let primaryOutfit = Outfit(
+            name: copy.primaryOutfit,
+            note: copy.outfitNote,
+            items: Array(clothing.prefix(3))
+        )
+        let secondaryOutfit = Outfit(
+            name: copy.secondaryOutfit,
+            note: copy.outfitNote,
+            items: Array(clothing.suffix(3))
+        )
+        context.insert(primaryOutfit)
+        context.insert(secondaryOutfit)
+
+        let calendar = Calendar(identifier: .gregorian)
+        let startDate = calendar.date(byAdding: .day, value: 18, to: Date()) ?? Date()
+        let endDate = calendar.date(byAdding: .day, value: 22, to: Date()) ?? startDate
+        let trip = Trip(
+            name: copy.tripName,
+            startDate: startDate,
+            endDate: endDate,
+            destination: copy.destination,
+            destinationCountryCode: "JP",
+            note: copy.tripNote
+        )
+        context.insert(trip)
+
+        let packingNames = copy.packingNames
+        for (index, packingName) in packingNames.enumerated() {
+            let item = PackingItem(
+                trip: trip,
+                clothingItem: index < clothing.count ? clothing[index] : nil,
+                customName: packingName,
+                isPacked: index < 3
+            )
+            context.insert(item)
+        }
+
+        do {
+            try context.save()
+        } catch {
+            fatalError("[TripFit] Failed to seed screenshot data: \(error)")
+        }
+    }
+
+    private struct ScreenshotCopy {
+        let clothingNames: [String]
+        let color: String
+        let clothingNote: String
+        let primaryOutfit: String
+        let secondaryOutfit: String
+        let outfitNote: String
+        let tripName: String
+        let destination: String
+        let tripNote: String
+        let packingNames: [String]
+
+        static var current: ScreenshotCopy {
+            switch TFAppLanguage.current() {
+            case .korean:
+                ScreenshotCopy(
+                    clothingNames: ["리넨 셔츠", "와이드 팬츠", "트래블 재킷", "화이트 스니커즈", "데일리 토트백"],
+                    color: "네이비",
+                    clothingNote: "여행에 가볍게 매치하기 좋은 아이템",
+                    primaryOutfit: "도쿄 산책 룩",
+                    secondaryOutfit: "저녁 약속 룩",
+                    outfitNote: "편안하고 사진이 잘 나오는 조합",
+                    tripName: "도쿄 여름 여행",
+                    destination: "도쿄, 일본",
+                    tripNote: "친구들과 함께 준비하는 4박 5일",
+                    packingNames: ["리넨 셔츠", "와이드 팬츠", "트래블 재킷", "화이트 스니커즈", "충전기"]
+                )
+            case .japanese:
+                ScreenshotCopy(
+                    clothingNames: ["リネンシャツ", "ワイドパンツ", "トラベルジャケット", "白いスニーカー", "デイリートート"],
+                    color: "ネイビー",
+                    clothingNote: "旅先で着回しやすいアイテム",
+                    primaryOutfit: "東京さんぽコーデ",
+                    secondaryOutfit: "ディナーコーデ",
+                    outfitNote: "快適で写真映えする組み合わせ",
+                    tripName: "東京サマートリップ",
+                    destination: "東京、日本",
+                    tripNote: "友だちと準備する4泊5日の旅",
+                    packingNames: ["リネンシャツ", "ワイドパンツ", "ジャケット", "スニーカー", "充電器"]
+                )
+            case .simplifiedChinese:
+                ScreenshotCopy(
+                    clothingNames: ["亚麻衬衫", "阔腿裤", "旅行夹克", "白色运动鞋", "日常托特包"],
+                    color: "海军蓝",
+                    clothingNote: "适合旅行中轻松搭配",
+                    primaryOutfit: "东京漫步穿搭",
+                    secondaryOutfit: "晚餐约会穿搭",
+                    outfitNote: "舒适又上镜的组合",
+                    tripName: "东京夏日之旅",
+                    destination: "日本东京",
+                    tripNote: "和朋友一起准备五天四晚",
+                    packingNames: ["亚麻衬衫", "阔腿裤", "旅行夹克", "白色运动鞋", "充电器"]
+                )
+            case .traditionalChinese:
+                ScreenshotCopy(
+                    clothingNames: ["亞麻襯衫", "寬褲", "旅行外套", "白色運動鞋", "日常托特包"],
+                    color: "海軍藍",
+                    clothingNote: "適合旅行中輕鬆搭配",
+                    primaryOutfit: "東京散步穿搭",
+                    secondaryOutfit: "晚餐約會穿搭",
+                    outfitNote: "舒適又上鏡的組合",
+                    tripName: "東京夏日旅行",
+                    destination: "日本東京",
+                    tripNote: "和朋友一起準備五天四夜",
+                    packingNames: ["亞麻襯衫", "寬褲", "旅行外套", "白色運動鞋", "充電器"]
+                )
+            case .english:
+                ScreenshotCopy(
+                    clothingNames: ["Linen Shirt", "Wide-Leg Pants", "Travel Jacket", "White Sneakers", "Daily Tote"],
+                    color: "Navy",
+                    clothingNote: "An easy piece to mix and match while traveling",
+                    primaryOutfit: "Tokyo Walking Look",
+                    secondaryOutfit: "Dinner Plans Look",
+                    outfitNote: "Comfortable, coordinated, and photo-ready",
+                    tripName: "Tokyo Summer Escape",
+                    destination: "Tokyo, Japan",
+                    tripNote: "A five-day trip planned together with friends",
+                    packingNames: ["Linen Shirt", "Wide-Leg Pants", "Travel Jacket", "White Sneakers", "Charger"]
+                )
+            }
+        }
+    }
+#endif
 }
 
 @MainActor

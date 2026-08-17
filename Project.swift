@@ -59,6 +59,10 @@ let project = Project(
                 .target(name: "Domain"),
             ]
         ),
+        TripFitTarget.uiTests(
+            name: "TripFitScreenshotUITests",
+            path: "Tests/TripFitScreenshotUITests"
+        ),
         TripFitTarget.app(),
     ],
     schemes: [
@@ -71,6 +75,13 @@ let project = Project(
             archiveAction: .archiveAction(configuration: .release),
             profileAction: .profileAction(configuration: .release),
             analyzeAction: .analyzeAction(configuration: .debug)
+        ),
+        .scheme(
+            name: "TripFitScreenshots",
+            shared: true,
+            buildAction: .buildAction(targets: ["TripFit", "TripFitScreenshotUITests"]),
+            testAction: .targets(["TripFitScreenshotUITests"]),
+            runAction: .runAction(configuration: .debug)
         ),
     ]
 )

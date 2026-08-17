@@ -105,6 +105,7 @@ final class MainTabBarController: UITabBarController {
             let button = UIButton(type: .system)
             button.tag = index
             button.accessibilityLabel = item.title
+            button.accessibilityIdentifier = "tripfit.tab.\(["home", "wardrobe", "outfits", "trips"][index])"
             button.addTarget(self, action: #selector(dockButtonTapped(_:)), for: .touchUpInside)
             dockStack.addArrangedSubview(button)
             return button
@@ -346,6 +347,7 @@ private final class HomeDashboardViewController: UIViewController {
         settingsButton.layer.borderWidth = 1
         settingsButton.layer.borderColor = TFColor.Border.subtle.cgColor
         settingsButton.accessibilityLabel = localized("설정", "Settings")
+        settingsButton.accessibilityIdentifier = "tripfit.home.settings"
         settingsButton.addTarget(self, action: #selector(settingsTapped), for: .touchUpInside)
         container.addSubview(settingsButton)
 
